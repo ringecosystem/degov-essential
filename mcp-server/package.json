@@ -3,6 +3,24 @@
   "version": "0.0.1",
   "description": "Degov mcp server",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx src/index.ts",
+    "build": "tsc -b",
+    "start": "node build/index.js",
+    "lint": "eslint . --ext .ts --fix",
+    "package": "npm run build && ncc build build/index.js -o dist --source-map --minify"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "fastify": "^5.3.3",
+    "fastify-mcp": "^2.0.1",
+    "viem": "^2.30.6",
+    "zod": "^3.25.50"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@vercel/ncc": "^0.38.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
   }
 }
