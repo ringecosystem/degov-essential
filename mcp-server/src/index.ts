@@ -8,7 +8,6 @@ async function main() {
   const host = process.env.HOST || "127.0.0.1";
   const port = parseInt(process.env.PORT || "3000", 10);
   const c = Container.get(DegovMcpHttpServer);
-  console.log(c);
   await c.listen({ host, port });
 }
 
