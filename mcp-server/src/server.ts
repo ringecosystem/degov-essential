@@ -1,11 +1,17 @@
 import { Service } from "typedi";
+import Fastify, { FastifyInstance } from "fastify";
+import { Sessions, streamableHttp, fastifyMCPSSE } from "fastify-mcp";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+
+import { DEFINED_LOGGER_RULE } from "./integration/logger";
 import { DegovHelpers } from "./helpers";
 import { RuntimeProfile } from "./types";
-import Fastify, { FastifyInstance } from "fastify";
-import { DEFINED_LOGGER_RULE } from "./integration/logger";
+import { DegovMcpServer } from "./mcp/mcpserver";
 
 @Service()
-export class DegovMcpServer {
+export class DegovMcpHttpServer {
+  constructor(private readonly mcpServer: DegovMcpServer) {}
+
   async listen(options: { host: string; port: number }) {
     const profile: RuntimeProfile = DegovHelpers.runtimeProfile();
     const fastify = Fastify({
@@ -16,7 +22,7 @@ export class DegovMcpServer {
     });
     try {
       await this.richs(fastify);
-      await this.routes(fastify);
+      await this.mcp(fastify);
 
       await fastify.listen({ host: options.host, port: options.port });
       fastify.log.info(
@@ -42,5 +48,35 @@ export class DegovMcpServer {
     });
   }
 
-  private async routes(fastify: FastifyInstance) {}
+  private async mcp(fastify: FastifyInstance) {
+    const sessions = new Sessions<StreamableHTTPServerTransport>();
+
+    sessions.on("connected", (sessionId) => {
+      fastify.log.info(`Session ${sessionId} connected`);
+    });
+
+    sessions.on("terminated", (sessionId) => {
+      fastify.log.info(`Session ${sessionId} terminated`);
+    });
+
+    const transportType = (
+      process.env.MCP_TRANSPORT_TYPE || "sse"
+    ).toLowerCase();
+
+    switch (transportType) {
+      case "sse":
+        fastify.register(fastifyMCPSSE, {
+          server: await this.mcpServer.create(),
+        });
+        break;
+      case "streamable_http":
+        fastify.register(streamableHttp, {
+          stateful: true,
+          mcpEndpoint: "/mcp",
+          sessions,
+          createServer: this.mcpServer.create,
+        });
+        break;
+    }
+  }
 }
