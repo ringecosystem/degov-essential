@@ -32,4 +32,5 @@ dist-ssr
 build
 dist
 *.tsbuildinfo
+.env
 
