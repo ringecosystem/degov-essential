@@ -12,14 +12,15 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "agent-twitter-client": "github:elizaOS/agent-twitter-client#main",
     "fastify": "^5.3.3",
     "fastify-mcp": "^2.0.1",
     "pino-pretty": "^13.0.0",
     "reflect-metadata": "^0.2.2",
+    "twitter-api-v2": "^1.23.2",
     "typedi": "^0.10.0",
     "viem": "^2.30.6",
-    "zod": "^3.25.50",
-    "agent-twitter-client": "github:elizaOS/agent-twitter-client#main"
+    "zod": "^3.25.50"
   },
   "devDependencies": {
     "@modelcontextprotocol/inspector": "^0.13.0",

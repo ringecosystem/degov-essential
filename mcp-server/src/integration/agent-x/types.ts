@@ -3,6 +3,8 @@ export type AuthMethod = "cookies" | "credentials" | "api";
 // Define the search modes
 export type SearchMode = "Top" | "Latest" | "Photos" | "Videos";
 
+export type XApiVersion = "v1" | "v2";
+
 export interface AuthConfig {
   method: AuthMethod;
   alias?: string;
@@ -50,4 +52,3 @@ export interface FollowResponse {
   success: boolean;
   message: string;
 }
-

@@ -7,10 +7,14 @@ import { DEFINED_LOGGER_RULE } from "./integration/logger";
 import { DegovHelpers } from "./helpers";
 import { RuntimeProfile } from "./types";
 import { DegovMcpServer } from "./mcp/mcpserver";
+import { DegovMcpServerInitializer } from "./initialize";
 
 @Service()
 export class DegovMcpHttpServer {
-  constructor(private readonly mcpServer: DegovMcpServer) {}
+  constructor(
+    private readonly initializer: DegovMcpServerInitializer,
+    private readonly mcpServer: DegovMcpServer
+  ) {}
 
   async listen(options: { host: string; port: number }) {
     const profile: RuntimeProfile = DegovHelpers.runtimeProfile();
@@ -20,6 +24,8 @@ export class DegovMcpHttpServer {
       ignoreTrailingSlash: true,
       ignoreDuplicateSlashes: true,
     });
+
+    await this.initializer.init(fastify);
     try {
       await this.richs(fastify);
       await this.mcp(fastify);

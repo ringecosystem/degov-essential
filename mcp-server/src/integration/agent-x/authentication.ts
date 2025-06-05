@@ -5,7 +5,17 @@ import {
   CredentialsAuth,
   ApiAuth,
   TwitterAgentError,
-} from "./types.js";
+  AuthMethod,
+  XApiVersion,
+} from "./types";
+
+export type ScraperKeyOptions =
+  | { apiVersion?: XApiVersion; alias: string }
+  | {
+      apiVersion?: XApiVersion;
+      method: AuthMethod;
+      data?: CookieAuth | CredentialsAuth | ApiAuth;
+    };
 
 export class AuthenticationManager {
   private static instance: AuthenticationManager;
@@ -18,6 +28,13 @@ export class AuthenticationManager {
       AuthenticationManager.instance = new AuthenticationManager();
     }
     return AuthenticationManager.instance;
+  }
+
+  public async getScraper(
+    options: ScraperKeyOptions
+  ): Promise<Scraper | undefined> {
+    const key = this.getScraperKey(options);
+    return this.scraperInstances.get(key);
   }
 
   /**
@@ -165,43 +182,48 @@ export class AuthenticationManager {
   /**
    * Generate a unique key for the scraper instance
    */
-  private getScraperKey(config: AuthConfig): string {
-    if (config.alias) {
-      return config.alias;
+  private getScraperKey(options: ScraperKeyOptions): string {
+    let version = options.apiVersion ?? "v1"; // Default to v1 if not specified
+    if (!options.apiVersion && "method" in options) {
+      if ("api" === options.method) {
+        version = "v2"; // API method always uses v2
+      }
     }
 
-    let cookieAuth: CookieAuth;
-    let authTokenCookie: string | undefined;
-    let ct0Cookie: string | undefined;
-    let authToken: string;
-    let ct0: string;
-    let creds: CredentialsAuth;
-    let api: ApiAuth;
+    if ("alias" in options) {
+      return `${options.alias.toUpperCase()}_${version}`;
+    }
 
-    switch (config.method) {
-      case "cookies":
-        // For cookies, use a combination of auth_token and ct0 if available
-        cookieAuth = config.data as CookieAuth;
-        authTokenCookie = cookieAuth.cookies.find((c) =>
-          c.includes("auth_token=")
-        );
-        ct0Cookie = cookieAuth.cookies.find((c) => c.includes("ct0="));
+    const { method, data } = options;
 
-        if (authTokenCookie && ct0Cookie) {
-          authToken = authTokenCookie.split("=")[1].split(";")[0];
-          ct0 = ct0Cookie.split("=")[1].split(";")[0];
-          return `cookies_${authToken}_${ct0}`;
+    switch (method) {
+      case "cookies": {
+        const cookieAuth = data as CookieAuth | undefined;
+        if (cookieAuth && Array.isArray(cookieAuth.cookies)) {
+          const authToken = cookieAuth.cookies.find((c) =>
+            c.includes("auth_token=")
+          );
+          const ct0 = cookieAuth.cookies.find((c) => c.includes("ct0="));
+          if (authToken && ct0) {
+            const authTokenVal = authToken.split("=")[1].split(";")[0];
+            const ct0Val = ct0.split("=")[1].split(";")[0];
+            return `cookies_${authTokenVal}_${ct0Val}_${version}`;
+          }
         }
         return `cookies_${Date.now()}`;
-
-      case "credentials":
-        creds = config.data as CredentialsAuth;
-        return `credentials_${creds.username}`;
-
-      case "api":
-        api = config.data as ApiAuth;
-        return `api_${api.apiKey}`;
-
+      }
+      case "credentials": {
+        const creds = data as CredentialsAuth | undefined;
+        return creds && creds.username
+          ? `credentials_${creds.username}_${version}`
+          : `credentials_${Date.now()}_${version}`;
+      }
+      case "api": {
+        const api = data as ApiAuth | undefined;
+        return api && api.apiKey
+          ? `api_${api.apiKey}_${version}`
+          : `api_${Date.now()}_${version}`;
+      }
       default:
         return `unknown_${Date.now()}`;
     }
