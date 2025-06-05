@@ -1,9 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Service } from "typedi";
+import { TwitterTools } from "./tools/x";
 
 @Service()
 export class DegovMcpServer {
-  constructor() {}
+  constructor(private readonly twitterTools: TwitterTools) {}
 
   async create() {
     const mcpServer = new McpServer({
@@ -14,11 +15,13 @@ export class DegovMcpServer {
         tools: {},
       },
     });
-    await this.registerTools(mcpServer);
+    await this.registTools(mcpServer);
     return mcpServer.server;
   }
 
-  private async registerTools(server: McpServer) {
+  private async registTools(server: McpServer) {
+    await this.twitterTools.regist(server);
+
     server.tool("greet", () => {
       return {
         content: [{ type: "text", text: "Hello, world!" }],
