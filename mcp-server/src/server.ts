@@ -8,12 +8,20 @@ import { DegovHelpers } from "./helpers";
 import { RuntimeProfile } from "./types";
 import { DegovMcpServer } from "./mcp/mcpserver";
 import { DegovMcpServerInitializer } from "./initialize";
+import { HelloRouter } from "./routes/hello";
+import { TwitterRouter } from "./routes/twitter";
+// import fastifyCaching from "@fastify/caching";
+import fastifyCache, {
+  defaultStorageAdapter,
+} from "@specter-labs/fastify-cache";
 
 @Service()
 export class DegovMcpHttpServer {
   constructor(
     private readonly initializer: DegovMcpServerInitializer,
-    private readonly mcpServer: DegovMcpServer
+    private readonly mcpServer: DegovMcpServer,
+    private readonly helloRouter: HelloRouter,
+    private readonly twitterRouter: TwitterRouter
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -28,6 +36,7 @@ export class DegovMcpHttpServer {
     await this.initializer.init(fastify);
     try {
       await this.richs(fastify);
+      await this.routes(fastify);
       await this.mcp(fastify);
 
       await fastify.listen({ host: options.host, port: options.port });
@@ -41,6 +50,14 @@ export class DegovMcpHttpServer {
   }
 
   private async richs(fastify: FastifyInstance) {
+    // const Cache = require("cache");
+    // fastify.register(fastifyCaching, { cache: new Cache() });
+
+    fastify.register(fastifyCache, {
+      storageAdapter: defaultStorageAdapter,
+      ttl: 60 * 5, // 5 minutes
+    });
+
     fastify.setReplySerializer(function (payload, _statusCode) {
       return JSON.stringify(payload, (_, v) => {
         if (typeof v === "bigint") {
@@ -52,6 +69,11 @@ export class DegovMcpHttpServer {
         return v;
       });
     });
+  }
+
+  private async routes(fastify: FastifyInstance) {
+    this.helloRouter.regist(fastify);
+    this.twitterRouter.regist(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "@specter-labs/fastify-cache": "^1.0.3",
     "agent-twitter-client": "github:elizaOS/agent-twitter-client#main",
     "fastify": "^5.3.3",
     "fastify-mcp": "^2.0.1",
