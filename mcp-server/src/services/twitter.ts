@@ -4,11 +4,12 @@ import {
   TwitterAuthorizeForm,
   TwitterOAuthType,
 } from "../types";
-import { AuthenticationManager } from "../integration/agent-x/authentication";
+import { AuthenticationManager } from "../integration/x-scraper/authentication";
 import { FastifyInstance } from "fastify";
 import { twitter_authorization, twitter_user } from "../generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { EnvReader } from "../integration/envreader";
+import { ScraperTwitterClient } from "../integration/x-scraper";
 
 export interface AuthorizeResult {
   method: "COOKIES" | "API";
@@ -120,8 +121,7 @@ export class TwitterService {
           appSecret,
         });
 
-        const envTwitter = EnvReader.envTwitter();
-        const callbackHost = envTwitter.callbackHost();
+        const callbackHost = EnvReader.xCallbackHost();
         const callbakUrl = `${callbackHost}/twitter/authorized?profile=${inputProfile}`;
 
         const { url, oauth_token, oauth_token_secret } =
@@ -323,5 +323,60 @@ export class TwitterService {
       orderBy: { ctime: "desc" },
     });
     console.log(authorizations);
+    for (const auth of authorizations) {
+      const authMethod = auth.auth_method.toUpperCase();
+      switch (authMethod) {
+        case "COOKIES": {
+          const am = AuthenticationManager.getInstance();
+          if (!auth.cookies) {
+            fastify.log.warn(
+              `Twitter authorization for profile "${auth.profile}" has no cookies set. Skipping.`
+            );
+            continue;
+          }
+          const cookies = auth.cookies?.split(";").map((c) => c.trim()) ?? [];
+          const regResult = await am.regist(
+            {
+              method: "cookies",
+              alias: auth.profile,
+              data: {
+                cookies,
+              },
+            },
+            { force: true }
+          );
+          const atc = new ScraperTwitterClient(regResult.scraper);
+
+          break;
+        }
+        case "API": {
+          const { api_key, api_secret_key, access_token, access_secret } = auth;
+          if (!api_key || !api_secret_key) {
+            fastify.log.warn(
+              `Twitter authorization for profile "${auth.profile}" has no API keys set. Skipping.`
+            );
+            continue;
+          }
+          if (!access_token || !access_secret) {
+            fastify.log.warn(
+              `Twitter authorization for profile "${auth.profile}" has no access token or secret set. Skipping.`
+            );
+            continue;
+          }
+          const client = new TwitterApi({
+            appKey: api_key,
+            appSecret: api_secret_key,
+            accessToken: access_token,
+            accessSecret: access_secret,
+          });
+        }
+        default: {
+          fastify.log.warn(
+            `Unsupported Twitter authorization method "${authMethod}" for profile "${auth.profile}".`
+          );
+          continue;
+        }
+      }
+    }
   }
 }
