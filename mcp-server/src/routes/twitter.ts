@@ -1,10 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { Service } from "typedi";
-import { EnvReader } from "../integration/envreader";
 import { QueryTwitterCallback, Resp, TwitterAuthorizeForm } from "../types";
-import { TwitterApi } from "twitter-api-v2";
-import { AuthenticationManager } from "../integration/agent-x/authentication";
-import { ATwitterClient } from "../integration/agent-x";
 import { TwitterService } from "../services/twitter";
 
 @Service()

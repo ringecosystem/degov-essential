@@ -1,7 +1,7 @@
 import { Profile, Scraper, SearchMode, Tweet } from "agent-twitter-client";
 import { FollowResponse, PollData, TwitterAgentError } from "./types";
 
-export class ATwitterClient {
+export class AgentTwitterClient {
   constructor(private readonly scraper: Scraper) {}
 
   /**
