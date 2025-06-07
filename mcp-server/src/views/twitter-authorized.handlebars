@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {{#if auth}}
+    🎉 X Account Authorized! ({{ auth.name }})
+    {{else}}
+    🎉 X Account Authorized! (No Account Info)
+    {{/if}}
+  </title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1da1f2 0%, #e8f5fd 100%);
+      color: #222;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 2rem 2.5rem;
+      text-align: center;
+      max-width: 400px;
+      margin: 2rem;
+      animation: pop 0.7s cubic-bezier(.68, -0.55, .27, 1.55);
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(0.7);
+      }
+
+      80% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+      border: 3px solid #1da1f2;
+      background: #e8f5fd;
+      object-fit: cover;
+    }
+
+    .screen-name {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1da1f2;
+    }
+
+    .userid {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 1.5rem;
+    }
+
+    .success {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #27ae60;
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      to {
+        transform: translateY(-8px);
+      }
+    }
+
+    .tweet-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.7em 1.5em;
+      background: #1da1f2;
+      color: #fff;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .tweet-btn:hover {
+      background: #0d8ddb;
+    }
+
+    .warn {
+      color: #e0245e;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="success">🎉</div>
+    {{#if auth}}
+    {{#if auth.avatar}}
+    <img class="avatar" src="{{ auth.avatar }}" alt="Avatar of {{ auth.name }}">
+    {{else}}
+    <img class="avatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png"
+      alt="Default Avatar">
+    {{/if}}
+    <div class="screen-name">@{{ auth.name }}</div>
+    <div class="userid">User ID: {{ auth.twid }}</div>
+    <p>Welcome, <b>{{ auth.name }}</b>!<br>
+      Your X account has been <span style="color:#27ae60;font-weight:bold;">successfully authorized</span>.</p>
+    <a class="tweet-btn" href="https://x.com/{{ auth.username }}" target="_blank">
+      🚀 Visit your X Profile
+    </a>
+    {{else}}
+    <div class="screen-name" style="color:#e0245e;">No account information</div>
+    <p>
+      Authorization succeeded, but failed to retrieve your account information.<br>
+      This may affect some features.<br>
+      <span class="warn">You can try to re-authorize your account.</span>
+    </p>
+    {{/if}}
+  </div>
+</body>
+
+</html>

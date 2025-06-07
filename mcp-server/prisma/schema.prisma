@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model twitter_authorization {
+  id          String  @id
+  profile     String
+  description String?
+  version     String?
+  enabled     Int     @default(0)
+
+  auth_method String
+
+  access_token   String?
+  access_secret  String?
+  api_key        String?
+  api_secret_key String?
+
+  cookies String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}
+
+model twitter_user {
+  id String @id
+
+  twid          String  @unique
+  name          String?
+  username      String
+  avatar        String?
+  profile_url   String?
+  description   String?
+  verified      Int?
+  verified_type String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}

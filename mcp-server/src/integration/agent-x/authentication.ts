@@ -17,6 +17,11 @@ export type ScraperKeyOptions =
       data?: CookieAuth | CredentialsAuth | ApiAuth;
     };
 
+export interface RegistResult {
+  key: string;
+  scraper: Scraper;
+}
+
 export class AuthenticationManager {
   private static instance: AuthenticationManager;
   private scraperInstances = new Map<string, Scraper>();
@@ -40,15 +45,22 @@ export class AuthenticationManager {
   /**
    * Get or create a scraper instance based on the provided authentication config
    */
-  public async regist(config: AuthConfig): Promise<Scraper> {
+  public async regist(
+    config: AuthConfig,
+    options?: { force?: boolean }
+  ): Promise<RegistResult> {
+    const force = options?.force ?? false;
     const key = this.getScraperKey(config);
 
-    if (this.scraperInstances.has(key)) {
+    if (this.scraperInstances.has(key) && !force) {
       const scraper = this.scraperInstances.get(key)!;
       try {
         const isLoggedIn = await scraper.isLoggedIn();
         if (isLoggedIn) {
-          return scraper;
+          return {
+            key,
+            scraper,
+          };
         }
       } catch (error) {
         console.error("Error checking login status:", error);
@@ -60,7 +72,10 @@ export class AuthenticationManager {
     try {
       await this.authenticate(scraper, config);
       this.scraperInstances.set(key, scraper);
-      return scraper;
+      return {
+        key,
+        scraper,
+      };
     } catch (error) {
       throw new TwitterAgentError(
         `Authentication failed: ${(error as Error).message}`,

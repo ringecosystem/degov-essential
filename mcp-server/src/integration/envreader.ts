@@ -26,46 +26,46 @@ export class EnvReader {
 export class EnvReaderTwitter {
   constructor() {}
 
-  profiles(): string[] {
-    // return EnvReader.env("X_PROFILES", "default");
-    const rawProfiles = EnvReader.env("X_PROFILES", {
-      defaultValue: "default",
-    });
-    if (!rawProfiles) {
-      return [];
-    }
-    return rawProfiles.trim().toUpperCase().split(",");
-  }
+  // profiles(): string[] {
+  //   // return EnvReader.env("X_PROFILES", "default");
+  //   const rawProfiles = EnvReader.env("X_PROFILES", {
+  //     defaultValue: "default",
+  //   });
+  //   if (!rawProfiles) {
+  //     return [];
+  //   }
+  //   return rawProfiles.trim().toUpperCase().split(",");
+  // }
 
-  activeProfile(): string {
-    return EnvReader.env("X_ACTIVE_PROFILE", { defaultValue: "default" })!
-      .trim()
-      .toUpperCase();
-  }
+  // activeProfile(): string {
+  //   return EnvReader.env("X_ACTIVE_PROFILE", { defaultValue: "default" })!
+  //     .trim()
+  //     .toUpperCase();
+  // }
 
   callbackHost(): string {
     return EnvReader.env("X_CALLBACK_HOST")!.trim();
   }
 
-  apiKeyPair(profile: string): TwitterApiKeyPair {
-    const stdProfile = profile.trim().toUpperCase();
-    const apiKey = EnvReader.env(`X_${stdProfile}_API_KEY`);
-    const apiSecretKey = EnvReader.env(`X_${stdProfile}_API_SECRET_KEY`);
+  // apiKeyPair(profile: string): TwitterApiKeyPair {
+  //   const stdProfile = profile.trim().toUpperCase();
+  //   const apiKey = EnvReader.env(`X_${stdProfile}_API_KEY`);
+  //   const apiSecretKey = EnvReader.env(`X_${stdProfile}_API_SECRET_KEY`);
 
-    if (!apiKey || !apiSecretKey) {
-      throw new Error(
-        `API key pair not found for profile "${stdProfile}". Please set X_${stdProfile}_API_KEY and X_${stdProfile}_API_SECRET_KEY environment variables.`
-      );
-    }
+  //   if (!apiKey || !apiSecretKey) {
+  //     throw new Error(
+  //       `API key pair not found for profile "${stdProfile}". Please set X_${stdProfile}_API_KEY and X_${stdProfile}_API_SECRET_KEY environment variables.`
+  //     );
+  //   }
 
-    return {
-      apiKey,
-      apiSecretKey,
-    };
-  }
+  //   return {
+  //     apiKey,
+  //     apiSecretKey,
+  //   };
+  // }
 }
 
-export interface TwitterApiKeyPair {
-  apiKey: string;
-  apiSecretKey: string;
-}
+// export interface TwitterApiKeyPair {
+//   apiKey: string;
+//   apiSecretKey: string;
+// }

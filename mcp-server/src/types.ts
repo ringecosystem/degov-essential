@@ -32,3 +32,29 @@ export class Resp<T> {
     return new Resp(1, message, data, undefined);
   }
 }
+
+
+export interface TwitterAuthorizeForm {
+  profile: string;
+  method: "cookies" | "api";
+
+  auth_token?: string;
+  ct0?: string;
+  twid?: string;
+
+  api_key?: string;
+  api_secret_key?: string;
+}
+
+
+export interface TwitterOAuthType {
+  oauth_token: string;
+  oauth_token_secret: string;
+}
+
+export interface QueryTwitterCallback {
+  profile: string;
+  oauth_token: string;
+  oauth_verifier: string;
+}
+

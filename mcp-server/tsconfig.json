@@ -1,8 +1,10 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "esnext",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "checkJs": false,
     "declaration": true,
     "declarationMap": true,
     "rootDir": "src",
@@ -17,6 +19,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["__tests__", "node_modules", "build", "dist", "target"]
 }

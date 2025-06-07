@@ -1,164 +1,65 @@
-import { FastifyInstance, FastifyRequest } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/envreader";
-import { Resp } from "../types";
+import { QueryTwitterCallback, Resp, TwitterAuthorizeForm } from "../types";
 import { TwitterApi } from "twitter-api-v2";
+import { AuthenticationManager } from "../integration/agent-x/authentication";
+import { ATwitterClient } from "../integration/agent-x";
+import { TwitterService } from "../services/twitter";
 
 @Service()
 export class TwitterRouter {
+  constructor(private readonly twitterService: TwitterService) {}
+
   async regist(fastify: FastifyInstance) {
-    fastify.get(
+    fastify.get("/twitter/account", async (request, reply) => {
+      return reply.view("twitter-account.handlebars", {});
+    });
+
+    fastify.post(
       "/twitter/authorize",
       TwitterAuthorizeRequestSchema,
       async (
-        request: FastifyRequest<{ Querystring: QueryTwitterAuthorize }>,
+        request: FastifyRequest<{ Body: TwitterAuthorizeForm }>,
         _reply
       ) => {
-        const query = request.query;
-        const inputProfile = query.profile.trim().toUpperCase();
-        const envTwitter = EnvReader.envTwitter();
-        if (!envTwitter.profiles().includes(inputProfile)) {
-          return Resp.err(
-            "Invalid profile provided. Available profiles: " +
-              envTwitter.profiles().join(", ")
-          );
-        }
-
-        let redirectUrl;
-        try {
-          const apikeypair = envTwitter.apiKeyPair(inputProfile);
-          const callbackHost = envTwitter.callbackHost();
-          const callbakUrl = `${callbackHost}/twitter/callback?profile=${inputProfile}`;
-
-          const client = new TwitterApi({
-            appKey: apikeypair.apiKey,
-            appSecret: apikeypair.apiSecretKey,
-          });
-          const { url, oauth_token, oauth_token_secret } =
-            await client.generateAuthLink(callbakUrl, {
-              authAccessType: "write",
-              // linkMode: "authorize",
-            });
-          const twitterOAuth: TwitterOAuthType = {
-            oauth_token,
-            oauth_token_secret,
-          };
-          // @ts-ignore
-          await fastify.cache.set(
-            `X_OAUTH_${inputProfile}`,
-            twitterOAuth,
-            1000 * 60 * 10
-          );
-
-          redirectUrl = url;
-        } catch (error: any) {
-          let message = (error as Error).message;
-          if ("data" in error) {
-            message = `${message}: ${JSON.stringify(error.data)}`;
-          }
-
-          return Resp.err(
-            `Failed to retrieve API key pair for profile "${inputProfile}": ${message}`
-          );
-        }
-
-        return redirectUrl;
+        const result = await this.twitterService.authorize(
+          fastify,
+          request.body
+        );
+        return Resp.ok(result);
       }
     );
 
     fastify.get(
-      "/twitter/callback",
+      "/twitter/authorized",
       TwitterCallbackRequestSchema,
       async (
         request: FastifyRequest<{ Querystring: QueryTwitterCallback }>,
-        _reply
+        reply: FastifyReply
       ) => {
-        const { profile, oauth_token, oauth_verifier } = request.query;
-
-        const inputProfile = profile.trim().toUpperCase();
-        const envTwitter = EnvReader.envTwitter();
-        if (!envTwitter.profiles().includes(inputProfile)) {
-          return Resp.err(
-            "Invalid profile provided. Available profiles: " +
-              envTwitter.profiles().join(", ")
-          );
-        }
-
-        const oauthCacheItem = (await fastify.cache.get(
-          `X_OAUTH_${inputProfile}`
-        )) as TwitterOAuthType | null;
-        if (!oauthCacheItem) {
-          return Resp.err(
-            `No OAuth token found for profile "${inputProfile}". Please initiate the authorization flow first.`
-          );
-        }
-        if (oauthCacheItem.oauth_token !== oauth_token) {
-          return Resp.err(
-            `OAuth token mismatch for profile "${inputProfile}". Please initiate the authorization flow again.`
-          );
-        }
-
         try {
-          const apikeypair = envTwitter.apiKeyPair(inputProfile);
-          const unauthorizedClient = new TwitterApi({
-            appKey: apikeypair.apiKey,
-            appSecret: apikeypair.apiSecretKey,
-            accessToken: oauth_token,
-            accessSecret: oauthCacheItem.oauth_token_secret,
+          const result = await this.twitterService.callback(
+            fastify,
+            request.query
+          );
+          return reply.view("twitter-authorized.handlebars", {
+            auth: result.profile,
           });
-          const { accessToken, accessSecret, screenName, userId } =
-            await unauthorizedClient.login(oauth_verifier);
-          console.log(
-            `accessToken: ${accessToken} accessSecret: ${accessSecret} screenName: ${screenName} userId: ${userId}`
-          );
-        } catch (error: any) {
-          let message = (error as Error).message;
-          if ("data" in error) {
-            message = `${message}: ${JSON.stringify(error.data)}`;
-          }
-
-          return Resp.err(
-            `Failed to retrieve API key pair for profile "${inputProfile}": ${message}`
-          );
+        } catch (e: any) {
+          const message = `An error occurred while processing your request: ${e.message}`;
+          return reply.view("error.handlebars", {
+            error: {
+              message: message,
+              detail: JSON.stringify(e.data),
+              stack: e.stack,
+            },
+          });
         }
-
-        return Resp.ok("hello");
-        // const query = request.query as { profile: string; oauth_token: string; oauth_verifier: string };
-        // try {
-        //   const { accessToken, accessSecret } =
-        //     await client.loginWithOAuth1({
-        //       oauth_token: query.oauth_token,
-        //       oauth_verifier: query.oauth_verifier,
-        //     });
-        //   // Redirect to a success page or return a success response
-        //   reply.redirect(
-        //     `https://your-success-page.com?profile=${inputProfile}&accessToken=${accessToken}&accessSecret=${accessSecret}`
-        //   );
-        // } catch (error) {
-        //   console.error(
-        //     `Failed to authenticate with Twitter for profile "${inputProfile}":`,
-        //     error
-        //   );
-        //   return Resp.err(
-        //     `Failed to authenticate with Twitter for profile "${inputProfile}": ${error}`
-        //   );
-        // }
       }
     );
   }
 }
-
-const TwitterAuthorizeRequestSchema = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        profile: { type: "string" },
-      },
-      required: ["profile"],
-    },
-  },
-};
 
 const TwitterCallbackRequestSchema = {
   schema: {
@@ -174,17 +75,30 @@ const TwitterCallbackRequestSchema = {
   },
 };
 
-interface QueryTwitterAuthorize {
-  profile: string;
-}
-
-interface QueryTwitterCallback {
-  profile: string;
-  oauth_token: string;
-  oauth_verifier: string;
-}
-
-interface TwitterOAuthType {
-  oauth_token: string;
-  oauth_token_secret: string;
-}
+const TwitterAuthorizeRequestSchema = {
+  schema: {
+    body: {
+      type: "object",
+      properties: {
+        profile: { type: "string" },
+        method: { type: "string", enum: ["cookies", "api"] },
+        auth_token: { type: "string" },
+        ct0: { type: "string" },
+        twid: { type: "string" },
+        api_key: { type: "string" },
+        api_secret_key: { type: "string" },
+      },
+      required: ["profile", "method"],
+      oneOf: [
+        {
+          required: ["auth_token", "ct0", "twid"],
+          properties: { method: { const: "cookies" } },
+        },
+        {
+          required: ["api_key", "api_secret_key"],
+          properties: { method: { const: "api" } },
+        },
+      ],
+    },
+  },
+};

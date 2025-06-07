@@ -33,4 +33,8 @@ build
 dist
 *.tsbuildinfo
 .env
+*.db
+*.db-journal
+
+*.local.*
 
