@@ -9,7 +9,8 @@ import { FastifyInstance } from "fastify";
 import { twitter_authorization, twitter_user } from "../generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { EnvReader } from "../integration/envreader";
-import { ScraperTwitterClient } from "../integration/x-scraper";
+import { AgentClient, TwitterAgent } from "../internal/x-agent";
+import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
 
 export interface AuthorizeResult {
   method: "COOKIES" | "API";
@@ -25,6 +26,8 @@ export interface TwitterAuthorizeCallbackResult {
 
 @Service()
 export class TwitterService {
+  constructor(private readonly twitterAgent: TwitterAgent) {}
+
   async authorize(
     fastify: FastifyInstance,
     form: TwitterAuthorizeForm
@@ -322,33 +325,40 @@ export class TwitterService {
       },
       orderBy: { ctime: "desc" },
     });
-    console.log(authorizations);
+    const agentClients: AgentClient[] = [];
     for (const auth of authorizations) {
       const authMethod = auth.auth_method.toUpperCase();
       switch (authMethod) {
-        case "COOKIES": {
-          const am = AuthenticationManager.getInstance();
-          if (!auth.cookies) {
-            fastify.log.warn(
-              `Twitter authorization for profile "${auth.profile}" has no cookies set. Skipping.`
-            );
-            continue;
-          }
-          const cookies = auth.cookies?.split(";").map((c) => c.trim()) ?? [];
-          const regResult = await am.regist(
-            {
-              method: "cookies",
-              alias: auth.profile,
-              data: {
-                cookies,
-              },
-            },
-            { force: true }
-          );
-          const atc = new ScraperTwitterClient(regResult.scraper);
-
-          break;
-        }
+        // case "COOKIES": {
+        //   const am = AuthenticationManager.getInstance();
+        //   if (!auth.cookies) {
+        //     fastify.log.warn(
+        //       `Twitter authorization for profile "${auth.profile}" has no cookies set. Skipping.`
+        //     );
+        //     continue;
+        //   }
+        //   const cookies = auth.cookies?.split(";").map((c) => c.trim()) ?? [];
+        //   const regResult = await am.regist(
+        //     {
+        //       method: "cookies",
+        //       alias: auth.profile,
+        //       data: {
+        //         cookies,
+        //       },
+        //     },
+        //     { force: true }
+        //   );
+        //   const atc = new ScraperTwitterClient(regResult.scraper);
+        //   agentClients.push({
+        //     profile: auth.profile,
+        //     version: "v1",
+        //     client: atc,
+        //   });
+        //   fastify.log.info(
+        //     `Twitter Scraper client for profile "${auth.profile}" initialized successfully.`
+        //   );
+        //   break;
+        // }
         case "API": {
           const { api_key, api_secret_key, access_token, access_secret } = auth;
           if (!api_key || !api_secret_key) {
@@ -363,12 +373,24 @@ export class TwitterService {
             );
             continue;
           }
-          const client = new TwitterApi({
-            appKey: api_key,
-            appSecret: api_secret_key,
-            accessToken: access_token,
-            accessSecret: access_secret,
+          const rateLimitPlugin = new TwitterApiRateLimitPlugin();
+          const client = new TwitterApi(
+            {
+              appKey: api_key,
+              appSecret: api_secret_key,
+              accessToken: access_token,
+              accessSecret: access_secret,
+            },
+            { plugins: [rateLimitPlugin] }
+          );
+          agentClients.push({
+            profile: auth.profile,
+            client,
           });
+          fastify.log.info(
+            `Twitter API client for profile "${auth.profile}" initialized successfully.`
+          );
+          break;
         }
         default: {
           fastify.log.warn(
@@ -377,6 +399,7 @@ export class TwitterService {
           continue;
         }
       }
+      this.twitterAgent.resetClient(agentClients);
     }
   }
 }

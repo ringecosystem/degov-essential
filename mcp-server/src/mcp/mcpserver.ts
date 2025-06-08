@@ -15,6 +15,7 @@ export class DegovMcpServer {
         tools: {},
       },
     });
+
     await this.registTools(mcpServer);
     return mcpServer.server;
   }

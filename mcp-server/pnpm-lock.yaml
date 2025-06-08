@@ -26,6 +26,9 @@ importers:
       '@specter-labs/fastify-cache':
         specifier: ^1.0.3
         version: 1.0.3(fastify@5.3.3)
+      '@twitter-api-v2/plugin-rate-limit':
+        specifier: ^1.1.0
+        version: 1.1.0(twitter-api-v2@1.23.2)
       agent-twitter-client:
         specifier: github:elizaOS/agent-twitter-client#main
         version: https://codeload.github.com/elizaOS/agent-twitter-client/tar.gz/31fd878e5641eaa78e1d3ec4dadb837ca740356a
@@ -939,6 +942,11 @@ packages:
 
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
+
+  '@twitter-api-v2/plugin-rate-limit@1.1.0':
+    resolution: {integrity: sha512-5nUk0w0s1yzzMe+NLN5BlKzwgl9OHkF1Makb5Xje1ntCO1H1fGq0qli80WRvcrpcwKZcSckRkXd4HEksh2LZ6g==}
+    peerDependencies:
+      twitter-api-v2: ^1.11.0
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -3762,6 +3770,10 @@ snapshots:
   '@tsconfig/node14@1.0.3': {}
 
   '@tsconfig/node16@1.0.4': {}
+
+  '@twitter-api-v2/plugin-rate-limit@1.1.0(twitter-api-v2@1.23.2)':
+    dependencies:
+      twitter-api-v2: 1.23.2
 
   '@types/babel__core@7.20.5':
     dependencies:

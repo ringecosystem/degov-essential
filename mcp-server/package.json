@@ -8,7 +8,7 @@
     "start": "node build/index.js",
     "lint": "eslint . --ext .ts --fix",
     "package": "npm run build && ncc build build/index.js -o dist --source-map --minify",
-    "mcp:inspect": "npx @modelcontextprotocol/inspector"
+    "mcp:inspector": "npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
     "@akashrajpurohit/snowflake-id": "^2.0.0",
@@ -17,6 +17,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@prisma/client": "6.9.0",
     "@specter-labs/fastify-cache": "^1.0.3",
+    "@twitter-api-v2/plugin-rate-limit": "^1.1.0",
     "agent-twitter-client": "github:elizaOS/agent-twitter-client#main",
     "fastify": "^5.3.3",
     "fastify-mcp": "^2.0.1",

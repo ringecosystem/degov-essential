@@ -11,4 +11,16 @@ export class DegovHelpers {
         return RuntimeProfile.Development;
     }
   }
+
+  static safeJsonStringify(payload: any): string {
+    return JSON.stringify(payload, (_, v) => {
+      if (typeof v === "bigint") {
+        return v.toString();
+      }
+      if (v === null) {
+        return undefined;
+      }
+      return v;
+    });
+  }
 }

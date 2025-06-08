@@ -70,15 +70,7 @@ export class DegovMcpHttpServer {
     fastify.decorate("snowflake", snowflake);
 
     fastify.setReplySerializer(function (payload, _statusCode) {
-      return JSON.stringify(payload, (_, v) => {
-        if (typeof v === "bigint") {
-          return v.toString();
-        }
-        if (v === null) {
-          return undefined;
-        }
-        return v;
-      });
+      return DegovHelpers.safeJsonStringify(payload);
     });
 
     // render
