@@ -316,6 +316,58 @@ export class TwitterTools {
         }
       }
     );
+
+    server.registerTool(
+      "send-tweet",
+      {
+        description: "Send a tweet.",
+        inputSchema: {
+          profile: z.string().describe("The profile to use.").optional(),
+          ...SendTweetV2ParamsSchema,
+        },
+        outputSchema: {
+          data: z
+            .object({
+              id: z.string().describe("The ID of the sent tweet"),
+              text: z.string().describe("The text of the sent tweet"),
+            })
+            .optional(),
+          errors: z.string().describe("Error message").optional(),
+        },
+      },
+      async (options) => {
+        try {
+          // @ts-ignore
+          const result = await this.twitterAgent.sendTweet(options);
+          const output = {
+            data: result.data,
+            errors: McpCommon.stdTwitterError(result.errors),
+          };
+          return {
+            structuredContent: output,
+            content: [
+              {
+                type: "text",
+                text: DegovHelpers.safeJsonStringify(output),
+              },
+            ],
+          };
+        } catch (error: any) {
+          const message = McpCommon.defaultToolErrorMessage(error);
+          return {
+            structuredContent: {
+              errors: message,
+            },
+            content: [
+              {
+                type: "text",
+                text: message,
+              },
+            ],
+          };
+        }
+      }
+    );
   }
 }
 
@@ -525,4 +577,73 @@ export const TweetV2Schema = {
     })
     .optional(),
   community_id: z.string().optional(),
+};
+
+export const SendTweetV2ParamsSchema = {
+  direct_message_deep_link: z
+    .string()
+    .describe("Direct message deep link to include in the tweet")
+    .optional(),
+  for_super_followers_only: z
+    .enum(["True", "False"])
+    .describe("Whether the tweet is only visible to super followers")
+    .optional(),
+  geo: z
+    .object({
+      place_id: z
+        .string()
+        .describe("Place ID for the tweet's location")
+        .optional(),
+    })
+    .describe("Geographical location of the tweet")
+    .optional(),
+  media: z
+    .object({
+      media_ids: z
+        .array(z.string())
+        .min(1)
+        .max(4)
+        .describe("Media IDs to attach to the tweet")
+        .optional(),
+      tagged_user_ids: z
+        .array(z.string())
+        .describe("User IDs tagged in the media")
+        .optional(),
+    })
+    .describe("Media options")
+    .optional(),
+  poll: z
+    .object({
+      duration_minutes: z
+        .number()
+        .describe("Poll duration in minutes")
+        .min(5)
+        .max(1440),
+      options: z.array(z.string()).describe("Poll options").min(2).max(4),
+    })
+    .describe("Poll options")
+    .optional(),
+  quote_tweet_id: z.string().describe("ID of the tweet to quote").optional(),
+  reply: z
+    .object({
+      exclude_reply_user_ids: z
+        .array(z.string())
+        .describe("User IDs to exclude from the reply")
+        .optional(),
+      in_reply_to_tweet_id: z
+        .string()
+        .describe("ID of the tweet to reply to")
+        .optional(),
+    })
+    .describe("Reply options")
+    .optional(),
+  reply_settings: z
+    .enum(["mentionedUsers", "following", "everyone"])
+    .or(z.string())
+    .optional(),
+  text: z.string().describe("The text of the tweet to send").optional(),
+  community_id: z
+    .string()
+    .describe("ID of the community to post in")
+    .optional(),
 };

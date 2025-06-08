@@ -1,4 +1,8 @@
-import { Tweetv2SearchParams, TwitterApi } from "twitter-api-v2";
+import {
+  SendTweetV2Params,
+  Tweetv2SearchParams,
+  TwitterApi,
+} from "twitter-api-v2";
 
 export interface AgentClient {
   profile: string;
@@ -24,3 +28,5 @@ export interface GetUserInput extends PickClientOptions {
 export interface SearchTweetsInput
   extends PickClientOptions,
     Tweetv2SearchParams {}
+
+export interface SendTweetInput extends PickClientOptions, SendTweetV2Params {}

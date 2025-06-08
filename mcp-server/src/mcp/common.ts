@@ -3,21 +3,26 @@ import { InlineErrorV2 } from "twitter-api-v2";
 export class McpCommon {
   static defaultToolErrorMessage(error: any): string {
     console.error("Error in tool:", error);
-    let message = error instanceof Error ? error.message : "Unknown error";
+    let output = error instanceof Error ? error.message : "Unknown error";
     if ("data" in error) {
       const data = error.data;
       const status = data.status;
       if (status === 429) {
         const rateLimit = error.rateLimit;
-        message += ` -> You just hit the rate limit! [limit]: ${
+        output += ` -> You just hit the rate limit! [limit]: ${
           rateLimit?.limit
         }, [remaining]: ${rateLimit?.remaining}, [reset]: ${new Date(
           rateLimit?.reset * 1000
         ).toISOString()}`;
       }
-      message = `[${status}]: ${message}`;
+      if (status) {
+        output = `[${status}]: ${output}`;
+      }
     }
-    return message;
+    if ("errors" in error) {
+      output = `${output}\nErrors: ${JSON.stringify(error.errors)}`;
+    }
+    return output;
   }
 
   static stdTwitterError(

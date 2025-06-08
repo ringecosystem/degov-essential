@@ -4,8 +4,10 @@ import {
   GetUserInput,
   PickClientOptions,
   SearchTweetsInput,
+  SendTweetInput,
 } from "./types";
 import {
+  TweetV2PostTweetResult,
   Tweetv2SearchResult,
   TweetV2SingleResult,
   TwitterApi,
@@ -60,10 +62,36 @@ export class TwitterAgent {
 
   async getTweetById(options: GetUserInput): Promise<TweetV2SingleResult> {
     const client = this.agentClient(options);
-    return await client.v2.singleTweet(options.id);
+    return await client.v2.singleTweet(options.id, {
+      expansions: ["attachments.poll_ids"],
+      "poll.fields": [
+        "id",
+        "duration_minutes",
+        "end_datetime",
+        "options",
+        "voting_status",
+      ],
+    });
   }
 
-  
+  async sendTweet(options: SendTweetInput): Promise<TweetV2PostTweetResult> {
+    const client = this.agentClient(options);
+    const cleanedOptions = cleanObject(options);
+    return await client.v2.tweet(cleanedOptions);
+  }
+}
 
-
+function cleanObject(obj: any): any {
+  return Object.fromEntries(
+    Object.entries(obj).filter(
+      ([_, value]) =>
+        value !== "" && // clean empty strings
+        value !== null && // clean null
+        value !== undefined && // clean undefined
+        (Array.isArray(value) ? value.length > 0 : true) && // clean empty arrays
+        (typeof value === "object" && !Array.isArray(value)
+          ? Object.keys(value).length > 0
+          : true) // clean empty objects
+    )
+  );
 }
