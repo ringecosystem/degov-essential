@@ -164,17 +164,17 @@ export class TwitterTools {
   }
 
   private registTweets(server: McpServer) {
-    function stdOutput(input: Tweetv2SearchResult) {
-      if (!input) {
-        return {
-          errors: "No user data found.",
-        };
-      }
-      return {
-        data: input.data,
-        errors: McpCommon.stdTwitterError(input.errors),
-      };
-    }
+    // function stdOutput(input: Tweetv2SearchResult) {
+    //   if (!input) {
+    //     return {
+    //       errors: "No user data found.",
+    //     };
+    //   }
+    //   return {
+    //     data: input.data,
+    //     errors: McpCommon.stdTwitterError(input.errors),
+    //   };
+    // }
 
     server.registerTool(
       "search-tweets",
@@ -227,7 +227,10 @@ export class TwitterTools {
       async (options) => {
         try {
           const result = await this.twitterAgent.searchTweets(options);
-          const output = stdOutput(result);
+          const output = {
+            data: result.data,
+            errors: McpCommon.stdTwitterError(result.errors),
+          };
 
           // const output = {
           //   data: [
@@ -242,6 +245,52 @@ export class TwitterTools {
           //   ],
           //   // errors: undefined
           // };
+          return {
+            structuredContent: output,
+            content: [
+              {
+                type: "text",
+                text: DegovHelpers.safeJsonStringify(output),
+              },
+            ],
+          };
+        } catch (error: any) {
+          const message = McpCommon.defaultToolErrorMessage(error);
+          return {
+            structuredContent: {
+              errors: message,
+            },
+            content: [
+              {
+                type: "text",
+                text: message,
+              },
+            ],
+          };
+        }
+      }
+    );
+
+    server.registerTool(
+      "query-single-tweet",
+      {
+        description: "Query a single tweet by ID.",
+        inputSchema: {
+          id: z.string().describe("The ID of the tweet to retrieve."),
+          profile: z.string().describe("The profile to use.").optional(),
+        },
+        outputSchema: {
+          data: z.object(TweetV2Schema).optional(),
+          errors: z.string().describe("Error message").optional(),
+        },
+      },
+      async (options) => {
+        try {
+          const result = await this.twitterAgent.getTweetById(options);
+          const output = {
+            data: result.data,
+            errors: McpCommon.stdTwitterError(result.errors),
+          };
           return {
             structuredContent: output,
             content: [

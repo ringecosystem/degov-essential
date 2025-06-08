@@ -5,7 +5,12 @@ import {
   PickClientOptions,
   SearchTweetsInput,
 } from "./types";
-import { Tweetv2SearchResult, TwitterApi, UserV2Result } from "twitter-api-v2";
+import {
+  Tweetv2SearchResult,
+  TweetV2SingleResult,
+  TwitterApi,
+  UserV2Result,
+} from "twitter-api-v2";
 
 @Service()
 export class TwitterAgent {
@@ -17,7 +22,8 @@ export class TwitterAgent {
   }
 
   private pickClient(options: PickClientOptions): AgentClient | undefined {
-    const profile = (options.profile ?? "default").toUpperCase();
+    const inputProfile = options.profile?.trim().toUpperCase();
+    const profile = (!!inputProfile ? inputProfile : "default").toUpperCase();
 
     return this.clients.find(
       (client) => client.profile.toUpperCase() === profile
@@ -36,11 +42,6 @@ export class TwitterAgent {
     return client.client;
   }
 
-  // getTweetById(options: GetTweetInput) {
-  //   const client = this.agentClient(options);
-  //   return client.getTweetById(options);
-  // }
-
   async getUserById(options: GetUserInput): Promise<UserV2Result> {
     const client = this.agentClient(options);
     return await client.v2.user(options.id);
@@ -53,7 +54,16 @@ export class TwitterAgent {
 
   async searchTweets(options: SearchTweetsInput): Promise<Tweetv2SearchResult> {
     const client = this.agentClient(options);
-    const paginator = await client.v2.search(options.query, options);
-    return paginator.data;
+    const result = await client.v2.search(options.query, options);
+    return result.data;
   }
+
+  async getTweetById(options: GetUserInput): Promise<TweetV2SingleResult> {
+    const client = this.agentClient(options);
+    return await client.v2.singleTweet(options.id);
+  }
+
+  
+
+
 }
