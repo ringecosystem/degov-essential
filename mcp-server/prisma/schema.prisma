@@ -8,6 +8,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model twitter_app {
+//   id String @id
+
+//   name           String  @unique
+//   api_key        String?
+//   api_secret_key String?
+
+//   ctime                 DateTime                @default(now())
+//   utime                 DateTime                @updatedAt
+//   twitter_authorization twitter_authorization[]
+// }
+
 model twitter_authorization {
   id          String  @id
   profile     String
@@ -15,17 +27,17 @@ model twitter_authorization {
   version     String?
   enabled     Int     @default(0)
 
-  auth_method String
+  access_token  String?
+  access_secret String?
 
-  access_token   String?
-  access_secret  String?
-  api_key        String?
-  api_secret_key String?
-
-  cookies String?
+  user_id String?
+  app_id  String?
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt
+
+  user twitter_user? @relation(fields: [user_id], references: [id])
+  // app  twitter_app?  @relation(fields: [app_id], references: [id])
 }
 
 model twitter_user {
@@ -42,4 +54,56 @@ model twitter_user {
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt
+
+  raw                   String
+  twitter_authorization twitter_authorization[]
+  twitter_tweet         twitter_tweet[]
+}
+
+model twitter_tweet {
+  id String @id
+
+  twid       String    @unique
+  text       String?
+  created_at DateTime?
+  author_id  String?
+
+  retweet_count Int?
+  like_count    Int?
+  reply_count   Int?
+  media_url     String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  raw    String
+  author twitter_user? @relation(fields: [author_id], references: [id])
+}
+
+model twitter_poll {
+  id String @id
+
+  duration_minutes Int?
+  end_datetime     DateTime?
+  voting_status    String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  twitter_poll_option twitter_poll_option[]
+}
+
+model twitter_poll_option {
+  id String @id
+
+  label    String
+  position Int
+  votes    Int
+
+  poll_id String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  poll twitter_poll? @relation(fields: [poll_id], references: [id])
 }
