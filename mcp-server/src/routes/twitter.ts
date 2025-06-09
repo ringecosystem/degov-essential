@@ -77,24 +77,9 @@ const TwitterAuthorizeRequestSchema = {
       type: "object",
       properties: {
         profile: { type: "string" },
-        method: { type: "string", enum: ["cookies", "api"] },
-        auth_token: { type: "string" },
-        ct0: { type: "string" },
-        twid: { type: "string" },
-        api_key: { type: "string" },
-        api_secret_key: { type: "string" },
+        method: { type: "string", enum: ["api"] },
       },
       required: ["profile", "method"],
-      oneOf: [
-        {
-          required: ["auth_token", "ct0", "twid"],
-          properties: { method: { const: "cookies" } },
-        },
-        {
-          required: ["api_key", "api_secret_key"],
-          properties: { method: { const: "api" } },
-        },
-      ],
     },
   },
 };

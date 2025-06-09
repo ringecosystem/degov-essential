@@ -23,7 +23,7 @@
       border-radius: 18px;
       box-shadow: 0 4px 24px rgba(29, 161, 242, 0.10);
       padding: 2.5rem 2.5rem 2rem 2.5rem;
-      max-width: 420px;
+      max-width: 400px;
       width: 100%;
       margin: 2rem;
       animation: pop 0.7s cubic-bezier(.68, -0.55, .27, 1.55);
@@ -68,31 +68,14 @@
     h2 {
       color: #1da1f2;
       margin-bottom: 0.5rem;
+      letter-spacing: 1px;
     }
 
-    .tab-group {
-      display: flex;
-      justify-content: center;
+    .form-title {
+      font-size: 1.15em;
+      color: #555;
       margin-bottom: 1.5rem;
-    }
-
-    .tab {
-      flex: 1;
-      padding: 0.7em 0;
-      cursor: pointer;
-      background: #e8f5fd;
-      color: #1da1f2;
-      border: none;
-      border-radius: 8px 8px 0 0;
-      font-weight: bold;
-      font-size: 1.1rem;
-      transition: background 0.2s, color 0.2s;
-      outline: none;
-    }
-
-    .tab.active {
-      background: #1da1f2;
-      color: #fff;
+      font-weight: 500;
     }
 
     form {
@@ -111,8 +94,7 @@
       font-weight: 500;
     }
 
-    input[type="text"],
-    input[type="password"] {
+    input[type="text"] {
       width: 100%;
       padding: 0.7em;
       border: 1.5px solid #e1e8ed;
@@ -122,15 +104,14 @@
       transition: border 0.2s;
     }
 
-    input[type="text"]:focus,
-    input[type="password"]:focus {
+    input[type="text"]:focus {
       border-color: #1da1f2;
       outline: none;
     }
 
     .btn-group {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       margin-top: 1.5rem;
     }
 
@@ -147,6 +128,7 @@
     .btn-reset {
       background: #e8f5fd;
       color: #1da1f2;
+      margin-right: 1rem;
     }
 
     .btn-reset:hover {
@@ -168,27 +150,23 @@
       margin-bottom: 1.2rem;
       text-align: left;
     }
+
+    .degov-link,
+    a.degov-link {
+      color: #1da1f2;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.2s, text-decoration 0.2s;
+    }
+
+    .degov-link:hover,
+    a.degov-link:hover {
+      color: #e0245e;
+      text-decoration: underline;
+    }
   </style>
   <script>
-    function switchTab(tab) {
-      document.getElementById('tab-cookie').classList.remove('active');
-      document.getElementById('tab-api').classList.remove('active');
-      document.getElementById('form-cookie').style.display = 'none';
-      document.getElementById('form-api').style.display = 'none';
-      if (tab === 'cookie') {
-        document.getElementById('tab-cookie').classList.add('active');
-        document.getElementById('form-cookie').style.display = 'block';
-      } else {
-        document.getElementById('tab-api').classList.add('active');
-        document.getElementById('form-api').style.display = 'block';
-      }
-      // Clear result message when switching tab
-      document.getElementById('result-message').innerText = '';
-    }
     window.onload = function () {
-      switchTab('api');
-      // Attach submit handlers
-      document.getElementById('form-cookie').onsubmit = handleSubmit;
       document.getElementById('form-api').onsubmit = handleSubmit;
     }
     function resetForm(formId) {
@@ -199,23 +177,10 @@
     async function handleSubmit(e) {
       e.preventDefault();
       const form = e.target;
-      let data = {};
-      if (form.id === 'form-cookie') {
-        data = {
-          method: 'cookies',
-          profile: form.profile.value,
-          auth_token: form.auth_token.value,
-          ct0: form.ct0.value,
-          twid: form.twid.value,
-        };
-      } else if (form.id === 'form-api') {
-        data = {
-          method: 'api',
-          profile: form.profile.value,
-          api_key: form.apiKey.value,
-          api_secret_key: form.apiSecretKey.value,
-        };
-      }
+      const data = {
+        method: 'api',
+        profile: form.profile.value
+      };
       try {
         const resp = await fetch('/twitter/authorize', {
           method: 'POST',
@@ -230,7 +195,6 @@
         }
 
         if (
-          data.method === 'api' &&
           result.data &&
           result.data.oauthUrl
         ) {
@@ -267,8 +231,7 @@
 <body>
   <div class="container">
     <div class="box-form">
-      <svg class="x-logo" viewBox="0 0 24 24" aria-hidden="true"
-        class="r-4qtqp9 r-yyyyoo r-dnmrzs r-bnwqim r-lrvibr r-m6rgpd r-lrsllp r-1nao33i r-16y2uox r-8kz0gk">
+      <svg class="x-logo" viewBox="0 0 24 24" aria-hidden="true">
         <g>
           <path
             d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z">
@@ -276,47 +239,14 @@
         </g>
       </svg>
       <h2>X Authorization</h2>
-      <div class="tab-group">
-        <button id="tab-api" class="tab active" type="button" onclick="switchTab('api')">API</button>
-        <button id="tab-cookie" class="tab" type="button" onclick="switchTab('cookie')">Cookie</button>
+      <div class="form-title">
+        Connect your Twitter account to
+        <a href="https://degov.ai" class="degov-link">DeGov.AI</a>
       </div>
-
-      <form id="form-cookie" style="display:none;" autocomplete="off">
-        <div class="form-group">
-          <label for="cookie-profile">Profile <span style="color:#e0245e">*</span></label>
-          <input type="text" id="cookie-profile" name="profile" required placeholder="Enter profile name"
-            value="default">
-        </div>
-        <div class="form-group">
-          <label for="auth_token">auth_token <span style="color:#e0245e">*</span></label>
-          <input type="text" id="auth_token" name="auth_token" required placeholder="Enter auth_token">
-        </div>
-        <div class="form-group">
-          <label for="ct0">ct0 <span style="color:#e0245e">*</span></label>
-          <input type="text" id="ct0" name="ct0" required placeholder="Enter ct0">
-        </div>
-        <div class="form-group">
-          <label for="twid">twid <span style="color:#e0245e">*</span></label>
-          <input type="text" id="twid" name="twid" required placeholder="Enter twid">
-        </div>
-        <div class="btn-group">
-          <button type="reset" class="btn-reset" onclick="resetForm('form-cookie')">Reset</button>
-          <button type="submit" class="btn-submit">Submit</button>
-        </div>
-      </form>
-
-      <form id="form-api" style="display:none;" autocomplete="off">
+      <form id="form-api" autocomplete="off">
         <div class="form-group">
           <label for="api-profile">Profile <span style="color:#e0245e">*</span></label>
           <input type="text" id="api-profile" name="profile" required placeholder="Enter profile name" value="default">
-        </div>
-        <div class="form-group">
-          <label for="apiKey">API Key <span style="color:#e0245e">*</span></label>
-          <input type="text" id="apiKey" name="apiKey" required placeholder="Enter API Key">
-        </div>
-        <div class="form-group">
-          <label for="apiSecretKey">API Secret Key <span style="color:#e0245e">*</span></label>
-          <input type="text" id="apiSecretKey" name="apiSecretKey" required placeholder="Enter API Secret Key">
         </div>
         <div class="btn-group">
           <button type="reset" class="btn-reset" onclick="resetForm('form-api')">Reset</button>

@@ -33,19 +33,10 @@ export class Resp<T> {
   }
 }
 
-
 export interface TwitterAuthorizeForm {
   profile: string;
-  method: "cookies" | "api";
-
-  auth_token?: string;
-  ct0?: string;
-  twid?: string;
-
-  api_key?: string;
-  api_secret_key?: string;
+  method: "api";
 }
-
 
 export interface TwitterOAuthType {
   oauth_token: string;
@@ -57,4 +48,3 @@ export interface QueryTwitterCallback {
   oauth_token: string;
   oauth_verifier: string;
 }
-

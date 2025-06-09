@@ -18,7 +18,17 @@ export class EnvReader {
     return value;
   }
 
-  static xCallbackHost(): string {
-    return EnvReader.env("X_CALLBACK_HOST")!.trim();
+  static twitterEnv(): TwittterEnv {
+    return {
+      apiKey: EnvReader.env("X_API_KEY")!,
+      apiSecretKey: EnvReader.env("X_API_SECRET_KEY")!,
+      callbackHost: EnvReader.env("X_CALLBACK_HOST")!,
+    };
   }
+}
+
+export interface TwittterEnv {
+  apiKey: string;
+  apiSecretKey: string;
+  callbackHost: string;
 }

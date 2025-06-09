@@ -8,36 +8,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model twitter_app {
-//   id String @id
-
-//   name           String  @unique
-//   api_key        String?
-//   api_secret_key String?
-
-//   ctime                 DateTime                @default(now())
-//   utime                 DateTime                @updatedAt
-//   twitter_authorization twitter_authorization[]
-// }
-
 model twitter_authorization {
   id          String  @id
   profile     String
   description String?
-  version     String?
   enabled     Int     @default(0)
 
   access_token  String?
   access_secret String?
 
   user_id String?
-  app_id  String?
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 
   user twitter_user? @relation(fields: [user_id], references: [id])
-  // app  twitter_app?  @relation(fields: [app_id], references: [id])
 }
 
 model twitter_user {

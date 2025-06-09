@@ -4,14 +4,12 @@ import {
   TwitterAuthorizeForm,
   TwitterOAuthType,
 } from "../types";
-import { AuthenticationManager } from "../integration/x-scraper/authentication";
 import { FastifyInstance } from "fastify";
 import { twitter_authorization, twitter_user } from "../generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { EnvReader } from "../integration/envreader";
 import { AgentClient, TwitterAgent } from "../internal/x-agent";
 import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
-import { TwitterApiAutoTokenRefresher } from "@twitter-api-v2/plugin-token-refresher";
 
 export interface AuthorizeResult {
   method: "COOKIES" | "API";
@@ -39,125 +37,34 @@ export class TwitterService {
     let twitterAuthorization: twitter_authorization | undefined;
     let oauthUrl: string | undefined;
     switch (method) {
-      case "COOKIES": {
-        const am = AuthenticationManager.getInstance();
-        let cookieTwid = (form.twid ?? "").trim();
-        if (!cookieTwid.startsWith("u%3")) {
-          cookieTwid = `u%3D${cookieTwid}`;
-        }
-        const cookies = [
-          `auth_token=${form.auth_token}; Domain=.twitter.com`,
-          `ct0=${form.ct0}; Domain=.twitter.com`,
-          `twid=${cookieTwid}; Domain=.twitter.com`,
-        ];
-        const registered = await am.regist(
-          {
-            method: "cookies",
-            alias: inputProfile,
-            data: {
-              cookies,
-            },
-          },
-          { force: true }
-        );
-        const storedAuthorization =
-          await prisma.twitter_authorization.findFirst({
-            where: {
-              profile: inputProfile,
-              version: "v1",
-            },
-          });
-        if (storedAuthorization) {
-          twitterAuthorization = {
-            ...storedAuthorization,
-            cookies: cookies.join(";"),
-          };
-        } else {
-          twitterAuthorization = {
-            id: "",
-            profile: inputProfile,
-            description: null,
-            version: "v1",
-            enabled: 1,
-            auth_method: "cookies",
-            cookies: cookies.join(";"),
-            access_token: null,
-            access_secret: null,
-            api_key: null,
-            api_secret_key: null,
-            ctime: new Date(),
-            utime: new Date(),
-          };
-        }
-        break;
-      }
       case "API": {
-        const appKey = form.api_key;
-        const appSecret = form.api_secret_key;
-        if (!appKey) {
-          throw new Error("API key is required for API method.");
-        }
-        if (!appSecret) {
-          throw new Error("API secret key is required for API method.");
-        }
+        const twenv = EnvReader.twitterEnv();
 
         const storedAuthorization =
           await prisma.twitter_authorization.findFirst({
             where: {
               profile: inputProfile,
-              version: "v2",
             },
           });
         if (storedAuthorization) {
-          if (
-            storedAuthorization.api_key === appKey &&
-            storedAuthorization.api_secret_key === appSecret
-          ) {
-            return {
-              method,
-              message: "Twitter API keys already registered.",
-            };
-          }
+          return {
+            method,
+            message: "This profile already has an authorization.",
+          };
         }
 
         const client = new TwitterApi({
-          appKey,
-          appSecret,
+          appKey: twenv.apiKey,
+          appSecret: twenv.apiSecretKey,
         });
 
-        const callbackHost = EnvReader.xCallbackHost();
-        const callbakUrl = `${callbackHost}/twitter/authorized?profile=${inputProfile}`;
+        const callbakUrl = `${twenv.callbackHost}/twitter/authorized?profile=${inputProfile}`;
 
         const { url, oauth_token, oauth_token_secret } =
           await client.generateAuthLink(callbakUrl, {
             authAccessType: "write",
             // linkMode: "authorize",
           });
-        // const a = await client.generateOAuth2AuthLink(callbakUrl, {
-        //   scope: [
-        //     "tweet.read",
-        //     "tweet.write",
-        //     // "tweet.moderate.write",
-        //     "users.read",
-        //     // "follows.read",
-        //     // "follows.write",
-        //     // "offline.access",
-        //     // "space.read",
-        //     // "mute.read",
-        //     // "mute.write",
-        //     // "like.read",
-        //     // "like.write",
-        //     // "list.read",
-        //     // "list.write",
-        //     // "block.read",
-        //     // "block.write",
-        //     // "bookmark.read",
-        //     // "bookmark.write",
-        //     // "dm.read",
-        //     // "dm.write",
-        //   ],
-        //   // state: inputProfile,
-        // });
 
         const twitterOAuth: TwitterOAuthType = {
           oauth_token,
@@ -171,63 +78,33 @@ export class TwitterService {
           1000 * 60 * 5
         );
 
-        if (storedAuthorization) {
-          twitterAuthorization = {
-            ...storedAuthorization,
-            api_key: appKey,
-            api_secret_key: appSecret,
-            access_token: null,
-            access_secret: null,
-            enabled: 0,
-          };
-        } else {
-          twitterAuthorization = {
-            id: "",
-            profile: inputProfile,
-            description: null,
-            version: "v2",
-            enabled: 0,
-            auth_method: "api",
-            cookies: null,
-            access_token: null,
-            access_secret: null,
-            api_key: appKey,
-            api_secret_key: appSecret,
-            ctime: new Date(),
-            utime: new Date(),
-          };
-        }
+        twitterAuthorization = {
+          id: fastify.snowflake.generate(),
+          profile: inputProfile,
+          description: null,
+          enabled: 0,
+          access_token: null,
+          access_secret: null,
+          user_id: null,
+          ctime: new Date(),
+          utime: new Date(),
+        };
         oauthUrl = url;
         break;
       }
       default: {
         throw new Error(
-          `Invalid method "${method}" provided. Supported methods are: COOKIES, API.`
+          `Invalid method "${method}" provided. Supported methods are: API.`
         );
       }
     }
     if (!twitterAuthorization) {
       throw new Error("Twitter authorization could not be created.");
     }
-    if (twitterAuthorization.id) {
-      // Update existing authorization
-      await prisma.twitter_authorization.update({
-        where: { id: twitterAuthorization.id },
-        data: {
-          ...twitterAuthorization,
-          utime: new Date(),
-        },
-      });
-      return {
-        method,
-        message: "Twitter authorization updated successfully.",
-      };
-    }
 
     await prisma.twitter_authorization.create({
       data: {
         ...twitterAuthorization,
-        id: fastify.snowflake.generate(),
       },
     });
     return {
@@ -249,7 +126,6 @@ export class TwitterService {
     const storedAuthorization = await prisma.twitter_authorization.findFirst({
       where: {
         profile: inputProfile,
-        version: "v2",
       },
     });
     if (!storedAuthorization) {
@@ -271,33 +147,18 @@ export class TwitterService {
         `OAuth token mismatch for profile "${inputProfile}". Please initiate the authorization flow again.`
       );
     }
-    const appKey = storedAuthorization.api_key;
-    const appSecret = storedAuthorization.api_secret_key;
-    if (!appKey || !appSecret) {
-      throw new Error(
-        `API keys are not set for profile "${inputProfile}". Please check your Twitter API configuration.`
-      );
-    }
+
+    const twenv = EnvReader.twitterEnv();
 
     const unauthorizedClient = new TwitterApi({
-      appKey,
-      appSecret,
+      appKey: twenv.apiKey!,
+      appSecret: twenv.apiSecretKey!,
       accessToken: oauth_token,
       accessSecret: cachedOauth.oauth_token_secret,
     });
-    // , screenName, userId
+
     const { accessToken, accessSecret, client } =
       await unauthorizedClient.login(oauth_verifier);
-
-    await prisma.twitter_authorization.update({
-      where: { id: storedAuthorization.id },
-      data: {
-        access_token: accessToken,
-        access_secret: accessSecret,
-        enabled: 1,
-        utime: new Date(),
-      },
-    });
 
     const twme = await client.v2.me();
     if (twme.errors) {
@@ -308,38 +169,42 @@ export class TwitterService {
       );
       return { result: "ok" };
     }
-    const twmed = twme.data;
 
+    const twmed = twme.data;
+    const twUser = {
+      id: twmed.id,
+      name: twmed.name,
+      username: twmed.username,
+      avatar: twmed.profile_image_url,
+      profile_url: twmed.url,
+      description: twmed.description,
+      verified: twmed.verified ? 1 : 0,
+      verified_type: twmed.verified_type,
+      raw: JSON.stringify(twmed),
+      ctime: new Date(),
+      utime: new Date(),
+    };
     await prisma.twitter_user.upsert({
-      where: { twid: twmed.id },
-      create: {
-        id: fastify.snowflake.generate(),
-        twid: twmed.id,
-        name: twmed.name,
-        username: twmed.username,
-        avatar: twmed.profile_image_url,
-        profile_url: twmed.url,
-        description: twmed.description,
-        verified: twmed.verified ? 1 : 0,
-        verified_type: twmed.verified_type,
-        ctime: new Date(),
-      },
-      update: {
-        twid: twmed.id,
-        name: twmed.name,
-        username: twmed.username,
-        avatar: twmed.profile_image_url,
-        profile_url: twmed.url,
-        description: twmed.description,
-        verified: twmed.verified ? 1 : 0,
-        verified_type: twmed.verified_type,
+      where: { id: twmed.id },
+      create: twUser,
+      update: twUser,
+    });
+    const xuser = await prisma.twitter_user.findFirst({
+      where: { id: twmed.id },
+    });
+
+    await prisma.twitter_authorization.update({
+      where: { id: storedAuthorization.id },
+      data: {
+        access_token: accessToken,
+        access_secret: accessSecret,
+        enabled: 1,
+        user_id: twmed.id,
         utime: new Date(),
       },
     });
-    const xuser = await prisma.twitter_user.findFirst({
-      where: { twid: twmed.id },
-    });
 
+    await this.loadAuthorization(fastify);
     return { result: "ok", profile: xuser ?? undefined };
   }
 
@@ -351,102 +216,35 @@ export class TwitterService {
       },
       orderBy: { ctime: "desc" },
     });
+    const twenv = EnvReader.twitterEnv();
     const agentClients: AgentClient[] = [];
     for (const auth of authorizations) {
-      const authMethod = auth.auth_method.toUpperCase();
-      switch (authMethod) {
-        // case "COOKIES": {
-        //   const am = AuthenticationManager.getInstance();
-        //   if (!auth.cookies) {
-        //     fastify.log.warn(
-        //       `Twitter authorization for profile "${auth.profile}" has no cookies set. Skipping.`
-        //     );
-        //     continue;
-        //   }
-        //   const cookies = auth.cookies?.split(";").map((c) => c.trim()) ?? [];
-        //   const regResult = await am.regist(
-        //     {
-        //       method: "cookies",
-        //       alias: auth.profile,
-        //       data: {
-        //         cookies,
-        //       },
-        //     },
-        //     { force: true }
-        //   );
-        //   const atc = new ScraperTwitterClient(regResult.scraper);
-        //   agentClients.push({
-        //     profile: auth.profile,
-        //     version: "v1",
-        //     client: atc,
-        //   });
-        //   fastify.log.info(
-        //     `Twitter Scraper client for profile "${auth.profile}" initialized successfully.`
-        //   );
-        //   break;
-        // }
-        case "API": {
-          const { api_key, api_secret_key, access_token, access_secret } = auth;
-          if (!api_key || !api_secret_key) {
-            fastify.log.warn(
-              `Twitter authorization for profile "${auth.profile}" has no API keys set. Skipping.`
-            );
-            continue;
-          }
-          if (!access_token || !access_secret) {
-            fastify.log.warn(
-              `Twitter authorization for profile "${auth.profile}" has no access token or secret set. Skipping.`
-            );
-            continue;
-          }
-          const rateLimitPlugin = new TwitterApiRateLimitPlugin();
-          const client = new TwitterApi(
-            {
-              appKey: api_key,
-              appSecret: api_secret_key,
-              accessToken: access_token,
-              accessSecret: access_secret,
-            },
-            { plugins: [rateLimitPlugin] }
-          );
+      const { access_token, access_secret } = auth;
 
-          // const credentials = {
-          //   clientId: process.env.X_JOKNI2_CLIENT_ID!,
-          //   clientSecret: process.env.X_JOKNI2_CLIENT_SECRET,
-          // };
-          // const tokenStore = { accessToken: "", refreshToken: "" };
-          // const autoRefresherPlugin = new TwitterApiAutoTokenRefresher({
-          //   refreshToken: tokenStore.refreshToken,
-          //   refreshCredentials: credentials,
-          //   onTokenUpdate(token) {
-          //     tokenStore.accessToken = token.accessToken;
-          //     tokenStore.refreshToken = token.refreshToken!;
-          //     // store in DB/Redis/...
-          //   },
-          //   onTokenRefreshError(error) {
-          //     console.error("Refresh error", error);
-          //   },
-          // });
-          // const client = new TwitterApi(tokenStore.accessToken, {
-          //   plugins: [autoRefresherPlugin, rateLimitPlugin],
-          // });
-
-          agentClients.push({
-            profile: auth.profile,
-            client,
-          });
-          fastify.log.info(
-            `Twitter API client for profile "${auth.profile}" initialized successfully.`
-          );
-          break;
-        }
-        default: {
-          fastify.log.warn(
-            `Unsupported Twitter authorization method "${authMethod}" for profile "${auth.profile}".`
-          );
-          continue;
-        }
+      if (!access_token || !access_secret) {
+        fastify.log.warn(
+          `Twitter authorization for profile "${auth.profile}" has no access token or secret set. Skipping.`
+        );
+        continue;
       }
+      const rateLimitPlugin = new TwitterApiRateLimitPlugin();
+      const client = new TwitterApi(
+        {
+          appKey: twenv.apiKey,
+          appSecret: twenv.apiSecretKey,
+          accessToken: access_token,
+          accessSecret: access_secret,
+        },
+        { plugins: [rateLimitPlugin] }
+      );
+
+      agentClients.push({
+        profile: auth.profile,
+        client,
+      });
+      fastify.log.info(
+        `Twitter API client for profile "${auth.profile}" initialized successfully.`
+      );
       this.twitterAgent.resetClient(agentClients);
     }
   }

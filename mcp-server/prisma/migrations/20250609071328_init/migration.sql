@@ -3,12 +3,10 @@ CREATE TABLE "twitter_authorization" (
     "id" TEXT NOT NULL,
     "profile" TEXT NOT NULL,
     "description" TEXT,
-    "version" TEXT,
     "enabled" INTEGER NOT NULL DEFAULT 0,
     "access_token" TEXT,
     "access_secret" TEXT,
     "user_id" TEXT,
-    "app_id" TEXT,
     "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "utime" TIMESTAMP(3) NOT NULL,
 
