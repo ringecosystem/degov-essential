@@ -59,8 +59,9 @@ model twitter_tweet {
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 
-  raw    String
-  author twitter_user? @relation(fields: [author_id], references: [id])
+  raw                  String?
+  author               twitter_user?          @relation(fields: [author_id], references: [id])
+  degov_tweet_progress degov_tweet_progress[]
 }
 
 model twitter_poll {
@@ -89,4 +90,17 @@ model twitter_poll_option {
   utime DateTime @updatedAt
 
   poll twitter_poll? @relation(fields: [poll_id], references: [id])
+}
+
+model degov_tweet_progress {
+  id String @id
+
+  status  String  @default("pending") // pending, posted, fulfilled, error
+  message String?
+  type    String // text, poll
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  tweet twitter_tweet? @relation(fields: [id], references: [id])
 }

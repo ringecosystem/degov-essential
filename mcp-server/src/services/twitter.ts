@@ -214,11 +214,20 @@ export class TwitterService {
       where: {
         enabled: 1,
       },
+      include: {
+        user: true,
+      },
       orderBy: { ctime: "desc" },
     });
     const twenv = EnvReader.twitterEnv();
     const agentClients: AgentClient[] = [];
     for (const auth of authorizations) {
+      if (!auth.user) {
+        fastify.log.warn(
+          `Twitter authorization for profile "${auth.profile}" has no associated user. Skipping.`
+        );
+        continue;
+      }
       const { access_token, access_secret } = auth;
 
       if (!access_token || !access_secret) {
@@ -240,6 +249,13 @@ export class TwitterService {
 
       agentClients.push({
         profile: auth.profile,
+        user: {
+          id: auth.user.id,
+          name: auth.user.name ?? undefined,
+          username: auth.user.username,
+          verified: auth.user.verified ? true : false,
+          verificationType: auth.user.verified_type ?? undefined,
+        },
         client,
       });
       fastify.log.info(
