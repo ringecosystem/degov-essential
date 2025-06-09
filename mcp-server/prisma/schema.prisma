@@ -54,7 +54,6 @@ model twitter_tweet {
   retweet_count Int?
   like_count    Int?
   reply_count   Int?
-  media_url     String?
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt

@@ -5,14 +5,18 @@ import {
   TwitterOAuthType,
 } from "../types";
 import { FastifyInstance } from "fastify";
-import { twitter_authorization, twitter_user } from "../generated/prisma";
+import {
+  twitter_authorization,
+  twitter_tweet,
+  twitter_user,
+} from "../generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { EnvReader } from "../integration/envreader";
 import { AgentClient, TwitterAgent } from "../internal/x-agent";
 import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
 
 export interface AuthorizeResult {
-  method: "COOKIES" | "API";
+  method: "API";
   message?: string;
   oauthUrl?: string;
 }
@@ -171,24 +175,20 @@ export class TwitterService {
     }
 
     const twmed = twme.data;
-    const twUser = {
+    const twUser: twitter_user = {
       id: twmed.id,
       name: twmed.name,
       username: twmed.username,
-      avatar: twmed.profile_image_url,
-      profile_url: twmed.url,
-      description: twmed.description,
+      avatar: twmed.profile_image_url ?? null,
+      profile_url: twmed.url ?? null,
+      description: twmed.description ?? null,
       verified: twmed.verified ? 1 : 0,
-      verified_type: twmed.verified_type,
+      verified_type: twmed.verified_type ?? null,
       raw: JSON.stringify(twmed),
       ctime: new Date(),
       utime: new Date(),
     };
-    await prisma.twitter_user.upsert({
-      where: { id: twmed.id },
-      create: twUser,
-      update: twUser,
-    });
+    await this.modifyUser(fastify, twUser);
     const xuser = await prisma.twitter_user.findFirst({
       where: { id: twmed.id },
     });
@@ -263,5 +263,94 @@ export class TwitterService {
       );
       this.twitterAgent.resetClient(agentClients);
     }
+  }
+
+  async getUserById(
+    fastify: FastifyInstance,
+    options: { id: string }
+  ): Promise<twitter_user | null> {
+    const prisma = fastify.prisma;
+    return await prisma.twitter_user.findFirst({
+      where: {
+        id: options.id,
+      },
+    });
+  }
+
+  async getUserByUsername(
+    fastify: FastifyInstance,
+    options: { username: string }
+  ): Promise<twitter_user | null> {
+    const prisma = fastify.prisma;
+    return await prisma.twitter_user.findFirst({
+      where: {
+        username: options.username,
+      },
+    });
+  }
+
+  async modifyUser(
+    fastify: FastifyInstance,
+    form: twitter_user
+  ): Promise<void> {
+    const prisma = fastify.prisma;
+    await prisma.twitter_user.upsert({
+      where: { id: form.id },
+      create: {
+        ...form,
+        ctime: new Date(),
+        utime: new Date(),
+      },
+      update: {
+        name: form.name,
+        username: form.username,
+        avatar: form.avatar,
+        profile_url: form.profile_url,
+        description: form.description,
+        verified: form.verified ? 1 : 0,
+        verified_type: form.verified_type,
+        raw: form.raw,
+        utime: new Date(),
+      },
+    });
+  }
+
+  async modifyTweets(
+    fastify: FastifyInstance,
+    forms: twitter_tweet[]
+  ): Promise<void> {
+    const prisma = fastify.prisma;
+    const now = new Date();
+
+    if (!forms || forms.length === 0) return;
+
+    await prisma.$transaction(
+      forms.map((form) =>
+        prisma.twitter_tweet.upsert({
+          where: { id: form.id },
+          create: {
+            ...form,
+            ctime: now,
+            utime: now,
+          },
+          update: {
+            ...form,
+            utime: now,
+          },
+        })
+      )
+    );
+  }
+
+  async getTweetById(
+    fastify: FastifyInstance,
+    options: { id: string }
+  ): Promise<twitter_tweet | null> {
+    const prisma = fastify.prisma;
+    return await prisma.twitter_tweet.findFirst({
+      where: {
+        id: options.id,
+      },
+    });
   }
 }

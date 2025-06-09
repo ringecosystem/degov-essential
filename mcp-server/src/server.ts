@@ -135,7 +135,7 @@ export class DegovMcpHttpServer {
     switch (transportType) {
       case "sse":
         fastify.register(fastifyMCPSSE, {
-          server: await this.mcpServer.create(),
+          server: await this.mcpServer.create(fastify),
         });
         break;
       case "streamable_http":
@@ -143,7 +143,7 @@ export class DegovMcpHttpServer {
           stateful: true,
           mcpEndpoint: "/mcp",
           sessions,
-          createServer: this.mcpServer.create,
+          createServer: async () => await this.mcpServer.create(fastify),
         });
         break;
     }

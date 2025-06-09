@@ -23,8 +23,12 @@ export interface GetTweetInput extends PickClientOptions {
   id: string;
 }
 
-export interface GetUserInput extends PickClientOptions {
+export interface GetByIdInput extends PickClientOptions {
   id: string;
+}
+
+export interface GetUserByUserameInput extends PickClientOptions {
+  username: string;
 }
 
 export interface SearchTweetsInput

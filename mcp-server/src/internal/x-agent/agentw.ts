@@ -1,0 +1,155 @@
+import { Service } from "typedi";
+import { TwitterAgent } from "./agent";
+import {
+  GetUserByUserameInput,
+  GetByIdInput,
+  PickClientOptions,
+  SearchTweetsInput,
+  SendTweetInput,
+  SimpleTweetUser,
+} from "./types";
+import {
+  TweetV2PostTweetResult,
+  Tweetv2SearchResult,
+  TweetV2SingleResult,
+  UserV2,
+  UserV2Result,
+} from "twitter-api-v2";
+import { TwitterService } from "../../services/twitter";
+import { FastifyInstance } from "fastify";
+import { twitter_tweet, twitter_user } from "../../generated/prisma";
+
+@Service()
+export class TwitterAgentW {
+  constructor(
+    private readonly twitterService: TwitterService,
+    private readonly twitterAgent: TwitterAgent
+  ) {}
+
+  private toTwitterUser(userv2: UserV2): twitter_user {
+    return {
+      id: userv2.id,
+      username: userv2.username,
+      description: userv2.description ?? null,
+      name: userv2.name ?? null,
+      verified:
+        typeof userv2.verified === "boolean" ? (userv2.verified ? 1 : 0) : null,
+      verified_type: (userv2.verified_type ?? null) as string | null,
+      avatar: userv2.profile_image_url ?? null,
+      profile_url: userv2.url ?? null,
+      ctime: new Date(),
+      utime: new Date(),
+      raw: JSON.stringify(userv2),
+    };
+  }
+
+  currentUser(options: PickClientOptions): SimpleTweetUser {
+    return this.twitterAgent.currentUser(options);
+  }
+
+  allowProfiles(): string[] {
+    return this.twitterAgent.allowProfiles();
+  }
+
+  async getUserById(
+    fastify: FastifyInstance,
+    options: GetByIdInput
+  ): Promise<UserV2Result> {
+    const cached = await this.twitterService.getUserById(fastify, options);
+    if (cached) {
+      return {
+        data: JSON.parse(cached.raw),
+        includes: undefined,
+        errors: undefined,
+      };
+    }
+    const result = await this.twitterAgent.getUserById(options);
+    const form: twitter_user = this.toTwitterUser(result.data);
+    await this.twitterService.modifyUser(fastify, form);
+    return result;
+  }
+
+  async getUserByUsername(
+    fastify: FastifyInstance,
+    options: GetUserByUserameInput
+  ): Promise<UserV2Result> {
+    const cached = await this.twitterService.getUserByUsername(
+      fastify,
+      options
+    );
+    if (cached) {
+      return {
+        data: JSON.parse(cached.raw),
+        includes: undefined,
+        errors: undefined,
+      };
+    }
+    const result = await this.twitterAgent.getUserByUsername(options);
+    const form: twitter_user = this.toTwitterUser(result.data);
+    await this.twitterService.modifyUser(fastify, form);
+    return result;
+  }
+
+  async searchTweets(
+    fastify: FastifyInstance,
+    options: SearchTweetsInput
+  ): Promise<Tweetv2SearchResult> {
+    const result = await this.twitterAgent.searchTweets(options);
+    const tweets: twitter_tweet[] = [];
+    for (const tweet of result.data) {
+      const tt: twitter_tweet = {
+        id: tweet.id,
+        text: tweet.text ?? null,
+        created_at: tweet.created_at ? new Date(tweet.created_at) : new Date(),
+        author_id: tweet.author_id ?? null,
+        retweet_count: 0,
+        like_count: 0,
+        reply_count: 0,
+        ctime: new Date(),
+        utime: new Date(),
+        raw: JSON.stringify(tweet),
+      };
+      tweets.push(tt);
+    }
+    await this.twitterService.modifyTweets(fastify, tweets);
+    return result;
+  }
+
+  async getTweetById(
+    fastify: FastifyInstance,
+    options: GetByIdInput
+  ): Promise<TweetV2SingleResult> {
+    const cached = await this.twitterService.getTweetById(fastify, options);
+    if (cached && cached.raw) {
+      return {
+        data: JSON.parse(cached.raw),
+        includes: undefined,
+        errors: undefined,
+      };
+    }
+    const result = await this.twitterAgent.getTweetById(options);
+    const form: twitter_tweet = {
+      id: result.data.id,
+      text: result.data.text ?? null,
+      created_at: result.data.created_at
+        ? new Date(result.data.created_at)
+        : new Date(),
+      author_id: result.data.author_id ?? null,
+      retweet_count: 0,
+      like_count: 0,
+      reply_count: 0,
+      ctime: new Date(),
+      utime: new Date(),
+      raw: JSON.stringify(result.data),
+    };
+    await this.twitterService.modifyTweets(fastify, [form]);
+    return result;
+  }
+
+  async sendTweet(
+    fastify: FastifyInstance,
+    options: SendTweetInput
+  ): Promise<TweetV2PostTweetResult> {
+    await this.sendTweet(options);
+  }
+}

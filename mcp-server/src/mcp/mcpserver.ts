@@ -1,12 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Service } from "typedi";
 import { TwitterTools } from "./tools/x";
+import { FastifyInstance } from "fastify";
 
 @Service()
 export class DegovMcpServer {
   constructor(private readonly twitterTools: TwitterTools) {}
 
-  async create() {
+  async create(fastify: FastifyInstance) {
     const mcpServer = new McpServer({
       name: "degov-mcp",
       version: "0.0.1",
@@ -16,11 +17,11 @@ export class DegovMcpServer {
       },
     });
 
-    await this.registTools(mcpServer);
+    await this.registTools(fastify, mcpServer);
     return mcpServer.server;
   }
 
-  private async registTools(server: McpServer) {
+  private async registTools(fastify: FastifyInstance, server: McpServer) {
     await this.twitterTools.regist(server);
 
     // server.tool("greet", () => {
