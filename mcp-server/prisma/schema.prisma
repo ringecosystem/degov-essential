@@ -43,7 +43,6 @@ model twitter_authorization {
 model twitter_user {
   id String @id
 
-  twid          String  @unique
   name          String?
   username      String
   avatar        String?
@@ -63,7 +62,6 @@ model twitter_user {
 model twitter_tweet {
   id String @id
 
-  twid       String    @unique
   text       String?
   created_at DateTime?
   author_id  String?
