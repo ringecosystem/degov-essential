@@ -28,14 +28,15 @@ export class TwitterTools {
       },
       async () => {
         const profiles = this.twitterAgent.allowProfiles();
+        const structuredContent = {
+          profiles: profiles,
+        };
         return {
-          structuredContent: {
-            profiles: profiles,
-          },
+          structuredContent,
           content: [
             {
               type: "text",
-              text: DegovHelpers.safeJsonStringify(profiles),
+              text: DegovHelpers.safeJsonStringify(structuredContent),
             },
           ],
         };
@@ -63,28 +64,30 @@ export class TwitterTools {
             profile: profile,
             id: id,
           });
+          const structuredContent = {
+            data: result.data,
+            errors: McpCommon.stdTwitterError(result.errors),
+          };
           return {
-            structuredContent: {
-              data: result.data,
-              errors: McpCommon.stdTwitterError(result.errors),
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(result.data),
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
         } catch (error: any) {
           const message = McpCommon.defaultToolErrorMessage(error);
+          const structuredContent = {
+            errors: message,
+          };
           return {
-            structuredContent: {
-              errors: message,
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: message,
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
@@ -111,28 +114,30 @@ export class TwitterTools {
             profile: profile,
             id: id,
           });
+          const structuredContent = {
+            data: result.data,
+            errors: McpCommon.stdTwitterError(result.errors),
+          };
           return {
-            structuredContent: {
-              data: result.data,
-              errors: McpCommon.stdTwitterError(result.errors),
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(result.data),
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
         } catch (error: any) {
           const message = McpCommon.defaultToolErrorMessage(error);
+          const structuredContent = {
+            errors: message,
+          };
           return {
-            structuredContent: {
-              errors: message,
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: message,
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
@@ -142,18 +147,6 @@ export class TwitterTools {
   }
 
   private registTweets(server: McpServer) {
-    // function stdOutput(input: Tweetv2SearchResult) {
-    //   if (!input) {
-    //     return {
-    //       errors: "No user data found.",
-    //     };
-    //   }
-    //   return {
-    //     data: input.data,
-    //     errors: McpCommon.stdTwitterError(input.errors),
-    //   };
-    // }
-
     server.registerTool(
       "search-tweets",
       {
@@ -211,7 +204,7 @@ export class TwitterTools {
       async (options) => {
         try {
           const result = await this.twitterAgent.searchTweets(options);
-          const output = {
+          const structuredContent = {
             data: result.data,
             includes: result.includes,
             errors: McpCommon.stdTwitterError(result.errors),
@@ -231,24 +224,25 @@ export class TwitterTools {
           //   // errors: undefined
           // };
           return {
-            structuredContent: output,
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(output),
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
         } catch (error: any) {
           const message = McpCommon.defaultToolErrorMessage(error);
+          const structuredContent = {
+            errors: message,
+          };
           return {
-            structuredContent: {
-              errors: message,
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: message,
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
@@ -278,30 +272,31 @@ export class TwitterTools {
       async (options) => {
         try {
           const result = await this.twitterAgent.getTweetById(options);
-          const output = {
+          const structuredContent = {
             data: result.data,
             includes: result.includes,
             errors: McpCommon.stdTwitterError(result.errors),
           };
           return {
-            structuredContent: output,
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(output),
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
         } catch (error: any) {
           const message = McpCommon.defaultToolErrorMessage(error);
+          const structuredContent = {
+            errors: message,
+          };
           return {
-            structuredContent: {
-              errors: message,
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: message,
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
@@ -331,29 +326,30 @@ export class TwitterTools {
         try {
           // @ts-ignore
           const result = await this.twitterAgent.sendTweet(options);
-          const output = {
+          const structuredContent = {
             data: result.data,
             errors: McpCommon.stdTwitterError(result.errors),
           };
           return {
-            structuredContent: output,
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(output),
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
         } catch (error: any) {
           const message = McpCommon.defaultToolErrorMessage(error);
+          const structuredContent = {
+            errors: message,
+          };
           return {
-            structuredContent: {
-              errors: message,
-            },
+            structuredContent,
             content: [
               {
                 type: "text",
-                text: message,
+                text: DegovHelpers.safeJsonStringify(structuredContent),
               },
             ],
           };
@@ -506,13 +502,27 @@ export const PollV2Schema = z.object({
 });
 
 export const TweetV2Schema = {
-  id: z.string(),
-  text: z.string(),
-  edit_history_tweet_ids: z.array(z.string()),
-  created_at: z.string().optional(),
-  author_id: z.string().optional(),
-  conversation_id: z.string().optional(),
-  in_reply_to_user_id: z.string().optional(),
+  id: z.string().describe("The tweet ID"),
+  text: z.string().describe("The text content of the tweet"),
+  edit_history_tweet_ids: z
+    .array(z.string())
+    .describe("List of edit history tweet IDs"),
+  created_at: z
+    .string()
+    .describe("The date and time when the tweet was created")
+    .optional(),
+  author_id: z
+    .string()
+    .describe("The user ID of the tweet's author")
+    .optional(),
+  conversation_id: z
+    .string()
+    .describe("The ID of the conversation this tweet belongs to")
+    .optional(),
+  in_reply_to_user_id: z
+    .string()
+    .describe("The user ID of the user this tweet is replying to")
+    .optional(),
   referenced_tweets: z
     .array(
       z.object({
@@ -520,12 +530,20 @@ export const TweetV2Schema = {
         id: z.string(),
       })
     )
+    .describe("List of referenced tweets, e.g., retweeted, quoted, replied to")
     .optional(),
   attachments: z
     .object({
-      media_keys: z.array(z.string()).optional(),
-      poll_ids: z.array(z.string()).optional(),
+      media_keys: z
+        .array(z.string())
+        .describe("List of media keys attached to the tweet")
+        .optional(),
+      poll_ids: z
+        .array(z.string())
+        .describe("List of poll IDs attached to the tweet")
+        .optional(),
     })
+    .describe("Attachments to the tweet, such as media and polls")
     .optional(),
   geo: z
     .object({
@@ -534,9 +552,11 @@ export const TweetV2Schema = {
           type: z.string(),
           coordinates: z.tuple([z.number(), z.number()]).nullable(),
         })
+        .describe("Geographical coordinates of the tweet's location")
         .optional(),
-      place_id: z.string(),
+      place_id: z.string().describe("Place ID for the tweet's location"),
     })
+    .describe("Geographical information of the tweet")
     .optional(),
   context_annotations: z
     .array(
