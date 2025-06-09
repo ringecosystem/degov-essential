@@ -23,10 +23,10 @@ export class DegovMcpServer {
   private async registTools(server: McpServer) {
     await this.twitterTools.regist(server);
 
-    server.tool("greet", () => {
-      return {
-        content: [{ type: "text", text: "Hello, world!" }],
-      };
-    });
+    // server.tool("greet", () => {
+    //   return {
+    //     content: [{ type: "text", text: "Hello, world!" }],
+    //   };
+    // });
   }
 }

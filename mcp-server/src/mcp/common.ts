@@ -19,7 +19,7 @@ export class McpCommon {
         output = `[${status}]: ${output}`;
       }
     }
-    if ("errors" in error) {
+    if ("errors" in error && error.errors) {
       output = `${output}\nErrors: ${JSON.stringify(error.errors)}`;
     }
     return output;

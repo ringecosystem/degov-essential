@@ -4,7 +4,6 @@ import { TwitterAgent } from "../../internal/x-agent";
 import { z } from "zod";
 import { DegovHelpers } from "../../helpers";
 import { McpCommon } from "../common";
-import { Tweetv2SearchResult, UserV2Result } from "twitter-api-v2";
 
 @Service()
 export class TwitterTools {
@@ -45,37 +44,6 @@ export class TwitterTools {
   }
 
   private registUser(server: McpServer) {
-    const userOutputSchema = {
-      errors: z.string().describe("Error message").optional(),
-
-      data: z
-        .object({
-          id: z.string(),
-          name: z.string(),
-          username: z.string(),
-          verified: z.boolean().optional(),
-          verified_type: z
-            .enum(["none", "blue", "business", "government"])
-            .optional(),
-          profile_image_url: z.string().optional(),
-          profile_banner_url: z.string().optional(),
-          pinned_tweet_id: z.string().optional(),
-        })
-        .optional(),
-    };
-
-    function stdOutput(input: UserV2Result) {
-      if (!input) {
-        return {
-          errors: "No user data found.",
-        };
-      }
-      return {
-        data: input.data,
-        errors: McpCommon.stdTwitterError(input.errors),
-      };
-    }
-
     server.registerTool(
       "user-by-id",
       {
@@ -84,7 +52,10 @@ export class TwitterTools {
           id: z.string().describe("The user id of the user to retrieve."),
           profile: z.string().describe("The profile to use.").optional(),
         },
-        outputSchema: userOutputSchema,
+        outputSchema: {
+          errors: z.string().describe("Error message").optional(),
+          data: z.object(UserV2Schema).optional(),
+        },
       },
       async ({ id, profile }) => {
         try {
@@ -92,13 +63,15 @@ export class TwitterTools {
             profile: profile,
             id: id,
           });
-          const output = stdOutput(result);
           return {
-            structuredContent: output,
+            structuredContent: {
+              data: result.data,
+              errors: McpCommon.stdTwitterError(result.errors),
+            },
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(output),
+                text: DegovHelpers.safeJsonStringify(result.data),
               },
             ],
           };
@@ -127,7 +100,10 @@ export class TwitterTools {
           id: z.string().describe("The username of the user to retrieve."),
           profile: z.string().describe("The profile to use.").optional(),
         },
-        outputSchema: userOutputSchema,
+        outputSchema: {
+          errors: z.string().describe("Error message").optional(),
+          data: z.object(UserV2Schema).optional(),
+        },
       },
       async ({ id, profile }) => {
         try {
@@ -135,13 +111,15 @@ export class TwitterTools {
             profile: profile,
             id: id,
           });
-          const output = stdOutput(result);
           return {
-            structuredContent: output,
+            structuredContent: {
+              data: result.data,
+              errors: McpCommon.stdTwitterError(result.errors),
+            },
             content: [
               {
                 type: "text",
-                text: DegovHelpers.safeJsonStringify(output),
+                text: DegovHelpers.safeJsonStringify(result.data),
               },
             ],
           };
@@ -221,6 +199,12 @@ export class TwitterTools {
         },
         outputSchema: {
           data: z.array(z.object(TweetV2Schema)).optional(),
+          includes: z
+            .object({
+              users: z.array(z.object(UserV2Schema)).optional(),
+              polls: z.array(PollV2Schema).optional(),
+            })
+            .optional(),
           errors: z.string().describe("Error message").optional(),
         },
       },
@@ -229,6 +213,7 @@ export class TwitterTools {
           const result = await this.twitterAgent.searchTweets(options);
           const output = {
             data: result.data,
+            includes: result.includes,
             errors: McpCommon.stdTwitterError(result.errors),
           };
 
@@ -281,6 +266,12 @@ export class TwitterTools {
         },
         outputSchema: {
           data: z.object(TweetV2Schema).optional(),
+          includes: z
+            .object({
+              users: z.array(z.object(UserV2Schema)).optional(),
+              polls: z.array(PollV2Schema).optional(),
+            })
+            .optional(),
           errors: z.string().describe("Error message").optional(),
         },
       },
@@ -289,6 +280,7 @@ export class TwitterTools {
           const result = await this.twitterAgent.getTweetById(options);
           const output = {
             data: result.data,
+            includes: result.includes,
             errors: McpCommon.stdTwitterError(result.errors),
           };
           return {
@@ -370,6 +362,148 @@ export class TwitterTools {
     );
   }
 }
+
+export const UserV2Schema = {
+  id: z.string().describe("The user ID"),
+  name: z.string().describe("The user's display name"),
+  username: z.string().describe("The user's username"),
+  created_at: z
+    .string()
+    .describe("The date and time when the user was created")
+    .optional(),
+  protected: z
+    .boolean()
+    .describe("Whether the user's account is protected (private)")
+    .optional(),
+  withheld: z
+    .object({
+      country_codes: z
+        .array(z.string())
+        .describe("List of country codes where the content is withheld")
+        .optional(),
+      scope: z
+        .enum(["user"])
+        .describe("Scope of the withheld content, typically 'user'")
+        .optional(),
+    })
+    .describe("Withheld information for the user")
+    .optional(),
+  location: z.string().describe("The user's location, if provided").optional(),
+  url: z.string().describe("The user's URL, if provided").optional(),
+  description: z.string().describe("The user's profile description").optional(),
+  verified: z
+    .boolean()
+    .describe("Whether the user is verified (blue checkmark)")
+    .optional(),
+  verified_type: z
+    .enum(["none", "blue", "business", "government"])
+    .describe("Type of verification for the user")
+    .optional(),
+  entities: z
+    .object({
+      url: z
+        .object({
+          urls: z.array(
+            z.object({
+              start: z.number(),
+              end: z.number(),
+              url: z.string(),
+              expanded_url: z.string(),
+              display_url: z.string(),
+            })
+          ),
+        })
+        .optional(),
+      description: z
+        .object({
+          urls: z
+            .array(
+              z.object({
+                start: z.number(),
+                end: z.number(),
+                url: z.string(),
+                expanded_url: z.string(),
+                display_url: z.string(),
+              })
+            )
+            .optional(),
+          hashtags: z
+            .array(
+              z.object({
+                start: z.number(),
+                end: z.number(),
+                tag: z.string(),
+              })
+            )
+            .optional(),
+          cashtags: z
+            .array(
+              z.object({
+                start: z.number(),
+                end: z.number(),
+                tag: z.string(),
+              })
+            )
+            .optional(),
+          mentions: z
+            .array(
+              z.object({
+                start: z.number(),
+                end: z.number(),
+                username: z.string(),
+              })
+            )
+            .optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  profile_image_url: z
+    .string()
+    .describe("URL of the user's profile image")
+    .optional(),
+  profile_banner_url: z
+    .string()
+    .describe("URL of the user's profile banner image")
+    .optional(),
+  public_metrics: z
+    .object({
+      followers_count: z.number().optional(),
+      following_count: z.number().optional(),
+      tweet_count: z.number().optional(),
+      listed_count: z.number().optional(),
+      like_count: z.number().optional(),
+      media_count: z.number().optional(),
+    })
+    .describe("Public metrics for the user")
+    .optional(),
+  pinned_tweet_id: z
+    .string()
+    .describe("ID of the user's pinned tweet")
+    .optional(),
+  connection_status: z
+    .array(z.string())
+    .describe("Connection status of the user, e.g., 'following', 'muting'")
+    .optional(),
+  most_recent_tweet_id: z
+    .string()
+    .describe("ID of the user's most recent tweet")
+    .optional(),
+};
+
+export const PollV2Schema = z.object({
+  id: z.string(),
+  options: z.array(
+    z.object({
+      position: z.number(),
+      label: z.string(),
+      votes: z.number(),
+    })
+  ),
+  duration_minutes: z.number().optional(),
+  end_datetime: z.string().optional(),
+  voting_status: z.string().optional(),
+});
 
 export const TweetV2Schema = {
   id: z.string(),

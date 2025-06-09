@@ -18,6 +18,7 @@
     "@prisma/client": "6.9.0",
     "@specter-labs/fastify-cache": "^1.0.3",
     "@twitter-api-v2/plugin-rate-limit": "^1.1.0",
+    "@twitter-api-v2/plugin-token-refresher": "^1.0.0",
     "agent-twitter-client": "github:elizaOS/agent-twitter-client#main",
     "fastify": "^5.3.3",
     "fastify-mcp": "^2.0.1",

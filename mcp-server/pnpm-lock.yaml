@@ -29,6 +29,9 @@ importers:
       '@twitter-api-v2/plugin-rate-limit':
         specifier: ^1.1.0
         version: 1.1.0(twitter-api-v2@1.23.2)
+      '@twitter-api-v2/plugin-token-refresher':
+        specifier: ^1.0.0
+        version: 1.0.0(twitter-api-v2@1.23.2)
       agent-twitter-client:
         specifier: github:elizaOS/agent-twitter-client#main
         version: https://codeload.github.com/elizaOS/agent-twitter-client/tar.gz/31fd878e5641eaa78e1d3ec4dadb837ca740356a
@@ -947,6 +950,11 @@ packages:
     resolution: {integrity: sha512-5nUk0w0s1yzzMe+NLN5BlKzwgl9OHkF1Makb5Xje1ntCO1H1fGq0qli80WRvcrpcwKZcSckRkXd4HEksh2LZ6g==}
     peerDependencies:
       twitter-api-v2: ^1.11.0
+
+  '@twitter-api-v2/plugin-token-refresher@1.0.0':
+    resolution: {integrity: sha512-tN4TNDbnwn1uY6uu4g3hSj5crHTeJDOfI3on8xUBm8XaXWLrjThsZlwjpF+O1PK2lPhznmluATPHMcYU9Wf73g==}
+    peerDependencies:
+      twitter-api-v2: ^1.12.0
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -3772,6 +3780,10 @@ snapshots:
   '@tsconfig/node16@1.0.4': {}
 
   '@twitter-api-v2/plugin-rate-limit@1.1.0(twitter-api-v2@1.23.2)':
+    dependencies:
+      twitter-api-v2: 1.23.2
+
+  '@twitter-api-v2/plugin-token-refresher@1.0.0(twitter-api-v2@1.23.2)':
     dependencies:
       twitter-api-v2: 1.23.2
 

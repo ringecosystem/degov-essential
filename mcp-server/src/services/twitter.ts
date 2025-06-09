@@ -11,6 +11,7 @@ import { TwitterApi } from "twitter-api-v2";
 import { EnvReader } from "../integration/envreader";
 import { AgentClient, TwitterAgent } from "../internal/x-agent";
 import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
+import { TwitterApiAutoTokenRefresher } from "@twitter-api-v2/plugin-token-refresher";
 
 export interface AuthorizeResult {
   method: "COOKIES" | "API";
@@ -132,6 +133,31 @@ export class TwitterService {
             authAccessType: "write",
             // linkMode: "authorize",
           });
+        // const a = await client.generateOAuth2AuthLink(callbakUrl, {
+        //   scope: [
+        //     "tweet.read",
+        //     "tweet.write",
+        //     // "tweet.moderate.write",
+        //     "users.read",
+        //     // "follows.read",
+        //     // "follows.write",
+        //     // "offline.access",
+        //     // "space.read",
+        //     // "mute.read",
+        //     // "mute.write",
+        //     // "like.read",
+        //     // "like.write",
+        //     // "list.read",
+        //     // "list.write",
+        //     // "block.read",
+        //     // "block.write",
+        //     // "bookmark.read",
+        //     // "bookmark.write",
+        //     // "dm.read",
+        //     // "dm.write",
+        //   ],
+        //   // state: inputProfile,
+        // });
 
         const twitterOAuth: TwitterOAuthType = {
           oauth_token,
@@ -383,6 +409,28 @@ export class TwitterService {
             },
             { plugins: [rateLimitPlugin] }
           );
+
+          // const credentials = {
+          //   clientId: process.env.X_JOKNI2_CLIENT_ID!,
+          //   clientSecret: process.env.X_JOKNI2_CLIENT_SECRET,
+          // };
+          // const tokenStore = { accessToken: "", refreshToken: "" };
+          // const autoRefresherPlugin = new TwitterApiAutoTokenRefresher({
+          //   refreshToken: tokenStore.refreshToken,
+          //   refreshCredentials: credentials,
+          //   onTokenUpdate(token) {
+          //     tokenStore.accessToken = token.accessToken;
+          //     tokenStore.refreshToken = token.refreshToken!;
+          //     // store in DB/Redis/...
+          //   },
+          //   onTokenRefreshError(error) {
+          //     console.error("Refresh error", error);
+          //   },
+          // });
+          // const client = new TwitterApi(tokenStore.accessToken, {
+          //   plugins: [autoRefresherPlugin, rateLimitPlugin],
+          // });
+
           agentClients.push({
             profile: auth.profile,
             client,
