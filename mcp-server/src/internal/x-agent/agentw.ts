@@ -7,6 +7,7 @@ import {
   SearchTweetsInput,
   SendTweetInput,
   SimpleTweetUser,
+  SentTweetHookInput,
 } from "./types";
 import {
   TweetV2PostTweetResult,
@@ -150,6 +151,14 @@ export class TwitterAgentW {
     fastify: FastifyInstance,
     options: SendTweetInput
   ): Promise<TweetV2PostTweetResult> {
-    await this.sendTweet(options);
+    const result = await this.twitterAgent.sendTweet(options);
+    const user = this.twitterAgent.currentUser(options);
+    const input: SentTweetHookInput = {
+      result: result,
+      tweet: options,
+      user: user,
+    };
+    await this.twitterService.storeSendTweet(fastify, input);
+    return result;
   }
 }

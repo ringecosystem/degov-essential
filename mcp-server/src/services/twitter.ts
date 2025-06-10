@@ -6,13 +6,18 @@ import {
 } from "../types";
 import { FastifyInstance } from "fastify";
 import {
+  degov_tweet_progress,
   twitter_authorization,
   twitter_tweet,
   twitter_user,
 } from "../generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { EnvReader } from "../integration/envreader";
-import { AgentClient, TwitterAgent } from "../internal/x-agent";
+import {
+  AgentClient,
+  SentTweetHookInput,
+  TwitterAgent,
+} from "../internal/x-agent";
 import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
 
 export interface AuthorizeResult {
@@ -340,6 +345,46 @@ export class TwitterService {
         })
       )
     );
+  }
+
+  async storeSendTweet(
+    fastify: FastifyInstance,
+    input: SentTweetHookInput
+  ): Promise<void> {
+    const prisma = fastify.prisma;
+    const { user, result, tweet } = input;
+    prisma.$transaction(async (tx) => {
+      const tweetForm: twitter_tweet = {
+        id: result.data.id,
+        text: result.data.text,
+        created_at: new Date(),
+        author_id: user.id,
+        retweet_count: 0,
+        like_count: 0,
+        reply_count: 0,
+        ctime: new Date(),
+        utime: new Date(),
+        raw: null,
+      };
+      let type = "text";
+      if (
+        tweet.poll &&
+        tweet.poll.duration_minutes &&
+        tweet.poll.options.length
+      ) {
+        type = "poll";
+      }
+      const progressForm: degov_tweet_progress = {
+        id: result.data.id,
+        status: "pending",
+        message: null,
+        type,
+        ctime: new Date(),
+        utime: new Date(),
+      };
+      await tx.twitter_tweet.create({ data: tweetForm });
+      await tx.degov_tweet_progress.create({ data: progressForm });
+    });
   }
 
   async getTweetById(

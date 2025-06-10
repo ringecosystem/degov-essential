@@ -16,13 +16,12 @@ export class DegovMcpServer {
         tools: {},
       },
     });
-
     await this.registTools(fastify, mcpServer);
     return mcpServer.server;
   }
 
   private async registTools(fastify: FastifyInstance, server: McpServer) {
-    await this.twitterTools.regist(server);
+    await this.twitterTools.regist(fastify, server);
 
     // server.tool("greet", () => {
     //   return {

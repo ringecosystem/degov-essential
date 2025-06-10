@@ -1,21 +1,22 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { Service } from "typedi";
-import { TwitterAgent } from "../../internal/x-agent";
 import { z } from "zod";
 import { DegovHelpers } from "../../helpers";
 import { McpCommon } from "../common";
+import { TwitterAgentW } from "../../internal/x-agent/agentw";
+import { FastifyInstance } from "fastify";
 
 @Service()
 export class TwitterTools {
-  constructor(private readonly twitterAgent: TwitterAgent) {}
+  constructor(private readonly twitterAgent: TwitterAgentW) {}
 
-  async regist(server: McpServer) {
-    this.registProfiles(server);
-    this.registUser(server);
-    this.registTweets(server);
+  async regist(fastify: FastifyInstance, server: McpServer) {
+    this.registProfiles(fastify, server);
+    this.registUser(fastify, server);
+    this.registTweets(fastify, server);
   }
 
-  private registProfiles(server: McpServer) {
+  private registProfiles(_fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
       "profiles",
       {
@@ -44,7 +45,7 @@ export class TwitterTools {
     );
   }
 
-  private registUser(server: McpServer) {
+  private registUser(fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
       "user-by-id",
       {
@@ -60,7 +61,7 @@ export class TwitterTools {
       },
       async ({ id, profile }) => {
         try {
-          const result = await this.twitterAgent.getUserById({
+          const result = await this.twitterAgent.getUserById(fastify, {
             profile: profile,
             id: id,
           });
@@ -100,7 +101,9 @@ export class TwitterTools {
       {
         description: "Get user information by twitter username.",
         inputSchema: {
-          id: z.string().describe("The username of the user to retrieve."),
+          username: z
+            .string()
+            .describe("The username of the user to retrieve."),
           profile: z.string().describe("The profile to use.").optional(),
         },
         outputSchema: {
@@ -108,11 +111,11 @@ export class TwitterTools {
           data: z.object(UserV2Schema).optional(),
         },
       },
-      async ({ id, profile }) => {
+      async ({ username, profile }) => {
         try {
-          const result = await this.twitterAgent.getUserByUsername({
+          const result = await this.twitterAgent.getUserByUsername(fastify, {
             profile: profile,
-            id: id,
+            username: username,
           });
           const structuredContent = {
             data: result.data,
@@ -146,7 +149,7 @@ export class TwitterTools {
     );
   }
 
-  private registTweets(server: McpServer) {
+  private registTweets(fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
       "search-tweets",
       {
@@ -203,7 +206,7 @@ export class TwitterTools {
       },
       async (options) => {
         try {
-          const result = await this.twitterAgent.searchTweets(options);
+          const result = await this.twitterAgent.searchTweets(fastify, options);
           const structuredContent = {
             data: result.data,
             includes: result.includes,
@@ -271,7 +274,7 @@ export class TwitterTools {
       },
       async (options) => {
         try {
-          const result = await this.twitterAgent.getTweetById(options);
+          const result = await this.twitterAgent.getTweetById(fastify, options);
           const structuredContent = {
             data: result.data,
             includes: result.includes,
