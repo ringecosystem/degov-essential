@@ -26,6 +26,7 @@ export class TwitterAgent {
   }
 
   private pickClient(options: PickClientOptions): AgentClient | undefined {
+    console.log("=====>", options);
     const inputProfile = options.xprofile?.trim().toUpperCase();
     const profile = (!!inputProfile ? inputProfile : "default").toUpperCase();
 
@@ -96,7 +97,7 @@ export class TwitterAgent {
 }
 
 function cleanObject(obj: any): any {
-  return Object.fromEntries(
+  const result = Object.fromEntries(
     Object.entries(obj).filter(
       ([_, value]) =>
         value !== "" && // clean empty strings
@@ -108,4 +109,6 @@ function cleanObject(obj: any): any {
           : true) // clean empty objects
     )
   );
+  delete result.xprofile; // remove xprofile if exists
+  return result;
 }

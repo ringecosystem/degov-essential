@@ -71,6 +71,7 @@ export class TwitterTools {
         },
       },
       async ({ xprofile }) => {
+        console.log("----------------> x-profile", xprofile);
         try {
           const twuser = this.twitterAgent.currentUser({ xprofile: xprofile });
           const structuredContent = {
@@ -391,7 +392,7 @@ export class TwitterTools {
       async (options) => {
         try {
           // @ts-ignore
-          const result = await this.twitterAgent.sendTweet(options);
+          const result = await this.twitterAgent.sendTweet(fastify, options);
           const structuredContent = {
             data: result.data,
             errors: McpCommon.stdTwitterError(result.errors),
