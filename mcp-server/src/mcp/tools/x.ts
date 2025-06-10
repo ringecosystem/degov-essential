@@ -51,8 +51,9 @@ export class TwitterTools {
       {
         description: "Get user information by twitter user id.",
         inputSchema: {
-          id: z.string().describe("The user id of the user to retrieve."),
           xprofile: z.string().describe("The profile to use.").optional(),
+
+          id: z.string().describe("The user id of the user to retrieve."),
         },
         outputSchema: {
           errors: z.string().describe("Error message").optional(),
@@ -101,10 +102,11 @@ export class TwitterTools {
       {
         description: "Get user information by twitter username.",
         inputSchema: {
+          xprofile: z.string().describe("The profile to use.").optional(),
+
           username: z
             .string()
             .describe("The username of the user to retrieve."),
-          xprofile: z.string().describe("The profile to use.").optional(),
         },
         outputSchema: {
           errors: z.string().describe("Error message").optional(),
@@ -258,8 +260,9 @@ export class TwitterTools {
       {
         description: "Query a single tweet by ID.",
         inputSchema: {
-          id: z.string().describe("The ID of the tweet to retrieve."),
           xprofile: z.string().describe("The profile to use.").optional(),
+
+          id: z.string().describe("The ID of the tweet to retrieve."),
         },
         outputSchema: {
           data: z.object(TweetV2Schema).optional(),
@@ -313,6 +316,7 @@ export class TwitterTools {
         description: "Send a tweet.",
         inputSchema: {
           xprofile: z.string().describe("The profile to use.").optional(),
+
           ...SendTweetV2ParamsSchema,
         },
         outputSchema: {
