@@ -51,6 +51,7 @@ export interface QueryTwitterCallback {
 
 export interface DegovDaoConfig {
   name: string;
+  code: string;
   xprofile?: string;
   links: DegovMcpDaoUrl;
 }

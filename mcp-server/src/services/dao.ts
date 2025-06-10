@@ -10,11 +10,12 @@ export class DaoService {
     const daos = ConfigReader.degovDaos();
     const result: DegovMcpDao[] = [];
     for (const daoc of daos) {
-      const { name, xprofile, links } = daoc;
+      const { name, code, xprofile, links } = daoc;
       const configLink = links.config;
       const degovConfig = await this.fetchDegovConfig(fastify, configLink);
       const dmd: DegovMcpDao = {
         name,
+        code,
         xprofile,
         links,
         config: degovConfig,

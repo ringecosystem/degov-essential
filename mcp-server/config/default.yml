@@ -13,6 +13,7 @@ twitter:
 
 daos:
   - name: DeGov Development Test DAO
+    code: degov-test-dao
     xprofile: default
     links:
       website: https://demo.degov.ai
