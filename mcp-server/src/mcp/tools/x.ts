@@ -18,7 +18,7 @@ export class TwitterTools {
 
   private registProfiles(_fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
-      "profiles",
+      "x-profiles",
       {
         description:
           "List allowed profiles and versions for X (Twitter) clients.",
@@ -47,7 +47,7 @@ export class TwitterTools {
 
   private registUser(fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
-      "user-by-id",
+      "x-user-by-id",
       {
         description: "Get user information by twitter user id.",
         inputSchema: {
@@ -97,7 +97,7 @@ export class TwitterTools {
     );
 
     server.registerTool(
-      "user-by-username",
+      "x-user-by-username",
       {
         description: "Get user information by twitter username.",
         inputSchema: {
@@ -151,7 +151,7 @@ export class TwitterTools {
 
   private registTweets(fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
-      "search-tweets",
+      "x-search-tweets",
       {
         description: "Search for tweets.",
         inputSchema: {
@@ -254,7 +254,7 @@ export class TwitterTools {
     );
 
     server.registerTool(
-      "query-single-tweet",
+      "x-query-single-tweet",
       {
         description: "Query a single tweet by ID.",
         inputSchema: {
@@ -308,7 +308,7 @@ export class TwitterTools {
     );
 
     server.registerTool(
-      "send-tweet",
+      "x-send-tweet",
       {
         description: "Send a tweet.",
         inputSchema: {
