@@ -103,3 +103,13 @@ model degov_tweet_progress {
 
   tweet twitter_tweet? @relation(fields: [id], references: [id])
 }
+
+model degov_dao_progress {
+  id String @id
+
+  code String @unique
+  last_block_number Int?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}

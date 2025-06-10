@@ -7,19 +7,31 @@ import yaml from "yaml";
 @Service()
 export class DaoService {
   async daos(fastify: FastifyInstance): Promise<DegovMcpDao[]> {
+    const prisma = fastify.prisma;
     const daos = ConfigReader.degovDaos();
     const result: DegovMcpDao[] = [];
+
+    const daoCodes = daos.map((dao) => dao.code);
+    const daoProgresses = await prisma.degov_dao_progress.findMany({
+      where: {
+        code: {
+          in: daoCodes,
+        },
+      },
+    });
+
     for (const daoc of daos) {
       const { name, code, xprofile, links } = daoc;
       const configLink = links.config;
       const degovConfig = await this.fetchDegovConfig(fastify, configLink);
+      const daoProgress = daoProgresses.find((item) => item.code === code);
       const dmd: DegovMcpDao = {
         name,
         code,
         xprofile,
         links,
         config: degovConfig,
-        lastProcessedBlock: -1,
+        lastProcessedBlock: daoProgress?.last_block_number ?? -1,
       };
       result.push(dmd);
     }

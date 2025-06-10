@@ -6,19 +6,18 @@ import { z } from "zod";
 @Service()
 export class DegovTools {
   async regist(fastify: FastifyInstance, server: McpServer) {
-    await this.registProposals(fastify, server);
+    // await this.registProposals(fastify, server);
   }
 
   private async registProposals(fastify: FastifyInstance, server: McpServer) {
     server.registerTool(
-      "degov-new-proposal",
+      "degov-generate-proposal-tweet",
       {
-        description: "New proposal created event",
+        description: "Generates a tweet for a proposal.",
         inputSchema: {
           xprofile: z.string().describe("The profile to use.").optional(),
 
-          chain: z.number().describe("Chain id"),
-          indexer: z.string().describe("Indexer endpoint"),
+          daocode: z.string().describe("The DAO code to use."),
           proposal_id: z.string().describe("Proposal ID"),
         },
         outputSchema: {},
