@@ -3,10 +3,10 @@ services:
     image: postgres:17-alpine
     restart: always
     ports:
-      - '127.0.0.1:12445:5432'
+      - '12445:5432'
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: let-me-in
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-let-me-in}
       POSTGRES_DB: degov-mcp
     volumes:
       - ./.data/postgres:/var/lib/postgresql/data
