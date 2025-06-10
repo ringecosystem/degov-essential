@@ -6,7 +6,6 @@ import {
   PickClientOptions,
   SearchTweetsInput,
   SendTweetInput,
-  // SentTweetHookInput,
   SimpleTweetUser,
 } from "./types";
 import {
@@ -27,7 +26,7 @@ export class TwitterAgent {
   }
 
   private pickClient(options: PickClientOptions): AgentClient | undefined {
-    const inputProfile = options.profile?.trim().toUpperCase();
+    const inputProfile = options.xprofile?.trim().toUpperCase();
     const profile = (!!inputProfile ? inputProfile : "default").toUpperCase();
 
     return this.clients.find(
@@ -38,7 +37,7 @@ export class TwitterAgent {
   private agentClient(options: PickClientOptions): TwitterApi {
     const client = this.pickClient(options);
     if (!client) {
-      throw new Error(`No client found for profile: ${options.profile}`);
+      throw new Error(`No client found for profile: ${options.xprofile}`);
     }
     return client.client;
   }
@@ -46,7 +45,7 @@ export class TwitterAgent {
   currentUser(options: PickClientOptions): SimpleTweetUser {
     const client = this.pickClient(options);
     if (!client) {
-      throw new Error(`No client found for profile: ${options.profile}`);
+      throw new Error(`No client found for profile: ${options.xprofile}`);
     }
     return client.user;
   }

@@ -16,7 +16,7 @@ export interface RecommendedProfileOptions {
 }
 
 export interface PickClientOptions {
-  profile?: string;
+  xprofile?: string;
 }
 
 export interface GetTweetInput extends PickClientOptions {

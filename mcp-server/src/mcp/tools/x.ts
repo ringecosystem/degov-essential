@@ -52,17 +52,17 @@ export class TwitterTools {
         description: "Get user information by twitter user id.",
         inputSchema: {
           id: z.string().describe("The user id of the user to retrieve."),
-          profile: z.string().describe("The profile to use.").optional(),
+          xprofile: z.string().describe("The profile to use.").optional(),
         },
         outputSchema: {
           errors: z.string().describe("Error message").optional(),
           data: z.object(UserV2Schema).optional(),
         },
       },
-      async ({ id, profile }) => {
+      async ({ id, xprofile }) => {
         try {
           const result = await this.twitterAgent.getUserById(fastify, {
-            profile: profile,
+            xprofile: xprofile,
             id: id,
           });
           const structuredContent = {
@@ -104,17 +104,17 @@ export class TwitterTools {
           username: z
             .string()
             .describe("The username of the user to retrieve."),
-          profile: z.string().describe("The profile to use.").optional(),
+          xprofile: z.string().describe("The profile to use.").optional(),
         },
         outputSchema: {
           errors: z.string().describe("Error message").optional(),
           data: z.object(UserV2Schema).optional(),
         },
       },
-      async ({ username, profile }) => {
+      async ({ username, xprofile }) => {
         try {
           const result = await this.twitterAgent.getUserByUsername(fastify, {
-            profile: profile,
+            xprofile: xprofile,
             username: username,
           });
           const structuredContent = {
@@ -155,7 +155,7 @@ export class TwitterTools {
       {
         description: "Search for tweets.",
         inputSchema: {
-          profile: z.string().describe("The profile to use.").optional(),
+          xprofile: z.string().describe("The profile to use.").optional(),
 
           end_time: z
             .string()
@@ -259,7 +259,7 @@ export class TwitterTools {
         description: "Query a single tweet by ID.",
         inputSchema: {
           id: z.string().describe("The ID of the tweet to retrieve."),
-          profile: z.string().describe("The profile to use.").optional(),
+          xprofile: z.string().describe("The profile to use.").optional(),
         },
         outputSchema: {
           data: z.object(TweetV2Schema).optional(),
@@ -312,7 +312,7 @@ export class TwitterTools {
       {
         description: "Send a tweet.",
         inputSchema: {
-          profile: z.string().describe("The profile to use.").optional(),
+          xprofile: z.string().describe("The profile to use.").optional(),
           ...SendTweetV2ParamsSchema,
         },
         outputSchema: {
