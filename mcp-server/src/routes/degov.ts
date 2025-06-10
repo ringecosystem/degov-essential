@@ -1,13 +1,15 @@
 import { FastifyInstance } from "fastify";
 import { Service } from "typedi";
-import { ConfigReader } from "../integration/config-reader";
 import { Resp } from "../types";
+import { DaoService } from "../services/dao";
 
 @Service()
 export class DegovRouter {
+  constructor(private readonly daoService: DaoService) {}
+
   async regist(fastify: FastifyInstance) {
     fastify.get("/degov/daos", async (request, reply) => {
-      const daos = ConfigReader.degovDaos();
+      const daos = await this.daoService.daos(fastify);
       return Resp.ok(daos);
     });
   }

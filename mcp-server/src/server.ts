@@ -13,6 +13,7 @@ import { TwitterRouter } from "./routes/twitter";
 import fastifyCache, {
   defaultStorageAdapter,
 } from "@specter-labs/fastify-cache";
+import fastifyAxios from "fastify-axios";
 import fastifyView from "@fastify/view";
 import fastifyPrisma from "@joggr/fastify-prisma";
 import { SnowflakeId } from "@akashrajpurohit/snowflake-id";
@@ -58,6 +59,7 @@ export class DegovMcpHttpServer {
   }
 
   private async richs(fastify: FastifyInstance) {
+    fastify.register(fastifyAxios);
     await fastify.register(fastifyPrisma, {
       client: new PrismaClient(),
     });

@@ -1,5 +1,5 @@
 import config from "config";
-import { DegovMcpDao } from "../types";
+import { DegovDaoConfig } from "../types";
 
 export class ConfigReader {
   static read<T>(
@@ -30,9 +30,9 @@ export class ConfigReader {
     };
   }
 
-  static degovDaos(): DegovMcpDao[] {
+  static degovDaos(): DegovDaoConfig[] {
     return (
-      ConfigReader.read<DegovMcpDao[]>("daos", {
+      ConfigReader.read<DegovDaoConfig[]>("daos", {
         defaultValue: [],
         optional: true,
       }) ?? []

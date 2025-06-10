@@ -14,7 +14,7 @@ twitter:
 daos:
   - name: DeGov Development Test DAO
     xprofile: default
-    url:
+    links:
       website: https://demo.degov.ai
       config: https://demo.degov.ai/degov.yml
       indexer: https://degov-indexer.vercel.app/graphql
