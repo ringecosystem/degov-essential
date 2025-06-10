@@ -5,6 +5,7 @@ import { DegovHelpers } from "../../helpers";
 import { McpCommon } from "../common";
 import { TwitterAgentW } from "../../internal/x-agent/agentw";
 import { FastifyInstance } from "fastify";
+import { error } from "console";
 
 @Service()
 export class TwitterTools {
@@ -41,6 +42,64 @@ export class TwitterTools {
             },
           ],
         };
+      }
+    );
+    server.registerTool(
+      "x-profile",
+      {
+        description: "Get the current x profile info.",
+        inputSchema: {
+          xprofile: z.string().describe("The profile to use."),
+        },
+        outputSchema: {
+          errors: z.string().describe("Error message").optional(),
+          data: z
+            .object({
+              id: z.string().describe("The user ID"),
+              name: z.string().describe("The user's display name").optional(),
+              username: z.string().describe("The user's username"),
+              verified: z
+                .boolean()
+                .describe("Whether the user is verified (blue checkmark)")
+                .optional(),
+              verificationType: z
+                .string()
+                .describe("Type of verification for the user")
+                .optional(),
+            })
+            .optional(),
+        },
+      },
+      async ({ xprofile }) => {
+        try {
+          const twuser = this.twitterAgent.currentUser({ xprofile: xprofile });
+          const structuredContent = {
+            data: twuser,
+          };
+          return {
+            structuredContent,
+            content: [
+              {
+                type: "text",
+                text: DegovHelpers.safeJsonStringify(structuredContent),
+              },
+            ],
+          };
+        } catch (error: any) {
+          const message = McpCommon.defaultToolErrorMessage(error);
+          const structuredContent = {
+            errors: message,
+          };
+          return {
+            structuredContent,
+            content: [
+              {
+                type: "text",
+                text: DegovHelpers.safeJsonStringify(structuredContent),
+              },
+            ],
+          };
+        }
       }
     );
   }
