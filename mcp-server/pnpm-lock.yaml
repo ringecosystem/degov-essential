@@ -35,6 +35,9 @@ importers:
       axios:
         specifier: ^1.9.0
         version: 1.9.0
+      config:
+        specifier: ^4.0.0
+        version: 4.0.0
       fastify:
         specifier: ^5.3.3
         version: 5.3.3
@@ -75,6 +78,9 @@ importers:
       '@modelcontextprotocol/inspector':
         specifier: ^0.13.0
         version: 0.13.0(@types/node@22.15.29)(tailwindcss@4.1.8)(typescript@5.8.3)
+      '@types/config':
+        specifier: ^3.3.5
+        version: 3.3.5
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
@@ -944,6 +950,9 @@ packages:
   '@types/babel__traverse@7.20.7':
     resolution: {integrity: sha512-dkO5fhS7+/oos4ciWxyEyjWe48zmG6wbCheo/G2ZnHx4fs3EU6YC6UM8rk56gAjNJ9P3MTH2jo5jb92/K6wbng==}
 
+  '@types/config@3.3.5':
+    resolution: {integrity: sha512-itq2HtXQBrNUKwMNZnb9mBRE3T99VYCdl1gjST9rq+9kFaB1iMMGuDeZnP88qid73DnpAMKH9ZolqDpS1Lz7+w==}
+
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
 
@@ -1218,6 +1227,10 @@ packages:
     resolution: {integrity: sha512-H9MWcoPsYddwbOGM6difjVwVZHl63nwMEwDJG/L7VGtuaJhb12h2caPG2tVPWs7emuYix252iGfqOyrz1GczTQ==}
     engines: {node: '>=18'}
     hasBin: true
+
+  config@4.0.0:
+    resolution: {integrity: sha512-zOzfDfcpaBUMRvTH+pbj111Gfb+1BMvCy9EcE5ckuugfAcks3FIQMyt8TRA30dhuGnZNBxfbPBUKtuM03ih/nA==}
+    engines: {node: '>= 20.0.0'}
 
   content-disposition@0.5.2:
     resolution: {integrity: sha512-kRGRZw3bLlFISDBgwTSA1TMBFN6J6GWDeubmDE3AF+3+yXL8hTWv8r5rkLbqYXY4RjPk/EzHnClI3zQf1cFmHA==}
@@ -3738,6 +3751,8 @@ snapshots:
     dependencies:
       '@babel/types': 7.27.3
 
+  '@types/config@3.3.5': {}
+
   '@types/graceful-fs@4.1.9':
     dependencies:
       '@types/node': 22.15.29
@@ -4044,6 +4059,10 @@ snapshots:
       supports-color: 8.1.1
       tree-kill: 1.2.2
       yargs: 17.7.2
+
+  config@4.0.0:
+    dependencies:
+      json5: 2.2.3
 
   content-disposition@0.5.2: {}
 

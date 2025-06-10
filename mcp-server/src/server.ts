@@ -19,6 +19,7 @@ import { SnowflakeId } from "@akashrajpurohit/snowflake-id";
 import { PrismaClient } from "./generated/prisma";
 
 import path from "path";
+import { DegovRouter } from "./routes/degov";
 
 @Service()
 export class DegovMcpHttpServer {
@@ -26,7 +27,8 @@ export class DegovMcpHttpServer {
     private readonly initializer: DegovMcpServerInitializer,
     private readonly mcpServer: DegovMcpServer,
     private readonly helloRouter: HelloRouter,
-    private readonly twitterRouter: TwitterRouter
+    private readonly twitterRouter: TwitterRouter,
+    private readonly degovRouter: DegovRouter
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -115,6 +117,7 @@ export class DegovMcpHttpServer {
   private async routes(fastify: FastifyInstance) {
     this.helloRouter.regist(fastify);
     this.twitterRouter.regist(fastify);
+    this.degovRouter.regist(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

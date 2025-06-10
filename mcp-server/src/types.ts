@@ -48,3 +48,15 @@ export interface QueryTwitterCallback {
   oauth_token: string;
   oauth_verifier: string;
 }
+
+export interface DegovMcpDao {
+  name: string;
+  xprofile?: string;
+  url: DegovMcpDaoUrl;
+}
+
+export interface DegovMcpDaoUrl {
+  website: string;
+  config: string;
+  indexer: string;
+}

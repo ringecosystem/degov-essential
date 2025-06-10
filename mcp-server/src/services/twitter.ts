@@ -12,7 +12,7 @@ import {
   twitter_user,
 } from "../generated/prisma";
 import { TwitterApi } from "twitter-api-v2";
-import { EnvReader } from "../integration/envreader";
+import { ConfigReader } from "../integration/config-reader";
 import {
   AgentClient,
   SentTweetHookInput,
@@ -47,7 +47,7 @@ export class TwitterService {
     let oauthUrl: string | undefined;
     switch (method) {
       case "API": {
-        const twenv = EnvReader.twitterEnv();
+        const twenv = ConfigReader.twitterEnv();
 
         const storedAuthorization =
           await prisma.twitter_authorization.findFirst({
@@ -157,7 +157,7 @@ export class TwitterService {
       );
     }
 
-    const twenv = EnvReader.twitterEnv();
+    const twenv = ConfigReader.twitterEnv();
 
     const unauthorizedClient = new TwitterApi({
       appKey: twenv.apiKey!,
@@ -224,7 +224,7 @@ export class TwitterService {
       },
       orderBy: { ctime: "desc" },
     });
-    const twenv = EnvReader.twitterEnv();
+    const twenv = ConfigReader.twitterEnv();
     const agentClients: AgentClient[] = [];
     for (const auth of authorizations) {
       if (!auth.user) {

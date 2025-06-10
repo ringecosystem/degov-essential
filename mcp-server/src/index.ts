@@ -1,12 +1,15 @@
 import "reflect-metadata";
-import "dotenv/config";
 
 import Container from "typedi";
 import { DegovMcpHttpServer } from "./server";
+import { ConfigReader } from "./integration/config-reader";
 
 async function main() {
-  const host = process.env.HOST || "127.0.0.1";
-  const port = parseInt(process.env.PORT || "3000", 10);
+  const host = ConfigReader.read("app.host", { defaultValue: "127.0.0.1" })!;
+  const port = parseInt(
+    ConfigReader.read("app.port", { defaultValue: "3000" })!,
+    10
+  );
   const c = Container.get(DegovMcpHttpServer);
   await c.listen({ host, port });
 }

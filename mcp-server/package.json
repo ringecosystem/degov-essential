@@ -20,6 +20,7 @@
     "@twitter-api-v2/plugin-rate-limit": "^1.1.0",
     "@twitter-api-v2/plugin-token-refresher": "^1.0.0",
     "axios": "^1.9.0",
+    "config": "^4.0.0",
     "fastify": "^5.3.3",
     "fastify-mcp": "^2.0.1",
     "graphql-request": "^7.2.0",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/inspector": "^0.13.0",
+    "@types/config": "^3.3.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.29",
     "@vercel/ncc": "^0.38.3",
