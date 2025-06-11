@@ -12,5 +12,10 @@ export class DegovRouter {
       const daos = await this.daoService.daos(fastify);
       return Resp.ok(daos);
     });
+
+    fastify.get("/degov/next-proposals", async (request, reply) => {
+      const events = await this.daoService.nextNewProposals(fastify);
+      return Resp.ok(events);
+    });
   }
 }
