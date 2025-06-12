@@ -41,8 +41,9 @@ export class PostTweetNewVoteTask {
 
   private async run(fastify: FastifyInstance) {
     while (true) {
+      const queryLimit = 10;
       const tweets = await this.degovService.nextCheckVoteTweets(fastify, {
-        limit: 10,
+        limit: queryLimit,
       });
       if (tweets.length === 0) {
         fastify.log.info("No tweets to process, waiting for next cycle.");
@@ -72,10 +73,12 @@ export class PostTweetNewVoteTask {
           });
         }
       }
+      if (tweets.length < queryLimit) {
+        fastify.log.info("Processed all available tweets, exiting loop and waiting for next cycle.");
+        break; // Exit the loop if fewer tweets than limit were found
+      }
     }
   }
 
-  private async processTweet(fastify: FastifyInstance, tweet: degov_tweet) {
-    
-  }
+  private async processTweet(fastify: FastifyInstance, tweet: degov_tweet) {}
 }

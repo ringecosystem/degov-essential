@@ -90,6 +90,19 @@ CREATE TABLE "degov_tweet" (
 );
 
 -- CreateTable
+CREATE TABLE "degov_vote_progress" (
+    "id" TEXT NOT NULL,
+    "daocode" TEXT NOT NULL,
+    "proposal_id" TEXT NOT NULL,
+    "chain_id" INTEGER NOT NULL,
+    "offset" INTEGER NOT NULL DEFAULT 0,
+    "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "utime" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "degov_vote_progress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "degov_dao_progress" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,

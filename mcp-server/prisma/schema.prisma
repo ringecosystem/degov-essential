@@ -114,6 +114,19 @@ model degov_tweet {
   tweet twitter_tweet? @relation(fields: [id], references: [id])
 }
 
+model degov_vote_progress {
+  id String @id
+
+  daocode     String
+  proposal_id String
+  chain_id    Int
+
+  offset Int @default(0) // offset for pagination
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}
+
 model degov_dao_progress {
   id String @id
 
