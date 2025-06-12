@@ -66,6 +66,8 @@ export interface NewProposalEvent {
   daocode: string;
   daoname: string;
   proposal: SimpleProposal;
+  blockNumber: number;
+  blockTimestamp: number;
 }
 
 export interface SimpleProposal {

@@ -91,6 +91,10 @@ export class PostTweetNewProposalTask {
       fastify.log.info(
         `Posted new proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${event.daoname}, Proposal URL: ${proposal.url}`
       );
+      await this.daoService.updateProgress(fastify, {
+        code: event.daocode,
+        lastBlockNumber: event.blockNumber,
+      });
       await setTimeout(1000); // Wait for 1 second before processing the next proposal
     }
   }
@@ -126,6 +130,8 @@ export class PostTweetNewProposalTask {
         xprofile: dao.xprofile,
         daocode: dao.code,
         daoname: dao.name,
+        blockNumber: parseInt(proposal.blockNumber),
+        blockTimestamp: parseInt(proposal.blockTimestamp),
         proposal: {
           id: proposal.proposalId,
           chainId,
