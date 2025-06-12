@@ -55,6 +55,7 @@ model twitter_tweet {
   retweet_count Int?
   like_count    Int?
   reply_count   Int?
+  from_agent    Int? @default(0) // indicates if the tweet was posted by an agent (e.g., bot)
 
   raw String?
 

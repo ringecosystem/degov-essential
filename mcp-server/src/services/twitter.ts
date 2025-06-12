@@ -330,22 +330,34 @@ export class TwitterService {
 
     if (!forms || forms.length === 0) return;
 
-    await prisma.$transaction(
-      forms.map((form) =>
-        prisma.twitter_tweet.upsert({
+    await prisma.$transaction(async (tx) => {
+      for (const form of forms) {
+        const existing = await tx.twitter_tweet.findUnique({
           where: { id: form.id },
-          create: {
-            ...form,
-            ctime: now,
-            utime: now,
-          },
-          update: {
-            ...form,
-            utime: now,
-          },
-        })
-      )
-    );
+          select: { from_agent: true },
+        });
+
+        if (existing) {
+          const from_agent = existing.from_agent === 1 ? 1 : form.from_agent;
+          await tx.twitter_tweet.update({
+            where: { id: form.id },
+            data: {
+              ...form,
+              utime: now,
+              from_agent,
+            },
+          });
+        } else {
+          await tx.twitter_tweet.create({
+            data: {
+              ...form,
+              ctime: now,
+              utime: now,
+            },
+          });
+        }
+      }
+    });
   }
 
   async storeSendTweet(
@@ -367,6 +379,7 @@ export class TwitterService {
         utime: new Date(),
         conversation_id: null,
         raw: null,
+        from_agent: 1,
       };
       let type = "text";
       if (

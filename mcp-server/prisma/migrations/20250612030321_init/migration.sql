@@ -40,6 +40,7 @@ CREATE TABLE "twitter_tweet" (
     "retweet_count" INTEGER,
     "like_count" INTEGER,
     "reply_count" INTEGER,
+    "from_agent" INTEGER DEFAULT 0,
     "raw" TEXT,
     "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "utime" TIMESTAMP(3) NOT NULL,

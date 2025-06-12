@@ -110,6 +110,7 @@ export class TwitterAgentW {
         utime: new Date(),
         raw: JSON.stringify(tweet),
         conversation_id: tweet.conversation_id ?? null,
+        from_agent: 0,
       };
       tweets.push(tt);
     }
@@ -144,6 +145,7 @@ export class TwitterAgentW {
       utime: new Date(),
       raw: JSON.stringify(result.data),
       conversation_id: result.data.conversation_id ?? null,
+      from_agent: 0,
     };
     await this.twitterService.modifyTweets(fastify, [form]);
     return result;
