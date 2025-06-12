@@ -1,7 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { Service } from "typedi";
-import { DegovTweetStatus } from "../types";
-import { degov_tweet } from "../generated/prisma";
+import {
+  AddVoteProgressForm,
+  DegovTweetStatus,
+  UpdateVoteProgressForm,
+} from "../types";
+import { degov_tweet, degov_vote_progress } from "../generated/prisma";
 
 @Service()
 export class DegovService {
@@ -61,5 +65,54 @@ export class DegovService {
     });
 
     return tweets;
+  }
+
+  async currentVoteProgress(
+    fastify: FastifyInstance,
+    options: { proposalId: string }
+  ): Promise<degov_vote_progress | undefined> {
+    const prisma = fastify.prisma;
+    const result = await prisma.degov_vote_progress.findFirst({
+      where: {
+        proposal_id: options.proposalId,
+      },
+    });
+    return result ?? undefined;
+  }
+
+  async modifyVoteProgress(
+    fastify: FastifyInstance,
+    form: AddVoteProgressForm | UpdateVoteProgressForm
+  ): Promise<degov_vote_progress> {
+    const prisma = fastify.prisma;
+    const existing = await prisma.degov_vote_progress.findFirst({
+      where: {
+        proposal_id: form.proposal_id,
+      },
+    });
+    if (existing) {
+      return await prisma.degov_vote_progress.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          offset: form.offset,
+          utime: new Date(),
+        },
+      });
+    }
+    // Only AddVoteProgressForm should be used for creation
+    if ("daocode" in form && "chain_id" in form) {
+      return await prisma.degov_vote_progress.create({
+        data: {
+          id: fastify.snowflake.generate(),
+          daocode: form.daocode,
+          proposal_id: form.proposal_id,
+          chain_id: form.chain_id,
+          offset: form.offset,
+        },
+      });
+    }
+    throw new Error("Missing required fields for creating vote progress");
   }
 }

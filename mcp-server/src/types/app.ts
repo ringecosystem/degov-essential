@@ -38,7 +38,7 @@ export enum RuntimeProfile {
 export interface DegovDaoConfig {
   name: string;
   code: string;
-  xprofile?: string;
+  xprofile: string;
   links: DegovMcpDaoUrl;
 }
 
@@ -54,7 +54,51 @@ export interface DegovMcpDao extends DegovDaoConfig {
 }
 
 export enum DegovTweetStatus {
-  Posted = 'posted',
-  Fulfilled = 'fulfilled',
-  Error = 'error',
+  Posted = "posted",
+  Fulfilled = "fulfilled",
+  Error = "error",
+}
+
+export interface NewProposalEvent {
+  xprofile: string;
+  daocode: string;
+  daoname: string;
+  proposal: SimpleProposal;
+}
+
+export interface SimpleProposal {
+  id: string;
+  chainId: number;
+  url: string;
+  voteStart: number;
+  voteEnd: number;
+  description: string;
+}
+
+export interface TwitterAuthorizeForm {
+  profile: string;
+  method: "api";
+}
+
+export interface TwitterOAuthType {
+  oauth_token: string;
+  oauth_token_secret: string;
+}
+
+export interface QueryTwitterCallback {
+  profile: string;
+  oauth_token: string;
+  oauth_verifier: string;
+}
+
+export interface AddVoteProgressForm {
+  daocode: string;
+  proposal_id: string;
+  chain_id: number;
+  offset: number;
+}
+
+export interface UpdateVoteProgressForm {
+  proposal_id: string;
+  offset: number;
 }

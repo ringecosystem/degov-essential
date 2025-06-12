@@ -1,6 +1,12 @@
 import { Service } from "typedi";
 import { gql, request } from "graphql-request";
-import { DIProposal, QueryNextProposalOptions } from "./types";
+import {
+  DIProposal,
+  DIVoteCast,
+  DIVoteCastResult,
+  QueryNextProposalOptions,
+  QueryProposalVotes,
+} from "./types";
 
 @Service()
 export class DegovIndexerProposal {
@@ -36,5 +42,49 @@ export class DegovIndexerProposal {
       return undefined; // No new proposals found
     }
     return proposals[0];
+  }
+
+  async queryProposalVotes(
+    options: QueryProposalVotes
+  ): Promise<DIVoteCastResult> {
+    const document = gql`
+      query QueryProposalVotes($offset: Int!, $proposal_id: String!) {
+        voteCasts(
+          offset: $offset
+          limit: 10
+          orderBy: blockNumber_ASC
+          where: { proposalId_eq: $proposal_id }
+        ) {
+          id
+          proposalId
+          reason
+          support
+          transactionHash
+          voter
+          weight
+          blockNumber
+          blockTimestamp
+        }
+      }
+    `;
+    const response = await request<{ voteCasts: DIVoteCast[] }>(
+      options.endpoint,
+      document,
+      {
+        offset: options.offset,
+        proposal_id: options.proposalId,
+      }
+    );
+    const voteCasts = response.voteCasts;
+    if (voteCasts.length === 0) {
+      return {
+        nextOffset: options.offset,
+        voteCasts: [],
+      }; // No votes found
+    }
+    return {
+      nextOffset: options.offset + voteCasts.length,
+      voteCasts,
+    };
   }
 }

@@ -23,4 +23,37 @@ export class DegovHelpers {
       return v;
     });
   }
+
+  static voteSupportText(support: any): string {
+    const supportNumber =
+      typeof support === "number" ? support : parseInt(support, 10);
+    switch (supportNumber) {
+      case 0:
+        return "Against";
+      case 1:
+        return "For";
+      case 2:
+        return "Abstain";
+      default:
+        return "Unknown";
+    }
+  }
+
+  static explorerLink(input?: string[]): ExplorerLink {
+    if (!input || input.length === 0) {
+      return new ExplorerLink(undefined);
+    }
+    return new ExplorerLink(input?.[0]);
+  }
+}
+
+export class ExplorerLink {
+  constructor(private readonly baseLink?: string) {}
+
+  transaction(txhash?: string): string | undefined {
+    if (!this.baseLink || !txhash) {
+      return undefined;
+    }
+    return `${this.baseLink}/tx/${txhash}`;
+  }
 }

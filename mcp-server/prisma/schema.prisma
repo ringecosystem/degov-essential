@@ -118,7 +118,7 @@ model degov_vote_progress {
   id String @id
 
   daocode     String
-  proposal_id String
+  proposal_id String @unique
   chain_id    Int
 
   offset Int @default(0) // offset for pagination

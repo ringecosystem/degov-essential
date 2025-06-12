@@ -8,13 +8,16 @@ import { OpenrouterAgent } from "../internal/openrouter";
 import { setTimeout } from "timers/promises";
 import { PromptProposal } from "../internal/prompt";
 import { EnvReader } from "../integration/env-reader";
+import { NewProposalEvent } from "../types";
+import { DegovIndexerProposal } from "../internal/graphql";
 
 @Service()
 export class PostTweetNewProposalTask {
   constructor(
     private readonly daoService: DaoService,
     private readonly twitterAgent: TwitterAgentW,
-    private readonly openrouterAgent: OpenrouterAgent
+    private readonly openrouterAgent: OpenrouterAgent,
+    private readonly degovIndexerProposal: DegovIndexerProposal
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -51,12 +54,12 @@ export class PostTweetNewProposalTask {
   }
 
   private async run(fastify: FastifyInstance) {
-    const events = await this.daoService.nextNewProposals(fastify);
+    const events = await this.nextNewProposals(fastify);
     for (const event of events) {
       const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
       const promptout = await PromptProposal.newProposalTweet(fastify, {
-        event,
         stu,
+        event,
       });
       const tweet = await this.openrouterAgent.generateText({
         system: promptout.system,
@@ -73,7 +76,7 @@ export class PostTweetNewProposalTask {
         ); // Convert milliseconds to minutes
         durationMinutes = Math.min(remainingTimeMinutes, maxDurationMinutes);
       }
-      const input: SendTweetInput = {
+      const tweetInput: SendTweetInput = {
         xprofile: event.xprofile,
         daocode: event.daocode,
         proposalId: proposal.id,
@@ -84,11 +87,57 @@ export class PostTweetNewProposalTask {
           duration_minutes: durationMinutes,
         },
       };
-      const sendResp = await this.twitterAgent.sendTweet(fastify, input);
+      const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
       fastify.log.info(
         `Posted new proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${event.daoname}, Proposal URL: ${proposal.url}`
       );
       await setTimeout(1000); // Wait for 1 second before processing the next proposal
     }
+  }
+
+  private async nextNewProposals(
+    fastify: FastifyInstance
+  ): Promise<NewProposalEvent[]> {
+    const daos = await this.daoService.daos(fastify);
+    const results: NewProposalEvent[] = [];
+
+    for (const dao of daos) {
+      if (!dao.xprofile) {
+        continue;
+      }
+      const chainId = dao.config?.chain?.id;
+      if (!chainId) {
+        fastify.log.warn(
+          `Chain ID not found for DAO ${dao.name}. Skipping proposal processing.`
+        );
+        continue;
+      }
+      const proposal = await this.degovIndexerProposal.queryNextProposal({
+        endpoint: dao.links.indexer,
+        lastBlockNumber: dao.lastProcessedBlock ?? 0,
+      });
+      if (!proposal) {
+        fastify.log.info(
+          `No new proposals found for DAO ${dao.name} with code ${dao.code}.`
+        );
+        continue; // No new proposals found
+      }
+      const npe: NewProposalEvent = {
+        xprofile: dao.xprofile,
+        daocode: dao.code,
+        daoname: dao.name,
+        proposal: {
+          id: proposal.proposalId,
+          chainId,
+          url: `${dao.links.website}/proposal/${proposal.proposalId}`,
+          voteStart: parseInt(proposal.voteStart),
+          voteEnd: parseInt(proposal.voteEnd),
+          description: proposal.description,
+        },
+      };
+      results.push(npe);
+    }
+
+    return results;
   }
 }

@@ -1,13 +1,12 @@
 import { Service } from "typedi";
-import { DegovConfig, DegovMcpDao, NewProposalEvent } from "../types";
+import { DegovConfig, DegovMcpDao } from "../types";
 import { ConfigReader } from "../integration/config-reader";
 import { FastifyInstance } from "fastify";
 import yaml from "yaml";
-import { DegovIndexerProposal } from "../internal/graphql";
 
 @Service()
 export class DaoService {
-  constructor(private readonly degovIndexerProposal: DegovIndexerProposal) {}
+  constructor() {}
 
   private async fetchDegovConfig(
     fastify: FastifyInstance,
@@ -66,49 +65,11 @@ export class DaoService {
     return result;
   }
 
-  async nextNewProposals(
-    fastify: FastifyInstance
-  ): Promise<NewProposalEvent[]> {
+  async dao(
+    fastify: FastifyInstance,
+    options: { daocode: string }
+  ): Promise<DegovMcpDao | undefined> {
     const daos = await this.daos(fastify);
-    const results: NewProposalEvent[] = [];
-
-    for (const dao of daos) {
-      if (!dao.xprofile) {
-        continue;
-      }
-      const chainId = dao.config?.chain?.id;
-      if (!chainId) {
-        fastify.log.warn(
-          `Chain ID not found for DAO ${dao.name}. Skipping proposal processing.`
-        );
-        continue;
-      }
-      const proposal = await this.degovIndexerProposal.queryNextProposal({
-        endpoint: dao.links.indexer,
-        lastBlockNumber: dao.lastProcessedBlock ?? 0,
-      });
-      if (!proposal) {
-        fastify.log.info(
-          `No new proposals found for DAO ${dao.name} with code ${dao.code}.`
-        );
-        continue; // No new proposals found
-      }
-      const npe: NewProposalEvent = {
-        xprofile: dao.xprofile,
-        daocode: dao.code,
-        daoname: dao.name,
-        proposal: {
-          id: proposal.proposalId,
-          chainId,
-          url: `${dao.links.website}/proposal/${proposal.proposalId}`,
-          voteStart: parseInt(proposal.voteStart),
-          voteEnd: parseInt(proposal.voteEnd),
-          description: proposal.description,
-        },
-      };
-      results.push(npe);
-    }
-
-    return results;
+    return daos.find((dao) => dao.code === options.daocode);
   }
 }
