@@ -103,7 +103,7 @@ model degov_tweet {
   proposal_id String
   chain_id    Int
 
-  status          String // posted, canceled, fulfilled, executed, error
+  status          String // posted, canceled, queued, fulfilled, executed, error
   type            String // text, poll
   times_processed Int     @default(0) // number of times this tweet has been processed
   message         String?

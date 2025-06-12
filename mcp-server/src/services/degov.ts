@@ -43,7 +43,7 @@ export class DegovService {
     });
   }
 
-  async listCheckCanceledTweets(
+  async listPostedTweets(
     fastify: FastifyInstance
   ): Promise<degov_tweet[]> {
     const prisma = fastify.prisma;

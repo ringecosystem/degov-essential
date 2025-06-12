@@ -23,6 +23,7 @@ import path from "path";
 import { DegovRouter } from "./routes/degov";
 import { PostTweetNewProposalTask, PostTweetNewVoteTask, PostTweetProposalCanceledTask } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
+import { PostTweetProposalQueuedTask } from "./tasks/post-tweet-queued";
 
 @Service()
 export class DegovMcpHttpServer {
@@ -35,6 +36,7 @@ export class DegovMcpHttpServer {
     private readonly postTweetNewProposalTask: PostTweetNewProposalTask,
     private readonly postTweetNewVoteTask: PostTweetNewVoteTask,
     private readonly postTweetProposalCanceledTask: PostTweetProposalCanceledTask,
+    private readonly postTweetProposalQueuedTask: PostTweetProposalQueuedTask,
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -124,15 +126,16 @@ export class DegovMcpHttpServer {
   }
 
   private async routes(fastify: FastifyInstance) {
-    this.helloRouter.regist(fastify);
-    this.twitterRouter.regist(fastify);
-    this.degovRouter.regist(fastify);
+    await this.helloRouter.regist(fastify);
+    await this.twitterRouter.regist(fastify);
+    await this.degovRouter.regist(fastify);
   }
 
   private async task(fastify: FastifyInstance) {
     await this.postTweetNewProposalTask.start(fastify);
     await this.postTweetNewVoteTask.start(fastify);
     await this.postTweetProposalCanceledTask.start(fastify);
+    await this.postTweetProposalQueuedTask.start(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

@@ -26,6 +26,6 @@ export class EnvReader {
     if (!value) {
       return false;
     }
-    return value.toLowerCase() === "true" || value === "1";
+    return value.trim().toLowerCase() === "true" || value === "1";
   }
 }

@@ -3,46 +3,43 @@ import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
 import { DegovService } from "../services/degov";
-import { DegovIndexerProposal } from "../internal/graphql";
 import { DaoService } from "../services/dao";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
+import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { DegovTweetStatus } from "../types";
-import { DegovHelpers } from "../helpers";
 
 @Service()
-export class PostTweetProposalCanceledTask {
+export class PostTweetProposalQueuedTask {
   constructor(
     private readonly degovService: DegovService,
-    private readonly twitterAgent: TwitterAgentW,
     private readonly daoService: DaoService,
+    private readonly twitterAgent: TwitterAgentW,
     private readonly degovIndexerProposal: DegovIndexerProposal
   ) {}
 
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask(
-      "task-post-tweet-proposal-canceled",
-      async () => {
-        try {
-          const enableFeature = EnvReader.envBool(
-            "FEATURE_POST_TWEET_PROPOSAL_CANCELED",
-            {
-              defaultValue: "true",
-            }
-          );
-          if (!enableFeature) {
-            fastify.log.warn(
-              "FEATURE_POST_TWEET_PROPOSAL_CANCELED is disabled, skipping task."
-            );
-            return;
+    const task = new AsyncTask("task-post-tweet-proposal-queued", async () => {
+      try {
+        const enableFeature = EnvReader.envBool(
+          "FEATURE_POST_TWEET_PROPOSAL_QUEUED",
+          {
+            defaultValue: "true",
           }
-
-          await this.run(fastify);
-        } catch (err) {
-          fastify.log.error(err);
+        );
+        if (!enableFeature) {
+          fastify.log.warn(
+            "FEATURE_POST_TWEET_PROPOSAL_QUEUED is disabled, skipping task."
+          );
+          return;
         }
+
+        await this.run(fastify);
+      } catch (err) {
+        fastify.log.error(err);
       }
-    );
+    });
     const job = new SimpleIntervalJob(
       {
         minutes: 3,
@@ -57,6 +54,7 @@ export class PostTweetProposalCanceledTask {
 
   private async run(fastify: FastifyInstance) {
     const postedTweets = await this.degovService.listPostedTweets(fastify);
+
     for (const postedTweet of postedTweets) {
       const dao = await this.daoService.dao(fastify, {
         daocode: postedTweet.daocode,
@@ -68,14 +66,14 @@ export class PostTweetProposalCanceledTask {
         return;
       }
       const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
-      const canceledProposal =
-        await this.degovIndexerProposal.queryProposalCanceled({
+      const queuedProposal =
+        await this.degovIndexerProposal.queryProposalQueued({
           endpoint: dao.links.indexer,
           proposalId: postedTweet.proposal_id,
         });
-      if (!canceledProposal) {
+      if (!queuedProposal) {
         fastify.log.info(
-          `No canceled proposal found for tweet ${postedTweet.id}.`
+          `No queued proposal found for tweet ${postedTweet.id}.`
         );
         continue;
       }
@@ -83,16 +81,19 @@ export class PostTweetProposalCanceledTask {
       const promptInput = {
         transactionLink: DegovHelpers.explorerLink(
           dao.config?.chain?.explorers
-        ).transaction(canceledProposal.transactionHash),
+        ).transaction(queuedProposal.transactionHash),
         proposalLink: `${dao.links.website}/proposal/${postedTweet.proposal_id}`,
       };
 
+      const etaSeconds = +queuedProposal.etaSeconds;
+      const etaDate = new Date(Date.now() + etaSeconds * 1000).toISOString();
       const tweet = [
-        "❌ this proposal has been canceled",
+        "⏳ this proposal queued for execution",
+        `📅 ETA: ${etaDate}`,
         ...(promptInput.transactionLink
           ? [`🔗 Transaction: ${promptInput.transactionLink}`]
           : []),
-        `👉 More details: ${promptInput.proposalLink}`,
+        `👉 Stay tuned for updates! ${promptInput.proposalLink}`,
       ].join("\n");
 
       const tweetInput: SendTweetInput = {
@@ -108,11 +109,12 @@ export class PostTweetProposalCanceledTask {
 
       const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
       fastify.log.info(
-        `Tweet sent for canceled proposal https://x.com/${stu.username}/status/${sendResp.data.id}`
+        `Posted queued proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal URL: ${promptInput.proposalLink}`
       );
+
       await this.degovService.updateTweetStatus(fastify, {
         proposalId: postedTweet.proposal_id,
-        status: DegovTweetStatus.Canceled,
+        status: DegovTweetStatus.Queued,
       });
     }
   }

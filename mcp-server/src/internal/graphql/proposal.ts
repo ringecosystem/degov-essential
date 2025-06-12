@@ -3,10 +3,11 @@ import { gql, request } from "graphql-request";
 import {
   DIProposal,
   DIProposalCanceled,
+  DIProposalQueued,
   DIVoteCast,
   DIVoteCastResult,
   QueryNextProposalOptions,
-  QueryProposalCanceleds,
+  QueryProposalById,
   QueryProposalVotes,
 } from "./types";
 
@@ -91,7 +92,7 @@ export class DegovIndexerProposal {
   }
 
   async queryProposalCanceled(
-    options: QueryProposalCanceleds
+    options: QueryProposalById
   ): Promise<DIProposalCanceled | undefined> {
     const document = gql`
       query QueryProposalCanceleds($proposal_id: String!) {
@@ -116,5 +117,35 @@ export class DegovIndexerProposal {
       return undefined; // No canceled proposal found
     }
     return proposalCanceleds[0]; // Return the first canceled proposal
+  }
+
+  async queryProposalQueued(
+    options: QueryProposalById
+  ): Promise<DIProposalQueued | undefined> {
+    const document = gql`
+      query QueryProposalQueued($proposal_id: String!) {
+        proposalQueueds(where: { proposalId_eq: $proposal_id }) {
+          id
+          proposalId
+          transactionHash
+          etaSeconds
+          blockNumber
+          blockTimestamp
+        }
+      }
+    `;
+    const response = await request<{ proposalQueueds: DIProposalQueued[] }>(
+      options.endpoint,
+      document,
+      {
+        proposal_id: options.proposalId,
+      }
+    );
+    const proposalQueueds = response.proposalQueueds;
+    if (proposalQueueds.length === 0) {
+      return undefined; // No queued proposal found
+    }
+
+    return proposalQueueds[0]; // Return the first queued proposal
   }
 }
