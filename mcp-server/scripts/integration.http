@@ -2,7 +2,3 @@
 
 GET http://localhost:13000/twitter/authorize
 
-
-## next proposals
-GET http://localhost:13000/degov/next-proposals
-
