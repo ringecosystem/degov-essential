@@ -36,6 +36,7 @@ export interface SearchTweetsInput
     Tweetv2SearchParams {}
 
 export interface SendTweetInput extends PickClientOptions, SendTweetV2Params {
+  daocode: string;
   proposalId: string;
   chainId: number;
 }

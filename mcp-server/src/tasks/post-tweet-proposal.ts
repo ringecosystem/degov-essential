@@ -75,6 +75,7 @@ export class PostTweetNewProposalTask {
       }
       const input: SendTweetInput = {
         xprofile: event.xprofile,
+        daocode: event.daocode,
         proposalId: proposal.id,
         chainId: proposal.chainId,
         text: tweet,

@@ -1,17 +1,14 @@
 import { Service } from "typedi";
-import {
-  DegovConfig,
-  DegovMcpDao,
-  DIProposal,
-  NewProposalEvent,
-} from "../types";
+import { DegovConfig, DegovMcpDao, NewProposalEvent } from "../types";
 import { ConfigReader } from "../integration/config-reader";
 import { FastifyInstance } from "fastify";
-import { gql, request } from "graphql-request";
 import yaml from "yaml";
+import { DegovIndexerProposal } from "../internal/graphql";
 
 @Service()
 export class DaoService {
+  constructor(private readonly degovIndexerProposal: DegovIndexerProposal) {}
+
   private async fetchDegovConfig(
     fastify: FastifyInstance,
     configLink: string
@@ -79,34 +76,6 @@ export class DaoService {
       if (!dao.xprofile) {
         continue;
       }
-      const document = gql`
-        query QueryProposals($last_block_number: BigInt) {
-          proposals(
-            orderBy: blockNumber_ASC
-            limit: 1
-            where: { blockNumber_gt: $last_block_number }
-          ) {
-            proposalId
-            proposer
-            blockNumber
-            blockTimestamp
-            voteStart
-            voteEnd
-            description
-          }
-        }
-      `;
-      const response = await request<{ proposals: DIProposal[] }>(
-        dao.links.indexer,
-        document,
-        {
-          last_block_number: 0,
-        }
-      );
-      const proposals = response.proposals;
-      if (proposals.length === 0) {
-        continue; // No new proposals found
-      }
       const chainId = dao.config?.chain?.id;
       if (!chainId) {
         fastify.log.warn(
@@ -114,9 +83,19 @@ export class DaoService {
         );
         continue;
       }
-      const proposal = proposals[0];
+      const proposal = await this.degovIndexerProposal.queryNextProposal({
+        endpoint: dao.links.indexer,
+        lastBlockNumber: dao.lastProcessedBlock ?? 0,
+      });
+      if (!proposal) {
+        fastify.log.info(
+          `No new proposals found for DAO ${dao.name} with code ${dao.code}.`
+        );
+        continue; // No new proposals found
+      }
       const npe: NewProposalEvent = {
         xprofile: dao.xprofile,
+        daocode: dao.code,
         daoname: dao.name,
         proposal: {
           id: proposal.proposalId,

@@ -376,6 +376,7 @@ export class TwitterTools {
         description: "Send a tweet.",
         inputSchema: {
           xprofile: z.string().describe("The profile to use.").optional(),
+          daocode: z.string().describe("The DAO code"),
           proposal_id: z.string().describe("The proposal ID"),
           chain_id: z.number().describe("The chain ID"),
 

@@ -75,11 +75,13 @@ CREATE TABLE "twitter_poll_option" (
 -- CreateTable
 CREATE TABLE "degov_tweet" (
     "id" TEXT NOT NULL,
+    "daocode" TEXT NOT NULL,
     "proposal_id" TEXT NOT NULL,
     "chain_id" INTEGER NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'pending',
-    "message" TEXT,
+    "status" TEXT NOT NULL,
     "type" TEXT NOT NULL,
+    "times_processed" INTEGER NOT NULL DEFAULT 0,
+    "message" TEXT,
     "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "utime" TIMESTAMP(3) NOT NULL,
 

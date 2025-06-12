@@ -378,9 +378,11 @@ export class TwitterService {
       }
       const degovTweetForm: degov_tweet = {
         id: result.data.id,
+        daocode: tweet.daocode,
         proposal_id: tweet.proposalId,
         chain_id: tweet.chainId,
         status: DegovTweetStatus.Posted,
+        times_processed: 0,
         message: null,
         type,
         ctime: new Date(),

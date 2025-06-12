@@ -98,12 +98,14 @@ model twitter_poll_option {
 model degov_tweet {
   id String @id
 
+  daocode     String
   proposal_id String
   chain_id    Int
 
-  status  String // posted, fulfilled, error
-  message String?
-  type    String // text, poll
+  status          String // posted, fulfilled, error
+  type            String // text, poll
+  times_processed Int     @default(0) // number of times this tweet has been processed
+  message         String?
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt

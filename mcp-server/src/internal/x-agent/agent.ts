@@ -90,7 +90,7 @@ export class TwitterAgent {
 
   async sendTweet(options: SendTweetInput): Promise<TweetV2PostTweetResult> {
     const client = this.agentClient(options);
-    const cleanedOptions = cleanObject(options);
+    const cleanedOptions = cleanObject({ ...options });
     return await client.v2.tweet(cleanedOptions);
   }
 }
@@ -108,6 +108,10 @@ function cleanObject(obj: any): any {
           : true) // clean empty objects
     )
   );
-  delete result.xprofile; // remove xprofile if exists
+  delete result.xprofile;
+  delete result.daoname;
+  delete result.daocode;
+  delete result.chainId;
+  delete result.proposalId;
   return result;
 }

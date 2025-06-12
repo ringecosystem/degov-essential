@@ -1,5 +1,6 @@
 export interface NewProposalEvent {
   xprofile: string;
+  daocode: string;
   daoname: string;
   proposal: SimpleProposal;
 }
