@@ -3,7 +3,7 @@ import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
 import { DegovService } from "../services/degov";
-import { degov_tweet, degov_vote_progress } from "../generated/prisma";
+import { degov_tweet } from "../generated/prisma";
 import { DegovIndexerProposal } from "../internal/graphql";
 import { DaoService } from "../services/dao";
 import { OpenrouterAgent } from "../internal/openrouter";

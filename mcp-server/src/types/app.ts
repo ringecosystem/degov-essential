@@ -55,7 +55,9 @@ export interface DegovMcpDao extends DegovDaoConfig {
 
 export enum DegovTweetStatus {
   Posted = "posted",
+  Canceled = "canceled",
   Fulfilled = "fulfilled",
+  Executed = "executed",
   Error = "error",
 }
 

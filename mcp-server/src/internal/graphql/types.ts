@@ -11,6 +11,10 @@ export interface QueryProposalVotes extends BaseGraphqlQuery {
   offset: number;
 }
 
+export interface QueryProposalCanceleds extends BaseGraphqlQuery {
+  proposalId: string;
+}
+
 export interface DIProposal {
   proposalId: string;
   proposer: string;
@@ -36,4 +40,12 @@ export interface DIVoteCast {
 export interface DIVoteCastResult {
   nextOffset: number;
   voteCasts: DIVoteCast[];
+}
+
+export interface DIProposalCanceled {
+  id: string;
+  proposalId: string;
+  transactionHash: string;
+  blockNumber: string;
+  blockTimestamp: string;
 }

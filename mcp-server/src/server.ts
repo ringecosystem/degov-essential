@@ -21,7 +21,7 @@ import { PrismaClient } from "./generated/prisma";
 
 import path from "path";
 import { DegovRouter } from "./routes/degov";
-import { PostTweetNewProposalTask, PostTweetNewVoteTask } from "./tasks";
+import { PostTweetNewProposalTask, PostTweetNewVoteTask, PostTweetProposalCanceledTask } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
 
 @Service()
@@ -33,7 +33,8 @@ export class DegovMcpHttpServer {
     private readonly twitterRouter: TwitterRouter,
     private readonly degovRouter: DegovRouter,
     private readonly postTweetNewProposalTask: PostTweetNewProposalTask,
-    private readonly postTweetNewVoteTask: PostTweetNewVoteTask
+    private readonly postTweetNewVoteTask: PostTweetNewVoteTask,
+    private readonly postTweetProposalCanceledTask: PostTweetProposalCanceledTask,
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -131,6 +132,7 @@ export class DegovMcpHttpServer {
   private async task(fastify: FastifyInstance) {
     await this.postTweetNewProposalTask.start(fastify);
     await this.postTweetNewVoteTask.start(fastify);
+    await this.postTweetProposalCanceledTask.start(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

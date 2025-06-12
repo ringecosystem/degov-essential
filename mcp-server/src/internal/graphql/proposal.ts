@@ -2,9 +2,11 @@ import { Service } from "typedi";
 import { gql, request } from "graphql-request";
 import {
   DIProposal,
+  DIProposalCanceled,
   DIVoteCast,
   DIVoteCastResult,
   QueryNextProposalOptions,
+  QueryProposalCanceleds,
   QueryProposalVotes,
 } from "./types";
 
@@ -86,5 +88,33 @@ export class DegovIndexerProposal {
       nextOffset: options.offset + voteCasts.length,
       voteCasts,
     };
+  }
+
+  async queryProposalCanceled(
+    options: QueryProposalCanceleds
+  ): Promise<DIProposalCanceled | undefined> {
+    const document = gql`
+      query QueryProposalCanceleds($proposal_id: String!) {
+        proposalCanceleds(where: { proposalId_eq: $proposal_id }) {
+          id
+          proposalId
+          transactionHash
+          blockNumber
+          blockTimestamp
+        }
+      }
+    `;
+    const response = await request<{ proposalCanceleds: DIProposalCanceled[] }>(
+      options.endpoint,
+      document,
+      {
+        proposal_id: options.proposalId,
+      }
+    );
+    const proposalCanceleds = response.proposalCanceleds;
+    if (proposalCanceleds.length === 0) {
+      return undefined; // No canceled proposal found
+    }
+    return proposalCanceleds[0]; // Return the first canceled proposal
   }
 }

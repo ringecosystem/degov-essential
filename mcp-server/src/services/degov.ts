@@ -43,6 +43,22 @@ export class DegovService {
     });
   }
 
+  async listCheckCanceledTweets(
+    fastify: FastifyInstance
+  ): Promise<degov_tweet[]> {
+    const prisma = fastify.prisma;
+    const results = await prisma.degov_tweet.findMany({
+      where: {
+        status: DegovTweetStatus.Posted,
+      },
+      orderBy: {
+        ctime: "asc",
+        times_processed: "asc",
+      },
+    });
+    return results;
+  }
+
   async nextCheckVoteTweets(
     fastify: FastifyInstance,
     options?: { limit?: number }
