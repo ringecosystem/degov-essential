@@ -45,6 +45,24 @@ export class DegovHelpers {
     }
     return new ExplorerLink(input?.[0]);
   }
+
+  static pollOptionCode(options: {
+    id: string;
+    label: string;
+    position: number;
+  }): string {
+    if (
+      !options ||
+      !options.id ||
+      !options.label ||
+      options.position === undefined
+    ) {
+      throw new Error(
+        "Invalid options provided for poll option code generation."
+      );
+    }
+    return `${options.id}-${options.label}-${options.position}`.toLowerCase();
+  }
 }
 
 export class ExplorerLink {

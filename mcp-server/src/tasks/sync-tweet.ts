@@ -1,0 +1,183 @@
+import { FastifyInstance } from "fastify";
+import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
+import { Service } from "typedi";
+import { EnvReader } from "../integration/env-reader";
+import { DegovService } from "../services/degov";
+import { DegovMcpDao, DegovTweetStatus } from "../types";
+import { TwitterAgentW } from "../internal/x-agent/agentw";
+import { degov_tweet } from "../generated/prisma";
+import { DaoService } from "../services/dao";
+
+@Service()
+export class SyncTweetTask {
+  constructor(
+    private readonly degovService: DegovService,
+    private readonly twitterAgent: TwitterAgentW,
+    private readonly daoService: DaoService
+  ) {}
+
+  async start(fastify: FastifyInstance) {
+    const task = new AsyncTask("task-sync-tweet", async () => {
+      try {
+        const enableFeature = EnvReader.envBool("FEATURE_SYNC_TWEET", {
+          defaultValue: "true",
+        });
+        if (!enableFeature) {
+          fastify.log.warn("FEATURE_SYNC_TWEET is disabled, skipping task.");
+          return;
+        }
+
+        await this.run(fastify);
+      } catch (err) {
+        fastify.log.error(err);
+      }
+    });
+    const job = new SimpleIntervalJob(
+      {
+        minutes: 2,
+        runImmediately: true,
+      },
+      task
+    );
+    fastify.ready().then(() => {
+      fastify.scheduler.addSimpleIntervalJob(job);
+    });
+  }
+
+  private async run(fastify: FastifyInstance) {
+    const postedTweets = await this.degovService.listTweetsByStatus(fastify, {
+      status: DegovTweetStatus.Posted,
+    });
+    for (const postedTweet of postedTweets) {
+      try {
+        const dao = await this.daoService.dao(fastify, {
+          daocode: postedTweet.daocode,
+        });
+        if (!dao || !dao.xprofile) {
+          fastify.log.warn(
+            `No DAO profile found for tweet ${postedTweet.id}, skipping conversation sync.`
+          );
+          return;
+        }
+
+        await this.syncTweet(fastify, { tweet: postedTweet, dao });
+        await this.syncConversation(fastify, { tweet: postedTweet, dao });
+      } catch (err) {
+        fastify.log.error(
+          `Failed to sync conversation for tweet ${postedTweet.id}: ${err}`
+        );
+      }
+    }
+  }
+
+  private async syncTweet(
+    fastify: FastifyInstance,
+    options: {
+      tweet: degov_tweet;
+      dao: DegovMcpDao;
+    }
+  ) {
+    const { tweet } = options;
+    const sntt = tweet.sync_next_time_tweet;
+    const syncStop = tweet.sync_stop_tweet ?? 1;
+    if (syncStop) {
+      fastify.log.info(
+        `Skipping tweet ${tweet.id} sync, sync_stop_tweet is set to ${syncStop}`
+      );
+      return;
+    }
+    const now = new Date();
+    if (sntt && sntt > now) {
+      fastify.log.info(
+        `Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
+      );
+      return;
+    }
+    const newTweet = await this.twitterAgent.getTweetById(fastify, {
+      id: tweet.id,
+      force: true, // Force query to ensure we get the latest data
+      xprofile: tweet.daocode,
+    });
+    const polls = newTweet.includes?.polls;
+    if (!polls || polls.length === 0) {
+      await this.degovService.updateDegovTweetSyncTweet(fastify, {
+        id: tweet.id,
+        syncStopTweet: 1, // Stop syncing this tweet
+      });
+      fastify.log.info(
+        `No polls found for tweet ${tweet.id}, stop sync this tweet.`
+      );
+      return;
+    }
+    const firstPoll = polls[0];
+    if (firstPoll.end_datetime) {
+      const end_datetime = new Date(firstPoll.end_datetime);
+      await this.degovService.updateDegovTweetSyncTweet(fastify, {
+        id: tweet.id,
+        syncNextTimeTweet: new Date(end_datetime.getTime() - 1000 * 60 * 8), // 8 minutes before poll end
+      });
+      fastify.log.info(
+        `Updated sync next time for tweet ${tweet.id} to 8 minutes before poll end: ${end_datetime}`
+      );
+    } else {
+      await this.degovService.updateDegovTweetSyncTweet(fastify, {
+        id: tweet.id,
+        syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 60 * 2), // Sync again in 2 hours
+      });
+      fastify.log.info(
+        `Poll for tweet ${tweet.id} has no end datetime, wait 2 hours to sync this tweet.`
+      );
+    }
+  }
+
+  private async syncConversation(
+    fastify: FastifyInstance,
+    options: { tweet: degov_tweet; dao: DegovMcpDao }
+  ) {
+    const { tweet, dao } = options;
+
+    const sntt = tweet.sync_next_time_reply;
+    const syncStop = tweet.sync_stop_reply ?? 1;
+    if (syncStop) {
+      fastify.log.info(
+        `Skipping tweet ${tweet.id} sync, sync_stop_reply is set to ${syncStop}`
+      );
+      return;
+    }
+    const now = new Date();
+    if (sntt && sntt > now) {
+      fastify.log.info(
+        `Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
+      );
+      return;
+    }
+
+    const result = await this.twitterAgent.searchTweets(fastify, {
+      xprofile: dao.xprofile,
+      query: `conversation_id:${tweet.id}`,
+      previous_token: tweet.reply_next_token ?? undefined,
+    });
+    const nextToken = result.meta.next_token;
+    if (nextToken) {
+      await this.degovService.updateReplyNextToken(fastify, {
+        id: tweet.id,
+        replyNextToken: nextToken,
+      });
+      await this.degovService.updateDegovTweetSyncTweet(fastify, {
+        id: tweet.id,
+        syncNextTimeTweet: new Date(Date.now() + 1000 * 5), // Sync again in 5 minutes
+      });
+      fastify.log.info(
+        `Updated reply next token for tweet ${tweet.id}, next token: ${nextToken}`
+      );
+    } else {
+      await this.degovService.updateDegovTweetSyncTweet(fastify, {
+        id: tweet.id,
+        syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 60), // Sync again in 1 hour
+      });
+      fastify.log.info(
+        `No next token for tweet ${tweet.id}, wait 1 hour reply sync.`
+      );
+    }
+  }
+}

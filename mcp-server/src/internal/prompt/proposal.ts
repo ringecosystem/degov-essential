@@ -1,9 +1,7 @@
 import { FastifyInstance } from "fastify";
-import { PromptOutput } from "../../tasks/types";
-import { NewProposalEvent } from "../../types";
+import { NewProposalEvent, PromptOutput } from "../../types";
 import { SimpleTweetUser } from "../x-agent";
 import { getBuiltInPrompt } from "./common";
-import { DIVoteCast } from "../graphql";
 
 export class PromptProposal {
   static async newProposalTweet(

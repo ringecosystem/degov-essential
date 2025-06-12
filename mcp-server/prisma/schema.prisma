@@ -66,11 +66,13 @@ model twitter_tweet {
   conversation twitter_tweet?  @relation("TweetConversation", fields: [conversation_id], references: [id])
   replies      twitter_tweet[] @relation("TweetConversation")
   degov_tweet  degov_tweet[]
+  twitter_poll twitter_poll[]
 }
 
 model twitter_poll {
   id String @id
 
+  tweet_id         String
   duration_minutes Int?
   end_datetime     DateTime?
   voting_status    String?
@@ -78,12 +80,14 @@ model twitter_poll {
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 
+  tweet               twitter_tweet         @relation(fields: [tweet_id], references: [id])
   twitter_poll_option twitter_poll_option[]
 }
 
 model twitter_poll_option {
   id String @id
 
+  code     String @unique
   label    String
   position Int
   votes    Int
@@ -103,10 +107,16 @@ model degov_tweet {
   proposal_id String
   chain_id    Int
 
-  status          String // posted, canceled, queued, fulfilled, executed, error
-  type            String // text, poll
-  times_processed Int     @default(0) // number of times this tweet has been processed
-  message         String?
+  status               String // posted, canceled, queued, executed, error
+  fulfilled            Int       @default(0) // indicates if the tweet has been fulfilled (1) or not (0)
+  type                 String // text, poll
+  reply_next_token     String? // token for the next reply in a thread
+  sync_stop_tweet      Int? // indicates if the tweet should be synced (1) or not (0)
+  sync_stop_reply      Int? // indicates if the replies should be synced (1) or not (0)
+  sync_next_time_tweet DateTime? // next time to sync the tweet
+  sync_next_time_reply DateTime? // next time to sync replies
+  times_processed      Int       @default(0) // number of times this tweet has been processed
+  message              String?
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt

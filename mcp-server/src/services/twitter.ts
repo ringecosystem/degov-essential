@@ -9,6 +9,8 @@ import { FastifyInstance } from "fastify";
 import {
   degov_tweet,
   twitter_authorization,
+  twitter_poll,
+  twitter_poll_option,
   twitter_tweet,
   twitter_user,
 } from "../generated/prisma";
@@ -395,6 +397,12 @@ export class TwitterService {
         proposal_id: tweet.proposalId,
         chain_id: tweet.chainId,
         status: DegovTweetStatus.Posted,
+        fulfilled: 0,
+        reply_next_token: null,
+        sync_next_time_reply: null,
+        sync_next_time_tweet: null,
+        sync_stop_tweet: 0,
+        sync_stop_reply: 0,
         times_processed: 0,
         message: null,
         type,
@@ -408,13 +416,97 @@ export class TwitterService {
 
   async getTweetById(
     fastify: FastifyInstance,
-    options: { id: string }
+    options: { id: string; includeReplies?: boolean }
   ): Promise<twitter_tweet | null> {
     const prisma = fastify.prisma;
     return await prisma.twitter_tweet.findFirst({
       where: {
         id: options.id,
       },
+      include: {
+        replies: options.includeReplies ? true : false,
+      },
     });
+  }
+
+  async modifyPoll(
+    fastify: FastifyInstance,
+    options: {
+      poll: twitter_poll;
+      options: twitter_poll_option[];
+    }
+  ) {
+    const prisma = fastify.prisma;
+    await prisma.$transaction(async (tx) => {
+      const existingPoll = await tx.twitter_poll.findUnique({
+        where: {
+          id: options.poll.id,
+        },
+      });
+
+      if (existingPoll) {
+        await tx.twitter_poll.update({
+          where: {
+            id: options.poll.id,
+          },
+          data: {
+            ...options.poll,
+            utime: new Date(),
+          },
+        });
+      } else {
+        await tx.twitter_poll.create({
+          data: {
+            ...options.poll,
+            ctime: new Date(),
+            utime: new Date(),
+          },
+        });
+      }
+
+      for (const option of options.options) {
+        const existingOption = await tx.twitter_poll_option.findUnique({
+          where: {
+            id: option.id,
+          },
+        });
+
+        if (existingOption) {
+          await tx.twitter_poll_option.update({
+            where: {
+              id: option.id,
+            },
+            data: {
+              ...option,
+              utime: new Date(),
+            },
+          });
+        } else {
+          await tx.twitter_poll_option.create({
+            data: {
+              ...option,
+              ctime: new Date(),
+              utime: new Date(),
+            },
+          });
+        }
+      }
+    });
+  }
+
+  async queryPoll(
+    fastify: FastifyInstance,
+    options: { tweetId: string }
+  ): Promise<twitter_poll | undefined> {
+    const prisma = fastify.prisma;
+    const storedTweetPoll = await prisma.twitter_poll.findFirst({
+      where: {
+        tweet_id: options.tweetId,
+      },
+      include: {
+        twitter_poll_option: true,
+      },
+    });
+    return storedTweetPoll ?? undefined;
   }
 }

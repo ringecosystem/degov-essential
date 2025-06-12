@@ -29,6 +29,8 @@ import {
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
 import { PostTweetProposalQueuedTask } from "./tasks/post-tweet-queued";
+import { FullfillTweetPollTask } from "./tasks/fulfill-tweet-poll";
+import { SyncTweetTask } from "./tasks/sync-tweet";
 
 @Service()
 export class DegovMcpHttpServer {
@@ -42,7 +44,9 @@ export class DegovMcpHttpServer {
     private readonly postTweetProposalVoteTask: PostTweetProposalVoteTask,
     private readonly postTweetProposalCanceledTask: PostTweetProposalCanceledTask,
     private readonly postTweetProposalQueuedTask: PostTweetProposalQueuedTask,
-    private readonly postTweetProposalExecutedTask: PostTweetProposalExecutedTask
+    private readonly postTweetProposalExecutedTask: PostTweetProposalExecutedTask,
+    private readonly fullfillTweetPollTask: FullfillTweetPollTask,
+    private readonly syncTweetTask: SyncTweetTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -143,6 +147,8 @@ export class DegovMcpHttpServer {
     await this.postTweetProposalCanceledTask.start(fastify);
     await this.postTweetProposalQueuedTask.start(fastify);
     await this.postTweetProposalExecutedTask.start(fastify);
+    await this.fullfillTweetPollTask.start(fastify);
+    await this.syncTweetTask.start(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

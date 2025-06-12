@@ -8,6 +8,7 @@ import {
   SendTweetInput,
   SimpleTweetUser,
   SentTweetHookInput,
+  ForceQueryDegovTwitter,
 } from "./types";
 import {
   TweetV2PostTweetResult,
@@ -18,7 +19,13 @@ import {
 } from "twitter-api-v2";
 import { TwitterService } from "../../services/twitter";
 import { FastifyInstance } from "fastify";
-import { twitter_tweet, twitter_user } from "../../generated/prisma";
+import {
+  twitter_poll,
+  twitter_poll_option,
+  twitter_tweet,
+  twitter_user,
+} from "../../generated/prisma";
+import { DegovHelpers } from "../../helpers";
 
 @Service()
 export class TwitterAgentW {
@@ -54,15 +61,18 @@ export class TwitterAgentW {
 
   async getUserById(
     fastify: FastifyInstance,
-    options: GetByIdInput
+    options: GetByIdInput & ForceQueryDegovTwitter
   ): Promise<UserV2Result> {
-    const cached = await this.twitterService.getUserById(fastify, options);
-    if (cached) {
-      return {
-        data: JSON.parse(cached.raw),
-        includes: undefined,
-        errors: undefined,
-      };
+    const forceQuery = options.force ?? false;
+    if (!forceQuery) {
+      const cached = await this.twitterService.getUserById(fastify, options);
+      if (cached) {
+        return {
+          data: JSON.parse(cached.raw),
+          includes: undefined,
+          errors: undefined,
+        };
+      }
     }
     const result = await this.twitterAgent.getUserById(options);
     const form: twitter_user = this.toTwitterUser(result.data);
@@ -72,18 +82,21 @@ export class TwitterAgentW {
 
   async getUserByUsername(
     fastify: FastifyInstance,
-    options: GetUserByUserameInput
+    options: GetUserByUserameInput & ForceQueryDegovTwitter
   ): Promise<UserV2Result> {
-    const cached = await this.twitterService.getUserByUsername(
-      fastify,
-      options
-    );
-    if (cached) {
-      return {
-        data: JSON.parse(cached.raw),
-        includes: undefined,
-        errors: undefined,
-      };
+    const forceQuery = options.force ?? false;
+    if (!forceQuery) {
+      const cached = await this.twitterService.getUserByUsername(
+        fastify,
+        options
+      );
+      if (cached) {
+        return {
+          data: JSON.parse(cached.raw),
+          includes: undefined,
+          errors: undefined,
+        };
+      }
     }
     const result = await this.twitterAgent.getUserByUsername(options);
     const form: twitter_user = this.toTwitterUser(result.data);
@@ -120,15 +133,18 @@ export class TwitterAgentW {
 
   async getTweetById(
     fastify: FastifyInstance,
-    options: GetByIdInput
+    options: GetByIdInput & ForceQueryDegovTwitter
   ): Promise<TweetV2SingleResult> {
-    const cached = await this.twitterService.getTweetById(fastify, options);
-    if (cached && cached.raw) {
-      return {
-        data: JSON.parse(cached.raw),
-        includes: undefined,
-        errors: undefined,
-      };
+    const forceQuery = options.force ?? false;
+    if (!forceQuery) {
+      const cached = await this.twitterService.getTweetById(fastify, options);
+      if (cached && cached.raw) {
+        return {
+          data: JSON.parse(cached.raw),
+          includes: undefined,
+          errors: undefined,
+        };
+      }
     }
     const result = await this.twitterAgent.getTweetById(options);
     const form: twitter_tweet = {
@@ -148,6 +164,43 @@ export class TwitterAgentW {
       from_agent: 0,
     };
     await this.twitterService.modifyTweets(fastify, [form]);
+    const polls = result.includes?.polls;
+    if (polls && polls.length) {
+      for (const poll of polls) {
+        const pollForm: twitter_poll = {
+          id: poll.id,
+          tweet_id: result.data.id,
+          duration_minutes: poll.duration_minutes ?? null,
+          end_datetime: poll.end_datetime ? new Date(poll.end_datetime) : null,
+          voting_status: poll.voting_status ?? null,
+          ctime: new Date(),
+          utime: new Date(),
+        };
+        const pollOptionsForm = [];
+        for (const option of poll.options) {
+          const optionCode = DegovHelpers.pollOptionCode({
+            id: poll.id,
+            label: option.label,
+            position: option.position,
+          });
+          const optionForm: twitter_poll_option = {
+            id: "",
+            code: optionCode,
+            poll_id: poll.id,
+            label: option.label,
+            votes: option.votes,
+            position: option.position,
+            ctime: new Date(),
+            utime: new Date(),
+          };
+          pollOptionsForm.push(optionForm);
+        }
+        await this.twitterService.modifyPoll(fastify, {
+          poll: pollForm,
+          options: pollOptionsForm,
+        });
+      }
+    }
     return result;
   }
 

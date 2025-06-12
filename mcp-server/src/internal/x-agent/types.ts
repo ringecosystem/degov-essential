@@ -11,6 +11,10 @@ export interface AgentClient {
   client: TwitterApi;
 }
 
+export interface ForceQueryDegovTwitter {
+  force?: boolean
+}
+
 export interface RecommendedProfileOptions {
   allowV1?: boolean;
 }

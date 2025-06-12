@@ -57,7 +57,6 @@ export enum DegovTweetStatus {
   Posted = "posted",
   Canceled = "canceled",
   Queued = "queued",
-  Fulfilled = "fulfilled",
   Executed = "executed",
   Error = "error",
 }
@@ -107,3 +106,9 @@ export interface UpdateVoteProgressForm {
   proposal_id: string;
   offset: number;
 }
+
+export interface PromptOutput {
+  system?: string;
+  prompt: string;
+}
+
