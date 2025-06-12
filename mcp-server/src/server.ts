@@ -21,7 +21,12 @@ import { PrismaClient } from "./generated/prisma";
 
 import path from "path";
 import { DegovRouter } from "./routes/degov";
-import { PostTweetNewProposalTask, PostTweetNewVoteTask, PostTweetProposalCanceledTask } from "./tasks";
+import {
+  PostTweetProposalNewTask,
+  PostTweetProposalVoteTask,
+  PostTweetProposalCanceledTask,
+  PostTweetProposalExecutedTask,
+} from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
 import { PostTweetProposalQueuedTask } from "./tasks/post-tweet-queued";
 
@@ -33,10 +38,11 @@ export class DegovMcpHttpServer {
     private readonly helloRouter: HelloRouter,
     private readonly twitterRouter: TwitterRouter,
     private readonly degovRouter: DegovRouter,
-    private readonly postTweetNewProposalTask: PostTweetNewProposalTask,
-    private readonly postTweetNewVoteTask: PostTweetNewVoteTask,
+    private readonly postTweetProposalNewTask: PostTweetProposalNewTask,
+    private readonly postTweetProposalVoteTask: PostTweetProposalVoteTask,
     private readonly postTweetProposalCanceledTask: PostTweetProposalCanceledTask,
     private readonly postTweetProposalQueuedTask: PostTweetProposalQueuedTask,
+    private readonly postTweetProposalExecutedTask: PostTweetProposalExecutedTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -132,10 +138,11 @@ export class DegovMcpHttpServer {
   }
 
   private async task(fastify: FastifyInstance) {
-    await this.postTweetNewProposalTask.start(fastify);
-    await this.postTweetNewVoteTask.start(fastify);
+    await this.postTweetProposalNewTask.start(fastify);
+    await this.postTweetProposalVoteTask.start(fastify);
     await this.postTweetProposalCanceledTask.start(fastify);
     await this.postTweetProposalQueuedTask.start(fastify);
+    await this.postTweetProposalExecutedTask.start(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

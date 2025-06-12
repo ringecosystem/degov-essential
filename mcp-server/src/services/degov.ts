@@ -43,13 +43,14 @@ export class DegovService {
     });
   }
 
-  async listPostedTweets(
-    fastify: FastifyInstance
+  async listTweetsByStatus(
+    fastify: FastifyInstance,
+    options: { status: DegovTweetStatus }
   ): Promise<degov_tweet[]> {
     const prisma = fastify.prisma;
     const results = await prisma.degov_tweet.findMany({
       where: {
-        status: DegovTweetStatus.Posted,
+        status: options.status,
       },
       orderBy: {
         ctime: "asc",

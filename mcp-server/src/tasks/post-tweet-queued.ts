@@ -53,7 +53,9 @@ export class PostTweetProposalQueuedTask {
   }
 
   private async run(fastify: FastifyInstance) {
-    const postedTweets = await this.degovService.listPostedTweets(fastify);
+    const postedTweets = await this.degovService.listTweetsByStatus(fastify, {
+      status: DegovTweetStatus.Posted,
+    });
 
     for (const postedTweet of postedTweets) {
       const dao = await this.daoService.dao(fastify, {
@@ -88,7 +90,7 @@ export class PostTweetProposalQueuedTask {
       const etaSeconds = +queuedProposal.etaSeconds;
       const etaDate = new Date(Date.now() + etaSeconds * 1000).toISOString();
       const tweet = [
-        "⏳ this proposal queued for execution",
+        "⏳ This proposal queued for execution",
         `📅 ETA: ${etaDate}`,
         ...(promptInput.transactionLink
           ? [`🔗 Transaction: ${promptInput.transactionLink}`]

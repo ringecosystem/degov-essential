@@ -12,7 +12,7 @@ import { NewProposalEvent } from "../types";
 import { DegovIndexerProposal } from "../internal/graphql";
 
 @Service()
-export class PostTweetNewProposalTask {
+export class PostTweetProposalNewTask {
   constructor(
     private readonly daoService: DaoService,
     private readonly twitterAgent: TwitterAgentW,
@@ -21,17 +21,17 @@ export class PostTweetNewProposalTask {
   ) {}
 
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask("task-post-tweet-new-proposal", async () => {
+    const task = new AsyncTask("task-post-tweet-proposal-new", async () => {
       try {
         const enableFeature = EnvReader.envBool(
-          "FEATURE_POST_TWEET_NEW_PROPOSAL",
+          "FEATURE_POST_TWEET_PROPOSAL_NEW",
           {
             defaultValue: "true",
           }
         );
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_POST_TWEET_NEW_PROPOSAL is disabled, skipping task."
+            "FEATURE_POST_TWEET_PROPOSAL_NEW is disabled, skipping task."
           );
           return;
         }

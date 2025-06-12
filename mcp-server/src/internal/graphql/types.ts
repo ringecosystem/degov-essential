@@ -51,11 +51,18 @@ export interface DIProposalCanceled {
 }
 
 export interface DIProposalQueued {
-    id: string;
-    proposalId: string;
-    transactionHash: string;
-    etaSeconds: string;
-    blockNumber: string;
-    blockTimestamp: string;
+  id: string;
+  proposalId: string;
+  transactionHash: string;
+  etaSeconds: string;
+  blockNumber: string;
+  blockTimestamp: string;
+}
 
+export interface DIProposalExecuted {
+  id: string;
+  proposalId: string;
+  transactionHash: string;
+  blockNumber: string;
+  blockTimestamp: string;
 }

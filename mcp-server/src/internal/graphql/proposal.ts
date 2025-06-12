@@ -3,6 +3,7 @@ import { gql, request } from "graphql-request";
 import {
   DIProposal,
   DIProposalCanceled,
+  DIProposalExecuted,
   DIProposalQueued,
   DIVoteCast,
   DIVoteCastResult,
@@ -147,5 +148,33 @@ export class DegovIndexerProposal {
     }
 
     return proposalQueueds[0]; // Return the first queued proposal
+  }
+
+  async queryProposalExecuted(
+    options: QueryProposalById
+  ): Promise<DIProposalExecuted | undefined> {
+    const document = gql`
+      query QueryProposalExecuted($proposal_id: String!) {
+        proposalExecuteds(where: { proposalId_eq: $proposal_id }) {
+          id
+          proposalId
+          transactionHash
+          blockNumber
+          blockTimestamp
+        }
+      }
+    `;
+    const response = await request<{ proposalExecuteds: DIProposalExecuted[] }>(
+      options.endpoint,
+      document,
+      {
+        proposal_id: options.proposalId,
+      }
+    );
+    const proposalExecuteds = response.proposalExecuteds;
+    if (proposalExecuteds.length === 0) {
+      return undefined; // No executed proposal found
+    }
+    return proposalExecuteds[0]; // Return the first executed proposal
   }
 }
