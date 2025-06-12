@@ -39,7 +39,6 @@ Generate a poll tweet use above data
     options: NewVoteCastTweetOptioins
   ): Promise<PromptOutput> {
     const rawData = {
-      voterAddress: options.voterAddress,
       voterAddressLink: options.voterAddressLink,
       transactionLink: options.transactionLink,
       proposalLink: options.proposalLink,
@@ -63,7 +62,6 @@ Generate a tweet use above data
 
 export interface NewVoteCastTweetOptioins {
   stu: SimpleTweetUser;
-  voterAddress: string;
   voterAddressLink: string;
   proposalLink: string;
   transactionLink?: string;

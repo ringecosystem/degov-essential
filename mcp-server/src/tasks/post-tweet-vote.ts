@@ -128,29 +128,31 @@ export class PostTweetNewVoteTask {
       try {
         const promptInput = {
           stu,
-          voterAddress: vote.voter,
           voterAddressLink: `${dao.links.website}/delegate/${vote.voter}`,
           proposalLink: `${dao.links.website}/proposal/${degovTweet.proposal_id}`,
           transactionLink: DegovHelpers.explorerLink(
             dao.config?.chain?.explorers
           ).transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
-          reason: vote.reason || "",
+          reason: vote.reason ?? "",
         };
-        // const promptout = await PromptProposal.newVoteCastTweet(fastify, promptInput);
-        // const tweet = await this.openrouterAgent.generateText({
-        //   system: promptout.system,
-        //   prompt: promptout.prompt,
-        // });
-        const tweet = [
-          `🗳️ Vote cast by ${promptInput.voterAddressLink}`,
-          "",
-          `🎯 Choice: ${promptInput.choice}`,
-          ...(promptInput.reason ? [`💬 Reason: ${promptInput.reason}`] : []),
-          `🔗 Transaction: ${promptInput.transactionLink}`,
-          "",
-          `👉 ${promptInput.proposalLink}`,
-        ].join("\n");
+        const promptout = await PromptProposal.newVoteCastTweet(
+          fastify,
+          promptInput
+        );
+        const tweet = await this.openrouterAgent.generateText({
+          system: promptout.system,
+          prompt: promptout.prompt,
+        });
+        // const tweet = [
+        //   `🗳️ Vote cast by ${promptInput.voterAddressLink}`,
+        //   "",
+        //   `🎯 Choice: ${promptInput.choice}`,
+        //   ...(promptInput.reason ? [`💬 Reason: ${promptInput.reason}`] : []),
+        //   `🔗 Transaction: ${promptInput.transactionLink}`,
+        //   "",
+        //   `👉 ${promptInput.proposalLink}`,
+        // ].join("\n");
 
         const tweetInput: SendTweetInput = {
           xprofile: dao.xprofile,
