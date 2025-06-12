@@ -6,6 +6,7 @@ export interface NewProposalEvent {
 
 export interface SimpleProposal {
   id: string;
+  chainId: number;
   url: string;
   voteStart: number;
   voteEnd: number;

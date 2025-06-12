@@ -1,12 +1,13 @@
 import { Service } from "typedi";
 import {
+  DegovTweetStatus,
   QueryTwitterCallback,
   TwitterAuthorizeForm,
   TwitterOAuthType,
 } from "../types";
 import { FastifyInstance } from "fastify";
 import {
-  degov_tweet_progress,
+  degov_tweet,
   twitter_authorization,
   twitter_tweet,
   twitter_user,
@@ -364,6 +365,7 @@ export class TwitterService {
         reply_count: 0,
         ctime: new Date(),
         utime: new Date(),
+        conversation_id: null,
         raw: null,
       };
       let type = "text";
@@ -374,16 +376,18 @@ export class TwitterService {
       ) {
         type = "poll";
       }
-      const progressForm: degov_tweet_progress = {
+      const degovTweetForm: degov_tweet = {
         id: result.data.id,
-        status: "pending",
+        proposal_id: tweet.proposalId,
+        chain_id: tweet.chainId,
+        status: DegovTweetStatus.Posted,
         message: null,
         type,
         ctime: new Date(),
         utime: new Date(),
       };
       await tx.twitter_tweet.create({ data: tweetForm });
-      await tx.degov_tweet_progress.create({ data: progressForm });
+      await tx.degov_tweet.create({ data: degovTweetForm });
     });
   }
 

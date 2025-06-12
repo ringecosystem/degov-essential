@@ -97,6 +97,8 @@ When users provide new proposal data and request to send a poll tweet, you must 
   "daoname": "DeGov Development Test DAO",
   "voteStart": "2025-03-12T06:19:06.000Z",
   "voteEnd": "2025-03-12T06:34:06.000Z",
+  "proposalId": "0x99d533881255fa1d078c319f48696d500361a0fcd7522e4adb181ffaaf12f4ce",
+  "chainId": 46,
   "proposalUrl": "https://demo.degov.ai/proposal/0x99d533881255fa1d078c319f48696d500361a0fcd7522e4adb181ffaaf12f4ce",
   "description": "# Test: Integration of Enhanced Security Features for DeGov\n\n<p>We propose the integration of enhanced security features...</p>"
 }

@@ -7,7 +7,7 @@ import {
 } from "../types";
 import { ConfigReader } from "../integration/config-reader";
 import { FastifyInstance } from "fastify";
-import { GraphQLClient, gql, request } from "graphql-request";
+import { gql, request } from "graphql-request";
 import yaml from "yaml";
 
 @Service()
@@ -107,13 +107,21 @@ export class DaoService {
       if (proposals.length === 0) {
         continue; // No new proposals found
       }
+      const chainId = dao.config?.chain?.id;
+      if (!chainId) {
+        fastify.log.warn(
+          `Chain ID not found for DAO ${dao.name}. Skipping proposal processing.`
+        );
+        continue;
+      }
       const proposal = proposals[0];
       const npe: NewProposalEvent = {
         xprofile: dao.xprofile,
         daoname: dao.name,
         proposal: {
           id: proposal.proposalId,
-          url: `${dao.links.website}/proposals/${proposal.proposalId}`,
+          chainId,
+          url: `${dao.links.website}/proposal/${proposal.proposalId}`,
           voteStart: parseInt(proposal.voteStart),
           voteEnd: parseInt(proposal.voteEnd),
           description: proposal.description,

@@ -9,7 +9,7 @@ export class TwitterRouter {
 
   async regist(fastify: FastifyInstance) {
     fastify.get("/twitter/account", async (request, reply) => {
-      return reply.view("twitter-account.handlebars", {});
+      return reply.view("view/twitter-account.handlebars", {});
     });
 
     fastify.post(
@@ -39,12 +39,12 @@ export class TwitterRouter {
             fastify,
             request.query
           );
-          return reply.view("twitter-authorized.handlebars", {
+          return reply.view("view/twitter-authorized.handlebars", {
             auth: result.profile,
           });
         } catch (e: any) {
           const message = `An error occurred while processing your request: ${e.message}`;
-          return reply.view("error.handlebars", {
+          return reply.view("view/error.handlebars", {
             error: {
               message: message,
               detail: JSON.stringify(e.data),

@@ -36,12 +36,13 @@ CREATE TABLE "twitter_tweet" (
     "text" TEXT,
     "created_at" TIMESTAMP(3),
     "author_id" TEXT,
+    "conversation_id" TEXT,
     "retweet_count" INTEGER,
     "like_count" INTEGER,
     "reply_count" INTEGER,
+    "raw" TEXT,
     "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "utime" TIMESTAMP(3) NOT NULL,
-    "raw" TEXT,
 
     CONSTRAINT "twitter_tweet_pkey" PRIMARY KEY ("id")
 );
@@ -72,15 +73,17 @@ CREATE TABLE "twitter_poll_option" (
 );
 
 -- CreateTable
-CREATE TABLE "degov_tweet_progress" (
+CREATE TABLE "degov_tweet" (
     "id" TEXT NOT NULL,
+    "proposal_id" TEXT NOT NULL,
+    "chain_id" INTEGER NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "message" TEXT,
     "type" TEXT NOT NULL,
     "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "utime" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "degov_tweet_progress_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "degov_tweet_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -104,7 +107,10 @@ ALTER TABLE "twitter_authorization" ADD CONSTRAINT "twitter_authorization_user_i
 ALTER TABLE "twitter_tweet" ADD CONSTRAINT "twitter_tweet_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "twitter_user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "twitter_tweet" ADD CONSTRAINT "twitter_tweet_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "twitter_tweet"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "twitter_poll_option" ADD CONSTRAINT "twitter_poll_option_poll_id_fkey" FOREIGN KEY ("poll_id") REFERENCES "twitter_poll"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "degov_tweet_progress" ADD CONSTRAINT "degov_tweet_progress_id_fkey" FOREIGN KEY ("id") REFERENCES "twitter_tweet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "degov_tweet" ADD CONSTRAINT "degov_tweet_id_fkey" FOREIGN KEY ("id") REFERENCES "twitter_tweet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

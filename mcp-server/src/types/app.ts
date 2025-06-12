@@ -52,3 +52,10 @@ export interface DegovMcpDao extends DegovDaoConfig {
   config?: DegovConfig;
   lastProcessedBlock?: number; // The last processed block by the indexer
 }
+
+export enum DegovTweetStatus {
+  Pending = 'pending',
+  Posted = 'posted',
+  Fulfilled = 'fulfilled',
+  Error = 'error',
+}

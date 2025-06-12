@@ -26,7 +26,6 @@ export class TwitterAgent {
   }
 
   private pickClient(options: PickClientOptions): AgentClient | undefined {
-    console.log("=====>", options);
     const inputProfile = options.xprofile?.trim().toUpperCase();
     const profile = (!!inputProfile ? inputProfile : "default").toUpperCase();
 

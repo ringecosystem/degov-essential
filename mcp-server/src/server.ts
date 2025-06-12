@@ -21,6 +21,8 @@ import { PrismaClient } from "./generated/prisma";
 
 import path from "path";
 import { DegovRouter } from "./routes/degov";
+import { PostTweetNewProposalTask, PostTweetNewVoteTask } from "./tasks";
+import { fastifySchedule } from "@fastify/schedule";
 
 @Service()
 export class DegovMcpHttpServer {
@@ -29,7 +31,9 @@ export class DegovMcpHttpServer {
     private readonly mcpServer: DegovMcpServer,
     private readonly helloRouter: HelloRouter,
     private readonly twitterRouter: TwitterRouter,
-    private readonly degovRouter: DegovRouter
+    private readonly degovRouter: DegovRouter,
+    private readonly postTweetNewProposalTask: PostTweetNewProposalTask,
+    private readonly postTweetNewVoteTask: PostTweetNewVoteTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -46,7 +50,8 @@ export class DegovMcpHttpServer {
 
       await this.initializer.init(fastify);
       await this.routes(fastify);
-      await this.mcp(fastify);
+      await this.task(fastify);
+      // await this.mcp(fastify);
 
       await fastify.listen({ host: options.host, port: options.port });
       fastify.log.info(
@@ -67,6 +72,7 @@ export class DegovMcpHttpServer {
       storageAdapter: defaultStorageAdapter,
       ttl: 60 * 5, // 5 minutes
     });
+    await fastify.register(fastifySchedule);
 
     const snowflake = SnowflakeId({
       workerId: 1,
@@ -82,7 +88,7 @@ export class DegovMcpHttpServer {
       engine: {
         handlebars: require("handlebars"),
       },
-      root: path.join(__dirname, "views"),
+      root: path.join(__dirname, "template"),
       // layout: "./templates/template",
       defaultContext: {
         __profile: DegovHelpers.runtimeProfile(),
@@ -120,6 +126,11 @@ export class DegovMcpHttpServer {
     this.helloRouter.regist(fastify);
     this.twitterRouter.regist(fastify);
     this.degovRouter.regist(fastify);
+  }
+
+  private async task(fastify: FastifyInstance) {
+    await this.postTweetNewProposalTask.start(fastify);
+    await this.postTweetNewVoteTask.start(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

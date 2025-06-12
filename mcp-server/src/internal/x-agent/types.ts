@@ -35,7 +35,10 @@ export interface SearchTweetsInput
   extends PickClientOptions,
     Tweetv2SearchParams {}
 
-export interface SendTweetInput extends PickClientOptions, SendTweetV2Params {}
+export interface SendTweetInput extends PickClientOptions, SendTweetV2Params {
+  proposalId: string;
+  chainId: number;
+}
 
 export interface SimpleTweetUser {
   id: string;

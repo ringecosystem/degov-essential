@@ -47,20 +47,24 @@ model twitter_user {
 model twitter_tweet {
   id String @id
 
-  text       String?
-  created_at DateTime?
-  author_id  String?
+  text            String?
+  created_at      DateTime?
+  author_id       String?
+  conversation_id String?
 
   retweet_count Int?
   like_count    Int?
   reply_count   Int?
 
+  raw String?
+
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 
-  raw                  String?
-  author               twitter_user?          @relation(fields: [author_id], references: [id])
-  degov_tweet_progress degov_tweet_progress[]
+  author       twitter_user?   @relation(fields: [author_id], references: [id])
+  conversation twitter_tweet?  @relation("TweetConversation", fields: [conversation_id], references: [id])
+  replies      twitter_tweet[] @relation("TweetConversation")
+  degov_tweet  degov_tweet[]
 }
 
 model twitter_poll {
@@ -91,10 +95,13 @@ model twitter_poll_option {
   poll twitter_poll? @relation(fields: [poll_id], references: [id])
 }
 
-model degov_tweet_progress {
+model degov_tweet {
   id String @id
 
-  status  String  @default("pending") // pending, posted, fulfilled, error
+  proposal_id String
+  chain_id    Int
+
+  status  String // posted, fulfilled, error
   message String?
   type    String // text, poll
 
@@ -107,7 +114,7 @@ model degov_tweet_progress {
 model degov_dao_progress {
   id String @id
 
-  code String @unique
+  code              String @unique
   last_block_number Int?
 
   ctime DateTime @default(now())
