@@ -22,14 +22,14 @@ import { PrismaClient } from "./generated/prisma";
 import path from "path";
 import { DegovRouter } from "./routes/degov";
 import {
-  PostTweetProposalNewTask,
-  PostTweetProposalVoteTask,
-  PostTweetProposalCanceledTask,
-  PostTweetProposalExecutedTask,
-  ProposalStatusTask,
-  SyncTweetTask,
-  FullfillTweetPollTask,
-  PostTweetProposalQueuedTask,
+  DegovProposalNewTask,
+  DegovProposalVoteTask,
+  DegovProposalCanceledTask,
+  DegovProposalExecutedTask,
+  DegovProposalStatusTask,
+  DegovTweetSyncTask,
+  DegovProposalFulfillTask,
+  DegovProposalQueuedTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
 
@@ -41,14 +41,14 @@ export class DegovMcpHttpServer {
     private readonly helloRouter: HelloRouter,
     private readonly twitterRouter: TwitterRouter,
     private readonly degovRouter: DegovRouter,
-    private readonly postTweetProposalNewTask: PostTweetProposalNewTask,
-    private readonly postTweetProposalVoteTask: PostTweetProposalVoteTask,
-    private readonly postTweetProposalCanceledTask: PostTweetProposalCanceledTask,
-    private readonly postTweetProposalQueuedTask: PostTweetProposalQueuedTask,
-    private readonly postTweetProposalExecutedTask: PostTweetProposalExecutedTask,
-    private readonly fullfillTweetPollTask: FullfillTweetPollTask,
-    private readonly syncTweetTask: SyncTweetTask,
-    private readonly proposalStatusTask: ProposalStatusTask
+    private readonly degovProposalNewTask: DegovProposalNewTask,
+    private readonly degovProposalVoteTask: DegovProposalVoteTask,
+    private readonly degovProposalCanceledTask: DegovProposalCanceledTask,
+    private readonly degovProposalQueuedTask: DegovProposalQueuedTask,
+    private readonly degovProposalExecutedTask: DegovProposalExecutedTask,
+    private readonly degovProposalFulfillTask: DegovProposalFulfillTask,
+    private readonly degovTweetSyncTask: DegovTweetSyncTask,
+    private readonly degovProposalStatusTask: DegovProposalStatusTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -144,14 +144,14 @@ export class DegovMcpHttpServer {
   }
 
   private async task(fastify: FastifyInstance) {
-    await this.postTweetProposalNewTask.start(fastify);
-    await this.postTweetProposalVoteTask.start(fastify);
-    await this.postTweetProposalCanceledTask.start(fastify);
-    await this.postTweetProposalQueuedTask.start(fastify);
-    await this.postTweetProposalExecutedTask.start(fastify);
-    await this.fullfillTweetPollTask.start(fastify);
-    await this.syncTweetTask.start(fastify);
-    await this.proposalStatusTask.start(fastify);
+    await this.degovProposalNewTask.start(fastify);
+    await this.degovProposalVoteTask.start(fastify);
+    await this.degovProposalCanceledTask.start(fastify);
+    await this.degovProposalQueuedTask.start(fastify);
+    await this.degovProposalExecutedTask.start(fastify);
+    await this.degovProposalFulfillTask.start(fastify);
+    await this.degovTweetSyncTask.start(fastify);
+    await this.degovProposalStatusTask.start(fastify);
   }
 
   private async mcp(fastify: FastifyInstance) {

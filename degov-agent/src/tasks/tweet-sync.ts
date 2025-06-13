@@ -11,7 +11,7 @@ import { error } from "console";
 import { DegovHelpers } from "../helpers";
 
 @Service()
-export class SyncTweetTask {
+export class DegovTweetSyncTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly twitterAgent: TwitterAgentW,

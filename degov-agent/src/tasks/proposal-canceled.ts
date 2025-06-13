@@ -11,7 +11,7 @@ import { DegovTweetStatus } from "../types";
 import { DegovHelpers } from "../helpers";
 
 @Service()
-export class PostTweetProposalCanceledTask {
+export class DegovProposalCanceledTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly twitterAgent: TwitterAgentW,

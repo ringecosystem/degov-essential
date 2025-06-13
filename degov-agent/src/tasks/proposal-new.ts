@@ -13,7 +13,7 @@ import { DegovIndexerProposal } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
 
 @Service()
-export class PostTweetProposalNewTask {
+export class DegovProposalNewTask {
   constructor(
     private readonly daoService: DaoService,
     private readonly twitterAgent: TwitterAgentW,

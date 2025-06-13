@@ -9,7 +9,7 @@ import { DegovMcpDao } from "../types";
 import { TwitterService } from "../services/twitter";
 
 @Service()
-export class FullfillTweetPollTask {
+export class DegovProposalFulfillTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly twitterService: TwitterService,

@@ -14,7 +14,7 @@ import { SendTweetInput } from "../internal/x-agent";
 import { setTimeout } from "timers/promises";
 
 @Service()
-export class PostTweetProposalVoteTask {
+export class DegovProposalVoteTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly twitterAgent: TwitterAgentW,

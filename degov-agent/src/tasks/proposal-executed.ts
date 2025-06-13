@@ -4,17 +4,14 @@ import { Service } from "typedi";
 import { DaoService } from "../services/dao";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { SendTweetInput } from "../internal/x-agent";
-import { OpenrouterAgent } from "../internal/openrouter";
-import { setTimeout } from "timers/promises";
-import { PromptProposal } from "../internal/prompt";
 import { EnvReader } from "../integration/env-reader";
-import { DegovTweetStatus, NewProposalEvent } from "../types";
+import { DegovTweetStatus } from "../types";
 import { DegovIndexerProposal } from "../internal/graphql";
 import { DegovService } from "../services/degov";
 import { DegovHelpers } from "../helpers";
 
 @Service()
-export class PostTweetProposalExecutedTask {
+export class DegovProposalExecutedTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly daoService: DaoService,

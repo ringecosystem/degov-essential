@@ -11,7 +11,7 @@ import { SendTweetInput } from "../internal/x-agent";
 import { DegovTweetStatus } from "../types";
 
 @Service()
-export class PostTweetProposalQueuedTask {
+export class DegovProposalQueuedTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly daoService: DaoService,
