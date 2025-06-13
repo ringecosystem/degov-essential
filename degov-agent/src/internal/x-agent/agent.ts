@@ -68,7 +68,7 @@ export class TwitterAgent {
 
   async searchTweets(options: SearchTweetsInput): Promise<Tweetv2SearchResult> {
     const client = this.agentClient(options);
-    const result = await client.v2.search(options.query, options);
+    const result = await client.v2.search(options.query, cleanTwitterParameter(options));
 
     return result.data;
   }
@@ -90,12 +90,12 @@ export class TwitterAgent {
 
   async sendTweet(options: SendTweetInput): Promise<TweetV2PostTweetResult> {
     const client = this.agentClient(options);
-    const cleanedOptions = cleanObject({ ...options });
+    const cleanedOptions = cleanTwitterParameter({ ...options });
     return await client.v2.tweet(cleanedOptions);
   }
 }
 
-function cleanObject(obj: any): any {
+function cleanTwitterParameter(obj: any): any {
   const result = Object.fromEntries(
     Object.entries(obj).filter(
       ([_, value]) =>

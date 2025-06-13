@@ -7,6 +7,8 @@ import { DegovMcpDao, DegovTweetStatus } from "../types";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { degov_tweet } from "../generated/prisma";
 import { DaoService } from "../services/dao";
+import { error } from "console";
+import { DegovHelpers } from "../helpers";
 
 @Service()
 export class SyncTweetTask {
@@ -64,7 +66,9 @@ export class SyncTweetTask {
         await this.syncConversation(fastify, { tweet: postedTweet, dao });
       } catch (err) {
         fastify.log.error(
-          `Failed to sync conversation for tweet ${postedTweet.id}: ${err}`
+          `Failed to sync conversation for tweet ${
+            postedTweet.id
+          }: ${DegovHelpers.helpfulErrorMessage(err)}`
         );
       }
     }
@@ -96,7 +100,7 @@ export class SyncTweetTask {
     const newTweet = await this.twitterAgent.getTweetById(fastify, {
       id: tweet.id,
       force: true, // Force query to ensure we get the latest data
-      xprofile: tweet.daocode,
+      xprofile: options.dao.xprofile,
     });
     const polls = newTweet.includes?.polls;
     if (!polls || polls.length === 0) {

@@ -5,10 +5,7 @@ import {
   DegovTweetStatus,
   UpdateVoteProgressForm,
 } from "../types";
-import {
-  degov_tweet,
-  degov_vote_progress,
-} from "../generated/prisma";
+import { degov_tweet, degov_vote_progress } from "../generated/prisma";
 
 @Service()
 export class DegovService {
@@ -55,10 +52,7 @@ export class DegovService {
       where: {
         status: options.status,
       },
-      orderBy: {
-        ctime: "asc",
-        times_processed: "asc",
-      },
+      orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
     });
     return results;
   }
@@ -76,10 +70,7 @@ export class DegovService {
           lte: 4, // Only check proposals that have been processed less than 3 times
         },
       },
-      orderBy: {
-        ctime: "asc",
-        times_processed: "asc",
-      },
+      orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
     });
     return results;
   }

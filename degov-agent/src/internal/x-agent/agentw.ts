@@ -109,25 +109,29 @@ export class TwitterAgentW {
     options: SearchTweetsInput
   ): Promise<Tweetv2SearchResult> {
     const result = await this.twitterAgent.searchTweets(options);
-    const tweets: twitter_tweet[] = [];
-    for (const tweet of result.data) {
-      const tt: twitter_tweet = {
-        id: tweet.id,
-        text: tweet.text ?? null,
-        created_at: tweet.created_at ? new Date(tweet.created_at) : new Date(),
-        author_id: tweet.author_id ?? null,
-        retweet_count: 0,
-        like_count: 0,
-        reply_count: 0,
-        ctime: new Date(),
-        utime: new Date(),
-        raw: JSON.stringify(tweet),
-        conversation_id: tweet.conversation_id ?? null,
-        from_agent: 0,
-      };
-      tweets.push(tt);
+    if (result.meta.result_count > 0) {
+      const tweets: twitter_tweet[] = [];
+      for (const tweet of result.data) {
+        const tt: twitter_tweet = {
+          id: tweet.id,
+          text: tweet.text ?? null,
+          created_at: tweet.created_at
+            ? new Date(tweet.created_at)
+            : new Date(),
+          author_id: tweet.author_id ?? null,
+          retweet_count: 0,
+          like_count: 0,
+          reply_count: 0,
+          ctime: new Date(),
+          utime: new Date(),
+          raw: JSON.stringify(tweet),
+          conversation_id: tweet.conversation_id ?? null,
+          from_agent: 0,
+        };
+        tweets.push(tt);
+      }
+      await this.twitterService.modifyTweets(fastify, tweets);
     }
-    await this.twitterService.modifyTweets(fastify, tweets);
     return result;
   }
 

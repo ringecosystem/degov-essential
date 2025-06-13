@@ -2,10 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { Service } from "typedi";
 import { z } from "zod";
 import { DegovHelpers } from "../../helpers";
-import { McpCommon } from "../common";
 import { TwitterAgentW } from "../../internal/x-agent/agentw";
 import { FastifyInstance } from "fastify";
-import { error } from "console";
 
 @Service()
 export class TwitterTools {
@@ -87,7 +85,7 @@ export class TwitterTools {
             ],
           };
         } catch (error: any) {
-          const message = McpCommon.defaultToolErrorMessage(error);
+          const message = DegovHelpers.helpfulErrorMessage(error);
           const structuredContent = {
             errors: message,
           };
@@ -128,7 +126,7 @@ export class TwitterTools {
           });
           const structuredContent = {
             data: result.data,
-            errors: McpCommon.stdTwitterError(result.errors),
+            errors: DegovHelpers.stdTwitterError(result.errors),
           };
           return {
             structuredContent,
@@ -140,7 +138,7 @@ export class TwitterTools {
             ],
           };
         } catch (error: any) {
-          const message = McpCommon.defaultToolErrorMessage(error);
+          const message = DegovHelpers.helpfulErrorMessage(error);
           const structuredContent = {
             errors: message,
           };
@@ -181,7 +179,7 @@ export class TwitterTools {
           });
           const structuredContent = {
             data: result.data,
-            errors: McpCommon.stdTwitterError(result.errors),
+            errors: DegovHelpers.stdTwitterError(result.errors),
           };
           return {
             structuredContent,
@@ -193,7 +191,7 @@ export class TwitterTools {
             ],
           };
         } catch (error: any) {
-          const message = McpCommon.defaultToolErrorMessage(error);
+          const message = DegovHelpers.helpfulErrorMessage(error);
           const structuredContent = {
             errors: message,
           };
@@ -272,7 +270,7 @@ export class TwitterTools {
           const structuredContent = {
             data: result.data,
             includes: result.includes,
-            errors: McpCommon.stdTwitterError(result.errors),
+            errors: DegovHelpers.stdTwitterError(result.errors),
           };
 
           // const output = {
@@ -298,7 +296,7 @@ export class TwitterTools {
             ],
           };
         } catch (error: any) {
-          const message = McpCommon.defaultToolErrorMessage(error);
+          const message = DegovHelpers.helpfulErrorMessage(error);
           const structuredContent = {
             errors: message,
           };
@@ -341,7 +339,7 @@ export class TwitterTools {
           const structuredContent = {
             data: result.data,
             includes: result.includes,
-            errors: McpCommon.stdTwitterError(result.errors),
+            errors: DegovHelpers.stdTwitterError(result.errors),
           };
           return {
             structuredContent,
@@ -353,7 +351,7 @@ export class TwitterTools {
             ],
           };
         } catch (error: any) {
-          const message = McpCommon.defaultToolErrorMessage(error);
+          const message = DegovHelpers.helpfulErrorMessage(error);
           const structuredContent = {
             errors: message,
           };
@@ -398,7 +396,7 @@ export class TwitterTools {
           const result = await this.twitterAgent.sendTweet(fastify, options);
           const structuredContent = {
             data: result.data,
-            errors: McpCommon.stdTwitterError(result.errors),
+            errors: DegovHelpers.stdTwitterError(result.errors),
           };
           return {
             structuredContent,
@@ -410,7 +408,7 @@ export class TwitterTools {
             ],
           };
         } catch (error: any) {
-          const message = McpCommon.defaultToolErrorMessage(error);
+          const message = DegovHelpers.helpfulErrorMessage(error);
           const structuredContent = {
             errors: message,
           };

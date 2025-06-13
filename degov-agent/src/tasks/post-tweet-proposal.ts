@@ -10,6 +10,7 @@ import { PromptProposal } from "../internal/prompt";
 import { EnvReader } from "../integration/env-reader";
 import { NewProposalEvent } from "../types";
 import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovHelpers } from "../helpers";
 
 @Service()
 export class PostTweetProposalNewTask {
@@ -38,7 +39,11 @@ export class PostTweetProposalNewTask {
 
         await this.run(fastify);
       } catch (err) {
-        fastify.log.error(err);
+        fastify.log.error(
+          `Error in PostTweetProposalNewTask: ${DegovHelpers.helpfulErrorMessage(
+            err
+          )}`
+        );
       }
     });
     const job = new SimpleIntervalJob(

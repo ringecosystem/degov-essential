@@ -431,7 +431,7 @@ export class TwitterService {
 
   async modifyPoll(
     fastify: FastifyInstance,
-    options: {
+    form: {
       poll: twitter_poll;
       options: twitter_poll_option[];
     }
@@ -440,41 +440,41 @@ export class TwitterService {
     await prisma.$transaction(async (tx) => {
       const existingPoll = await tx.twitter_poll.findUnique({
         where: {
-          id: options.poll.id,
+          id: form.poll.id,
         },
       });
 
       if (existingPoll) {
         await tx.twitter_poll.update({
           where: {
-            id: options.poll.id,
+            id: form.poll.id,
           },
           data: {
-            ...options.poll,
+            ...form.poll,
             utime: new Date(),
           },
         });
       } else {
         await tx.twitter_poll.create({
           data: {
-            ...options.poll,
+            ...form.poll,
             ctime: new Date(),
             utime: new Date(),
           },
         });
       }
 
-      for (const option of options.options) {
+      for (const option of form.options) {
         const existingOption = await tx.twitter_poll_option.findUnique({
           where: {
-            id: option.id,
+            code: option.code,
           },
         });
 
         if (existingOption) {
           await tx.twitter_poll_option.update({
             where: {
-              id: option.id,
+              id: existingOption.id,
             },
             data: {
               ...option,
@@ -485,6 +485,7 @@ export class TwitterService {
           await tx.twitter_poll_option.create({
             data: {
               ...option,
+              id: fastify.snowflake.generate(),
               ctime: new Date(),
               utime: new Date(),
             },
