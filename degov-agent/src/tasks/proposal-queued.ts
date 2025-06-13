@@ -23,14 +23,14 @@ export class DegovProposalQueuedTask {
     const task = new AsyncTask("task-post-tweet-proposal-queued", async () => {
       try {
         const enableFeature = EnvReader.envBool(
-          "FEATURE_POST_TWEET_PROPOSAL_QUEUED",
+          "FEATURE_TASK_PROPOSAL_QUEUED",
           {
             defaultValue: "true",
           }
         );
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_POST_TWEET_PROPOSAL_QUEUED is disabled, skipping task."
+            "FEATURE_TASK_PROPOSAL_QUEUED is disabled, skipping task."
           );
           return;
         }

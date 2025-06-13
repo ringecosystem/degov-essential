@@ -21,11 +21,11 @@ export class DegovTweetSyncTask {
   async start(fastify: FastifyInstance) {
     const task = new AsyncTask("task-sync-tweet", async () => {
       try {
-        const enableFeature = EnvReader.envBool("FEATURE_SYNC_TWEET", {
+        const enableFeature = EnvReader.envBool("FEATURE_TASK_TWEET_SYNC", {
           defaultValue: "true",
         });
         if (!enableFeature) {
-          fastify.log.warn("FEATURE_SYNC_TWEET is disabled, skipping task.");
+          fastify.log.warn("FEATURE_TASK_TWEET_SYNC is disabled, skipping task.");
           return;
         }
 
