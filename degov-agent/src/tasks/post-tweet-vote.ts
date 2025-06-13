@@ -26,9 +26,12 @@ export class PostTweetProposalVoteTask {
   async start(fastify: FastifyInstance) {
     const task = new AsyncTask("task-post-tweet-proposal-vote", async () => {
       try {
-        const enableFeature = EnvReader.envBool("FEATURE_POST_TWEET_PROPOSAL_VOTE", {
-          defaultValue: "true",
-        });
+        const enableFeature = EnvReader.envBool(
+          "FEATURE_POST_TWEET_PROPOSAL_VOTE",
+          {
+            defaultValue: "true",
+          }
+        );
         if (!enableFeature) {
           fastify.log.warn(
             "FEATURE_POST_TWEET_PROPOSAL_VOTE is disabled, skipping task."
@@ -117,12 +120,12 @@ export class PostTweetProposalVoteTask {
       }
     );
     const offset = currentVoteProgress?.offset ?? 0;
-    const qpvResult = await this.degovIndexerProposal.queryProposalVotes({
+    const voteCasts = await this.degovIndexerProposal.queryProposalVotes({
       endpoint: dao.links.indexer,
       proposalId: degovTweet.proposal_id,
       offset,
     });
-    const { nextOffset, voteCasts } = qpvResult;
+    let nextOffset = offset;
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
     for (const vote of voteCasts) {
       try {
@@ -170,11 +173,12 @@ export class PostTweetProposalVoteTask {
           `Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
         await setTimeout(1000);
+        nextOffset += 1;
       } catch (error) {
         fastify.log.error(
-          `Error processing vote cast for tweet ${degovTweet.id}: ${
-            error instanceof Error ? error.message : String(error)
-          }`
+          `Error processing vote cast for tweet ${
+            degovTweet.id
+          }: ${DegovHelpers.helpfulErrorMessage(error)}`
         );
       }
     }

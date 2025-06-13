@@ -43,7 +43,7 @@ export class DegovService {
     });
   }
 
-  async listTweetsByStatus(
+  async listPollTweetsByStatus(
     fastify: FastifyInstance,
     options: { status: DegovTweetStatus }
   ): Promise<degov_tweet[]> {
@@ -51,6 +51,7 @@ export class DegovService {
     const results = await prisma.degov_tweet.findMany({
       where: {
         status: options.status,
+        type: "poll",
       },
       orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
     });
@@ -89,10 +90,7 @@ export class DegovService {
           lt: 3, // Only check proposals that have been processed less than 3 times
         },
       },
-      orderBy: {
-        ctime: "asc",
-        times_processed: "asc",
-      },
+      orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
       take,
     });
 

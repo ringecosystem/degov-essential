@@ -6,7 +6,6 @@ import {
   DIProposalExecuted,
   DIProposalQueued,
   DIVoteCast,
-  DIVoteCastResult,
   QueryNextProposalOptions,
   QueryProposalById,
   QueryProposalVotes,
@@ -48,9 +47,7 @@ export class DegovIndexerProposal {
     return proposals[0];
   }
 
-  async queryProposalVotes(
-    options: QueryProposalVotes
-  ): Promise<DIVoteCastResult> {
+  async queryProposalVotes(options: QueryProposalVotes): Promise<DIVoteCast[]> {
     const document = gql`
       query QueryProposalVotes($offset: Int!, $proposal_id: String!) {
         voteCasts(
@@ -81,15 +78,9 @@ export class DegovIndexerProposal {
     );
     const voteCasts = response.voteCasts;
     if (voteCasts.length === 0) {
-      return {
-        nextOffset: options.offset,
-        voteCasts: [],
-      }; // No votes found
+      return []; // No votes found
     }
-    return {
-      nextOffset: options.offset + voteCasts.length,
-      voteCasts,
-    };
+    return voteCasts;
   }
 
   async queryProposalCanceled(

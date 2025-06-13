@@ -478,6 +478,7 @@ export class TwitterService {
             },
             data: {
               ...option,
+              id: existingOption.id,
               utime: new Date(),
             },
           });

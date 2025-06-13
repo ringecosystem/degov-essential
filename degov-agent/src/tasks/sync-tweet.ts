@@ -47,7 +47,7 @@ export class SyncTweetTask {
   }
 
   private async run(fastify: FastifyInstance) {
-    const postedTweets = await this.degovService.listTweetsByStatus(fastify, {
+    const postedTweets = await this.degovService.listPollTweetsByStatus(fastify, {
       status: DegovTweetStatus.Posted,
     });
     for (const postedTweet of postedTweets) {

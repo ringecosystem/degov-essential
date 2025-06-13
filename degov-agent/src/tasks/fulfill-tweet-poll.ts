@@ -107,6 +107,7 @@ export class FullfillTweetPollTask {
       id: tweet.id,
       includeReplies: true,
     });
+
     console.log("===> ", fullPoll);
     console.log("===> ", fullTweet);
   }

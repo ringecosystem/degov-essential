@@ -59,7 +59,7 @@ export class PostTweetProposalExecutedTask {
   }
 
   private async run(fastify: FastifyInstance) {
-    const queuedTweets = await this.degovService.listTweetsByStatus(fastify, {
+    const queuedTweets = await this.degovService.listPollTweetsByStatus(fastify, {
       status: DegovTweetStatus.Queued,
     });
 

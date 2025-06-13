@@ -37,11 +37,6 @@ export interface DIVoteCast {
   blockTimestamp: string;
 }
 
-export interface DIVoteCastResult {
-  nextOffset: number;
-  voteCasts: DIVoteCast[];
-}
-
 export interface DIProposalCanceled {
   id: string;
   proposalId: string;
