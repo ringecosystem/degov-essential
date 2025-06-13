@@ -26,12 +26,12 @@ import {
   PostTweetProposalVoteTask,
   PostTweetProposalCanceledTask,
   PostTweetProposalExecutedTask,
+  ProposalStatusTask,
+  SyncTweetTask,
+  FullfillTweetPollTask,
+  PostTweetProposalQueuedTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
-import { PostTweetProposalQueuedTask } from "./tasks/post-tweet-queued";
-import { FullfillTweetPollTask } from "./tasks/fulfill-tweet-poll";
-import { SyncTweetTask } from "./tasks/sync-tweet";
-import { ProposalStatusTask } from "./tasks";
 
 @Service()
 export class DegovMcpHttpServer {

@@ -3,5 +3,7 @@ import { Service } from "typedi";
 
 @Service()
 export class ProposalStatusTask {
-  async start(fastify: FastifyInstance) {}
+  async start(fastify: FastifyInstance) {
+
+  }
 }
