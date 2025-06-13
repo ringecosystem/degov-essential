@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model twitter_authorization {
+  id          String  @id
+  profile     String
+  description String?
+  enabled     Int     @default(0)
+
+  access_token  String?
+  access_secret String?
+
+  user_id String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  user twitter_user? @relation(fields: [user_id], references: [id])
+}
+
+model twitter_user {
+  id String @id
+
+  name          String?
+  username      String
+  avatar        String?
+  profile_url   String?
+  description   String?
+  verified      Int?
+  verified_type String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  raw                   String
+  twitter_authorization twitter_authorization[]
+  twitter_tweet         twitter_tweet[]
+}
+
+model twitter_tweet {
+  id String @id
+
+  text            String?
+  created_at      DateTime?
+  author_id       String?
+  conversation_id String?
+
+  retweet_count Int?
+  like_count    Int?
+  reply_count   Int?
+  from_agent    Int? @default(0) // indicates if the tweet was posted by an agent (e.g., bot)
+
+  raw String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  author       twitter_user?   @relation(fields: [author_id], references: [id])
+  conversation twitter_tweet?  @relation("TweetConversation", fields: [conversation_id], references: [id])
+  replies      twitter_tweet[] @relation("TweetConversation")
+  degov_tweet  degov_tweet[]
+  twitter_poll twitter_poll[]
+}
+
+model twitter_poll {
+  id String @id
+
+  tweet_id         String
+  duration_minutes Int?
+  end_datetime     DateTime?
+  voting_status    String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  tweet               twitter_tweet         @relation(fields: [tweet_id], references: [id])
+  twitter_poll_option twitter_poll_option[]
+}
+
+model twitter_poll_option {
+  id String @id
+
+  code     String @unique
+  label    String
+  position Int
+  votes    Int
+
+  poll_id String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  poll twitter_poll? @relation(fields: [poll_id], references: [id])
+}
+
+model degov_tweet {
+  id String @id
+
+  daocode     String
+  proposal_id String
+  chain_id    Int
+
+  status               String // posted, canceled, queued, executed, error
+  fulfilled            Int       @default(0) // indicates if the tweet has been fulfilled (1) or not (0)
+  type                 String // text, poll
+  reply_next_token     String? // token for the next reply in a thread
+  sync_stop_tweet      Int? // indicates if the tweet should be synced (1) or not (0)
+  sync_stop_reply      Int? // indicates if the replies should be synced (1) or not (0)
+  sync_next_time_tweet DateTime? // next time to sync the tweet
+  sync_next_time_reply DateTime? // next time to sync replies
+  times_processed      Int       @default(0) // number of times this tweet has been processed
+  message              String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  tweet twitter_tweet? @relation(fields: [id], references: [id])
+}
+
+model degov_vote_progress {
+  id String @id
+
+  daocode     String
+  proposal_id String @unique
+  chain_id    Int
+
+  offset Int @default(0) // offset for pagination
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}
+
+model degov_dao_progress {
+  id String @id
+
+  code              String @unique
+  last_block_number Int?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}

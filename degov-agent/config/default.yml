@@ -1,0 +1,21 @@
+app:
+  host: 127.0.0.1
+  port: 3000
+
+mcp:
+  # sse | streamable_http
+  transport_type: sse
+
+twitter:
+  api_key: your-api-key-here
+  secret_key: your-api-secret-key-here
+  callback_host: https://mcp.degov.ai
+
+daos:
+  - name: DeGov Development Test DAO
+    code: degov-test-dao
+    xprofile: default
+    links:
+      website: https://demo.degov.ai
+      config: https://demo.degov.ai/degov.yml
+      indexer: https://degov-indexer.vercel.app/graphql
