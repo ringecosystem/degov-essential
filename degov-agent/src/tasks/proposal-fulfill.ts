@@ -63,7 +63,7 @@ export class DegovProposalFulfillTask {
             `DAO not found for tweet ${unfulfilledTweet.id}, cannot fulfill tweet poll.`
           );
         }
-        await this.fulfillTweetPoll(fastify, {
+        await this.fulfillGovernorFromTweet(fastify, {
           tweet: unfulfilledTweet,
           dao,
         });
@@ -91,7 +91,7 @@ export class DegovProposalFulfillTask {
     }
   }
 
-  private async fulfillTweetPoll(
+  private async fulfillGovernorFromTweet(
     fastify: FastifyInstance,
     options: {
       tweet: degov_tweet;

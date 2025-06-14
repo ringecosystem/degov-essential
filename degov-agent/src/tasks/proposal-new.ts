@@ -93,6 +93,7 @@ export class DegovProposalNewTask {
           {
             stu,
             event,
+            voteEnd,
             durationMinutes: durationMinutes,
           }
         );

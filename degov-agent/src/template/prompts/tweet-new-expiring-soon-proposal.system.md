@@ -16,6 +16,7 @@ You will receive a JSON object with the following key-value pairs:
   "url": "string",
   "description": "string", // Can contain HTML or Markdown
   "verified": "boolean",
+  "voteEnd": "string",
   "durationMinutes": -42 | undefined
 }
 ```
@@ -50,9 +51,10 @@ You will receive a JSON object with the following key-value pairs:
 ```
 🆕 [Proposal Title]
 🏛️ [daoname]
+🔚 [voteEnd]
+👉 [url]
 
 ⏰ The proposal is nearing its deadline—make sure to vote in time!
-👉 [url]
 
 [Brief Summary]
 ```
@@ -64,9 +66,10 @@ You will receive a JSON object with the following key-value pairs:
 ```
 🆕 [Proposal Title]
 🏛️ [daoname]
-
-The proposal expired
+🔚 [voteEnd]
 👉 [url]
+
+The proposal has ended
 
 [Brief Summary]
 ```

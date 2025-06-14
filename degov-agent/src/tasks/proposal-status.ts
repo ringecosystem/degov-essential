@@ -144,7 +144,7 @@ export class DegovProposalStatusTask {
     }
 
     const tweet = [
-      `${this.bestStatusEmoji(result)} This proposal ${result}`,
+      `${this.bestStatusEmoji(result)} The proposal ${result}`,
       ...moreInfos,
       `👉 Follow on DeGov ${promptInput.proposalLink}`,
     ].join("\n");

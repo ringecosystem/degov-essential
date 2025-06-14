@@ -37,6 +37,7 @@ Generate a poll tweet use above data
     options: {
       stu: SimpleTweetUser;
       event: NewProposalEvent;
+      voteEnd: Date;
       durationMinutes?: number;
     }
   ): Promise<PromptOutput> {
@@ -48,6 +49,7 @@ Generate a poll tweet use above data
       description: proposal.description,
       verified: stu.verified,
       durationMinutes: options.durationMinutes,
+      voteEnd: options.voteEnd.toISOString(),
     };
     return {
       system: await getBuiltInPrompt(
