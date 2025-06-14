@@ -17,11 +17,14 @@ export class DegovProposalFulfillTask {
   ) {}
 
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask("task-fulfill-tweet-poll", async () => {
+    const task = new AsyncTask("task-proposal-fulfill", async () => {
       try {
-        const enableFeature = EnvReader.envBool("FEATURE_TASK_PROPOSAL_FULFILL", {
-          defaultValue: "true",
-        });
+        const enableFeature = EnvReader.envBool(
+          "FEATURE_TASK_PROPOSAL_FULFILL",
+          {
+            defaultValue: "true",
+          }
+        );
         if (!enableFeature) {
           fastify.log.warn(
             "FEATURE_TASK_PROPOSAL_FULFILL is disabled, skipping task."

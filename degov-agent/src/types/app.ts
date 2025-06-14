@@ -53,14 +53,6 @@ export interface DegovMcpDao extends DegovDaoConfig {
   lastProcessedBlock?: number; // The last processed block by the indexer
 }
 
-export enum DegovTweetStatus {
-  Posted = "posted",
-  Canceled = "canceled",
-  Queued = "queued",
-  Executed = "executed",
-  Error = "error",
-}
-
 export interface NewProposalEvent {
   xprofile: string;
   daocode: string;
@@ -112,3 +104,13 @@ export interface PromptOutput {
   prompt: string;
 }
 
+export enum ProposalState {
+  Pending = 'pending',
+  Active = 'active',
+  Canceled = 'canceled',
+  Defeated = 'defeated',
+  Succeeded = 'succeeded',
+  Queued = 'queued',
+  Expired = 'expired',
+  Executed = 'executed',
+}

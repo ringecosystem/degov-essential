@@ -22,14 +22,11 @@ export class DegovProposalNewTask {
   ) {}
 
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask("task-post-tweet-proposal-new", async () => {
+    const task = new AsyncTask("task-proposal-new", async () => {
       try {
-        const enableFeature = EnvReader.envBool(
-          "FEATURE_TASK_PROPOSAL_NEW",
-          {
-            defaultValue: "true",
-          }
-        );
+        const enableFeature = EnvReader.envBool("FEATURE_TASK_PROPOSAL_NEW", {
+          defaultValue: "true",
+        });
         if (!enableFeature) {
           fastify.log.warn(
             "FEATURE_TASK_PROPOSAL_NEW is disabled, skipping task."
@@ -61,37 +58,57 @@ export class DegovProposalNewTask {
   private async run(fastify: FastifyInstance) {
     const events = await this.nextNewProposals(fastify);
     for (const event of events) {
-      const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
-      const promptout = await PromptProposal.newProposalTweet(fastify, {
-        stu,
-        event,
-      });
-      const tweet = await this.openrouterAgent.generateText({
-        system: promptout.system,
-        prompt: promptout.prompt,
-      });
       const proposal = event.proposal;
       const voteEnd = new Date(+proposal.voteEnd * 1000);
-      const now = new Date();
-      let durationMinutes = 10; // 10 minutes for the poll duration
-      const maxDurationMinutes = 7 * 24 * 60; // 7 days in minutes
-      if (voteEnd > now) {
-        const remainingTimeMinutes = Math.ceil(
-          (voteEnd.getTime() - now.getTime()) / 60000
-        ); // Convert milliseconds to minutes
-        durationMinutes = Math.min(remainingTimeMinutes, maxDurationMinutes);
+      const durationMinutes = DegovHelpers.calculatePollTweetDurationMinutes({
+        proposalVoteEnd: voteEnd,
+      });
+
+      const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
+      let tweetInput: SendTweetInput | undefined;
+      if (durationMinutes && durationMinutes > 0) {
+        const promptout = await PromptProposal.newProposalTweet(fastify, {
+          stu,
+          event,
+        });
+        const tweet = await this.openrouterAgent.generateText({
+          system: promptout.system,
+          prompt: promptout.prompt,
+        });
+
+        tweetInput = {
+          xprofile: event.xprofile,
+          daocode: event.daocode,
+          proposalId: proposal.id,
+          chainId: proposal.chainId,
+          text: tweet,
+          poll: {
+            options: ["For", "Against", "Abstain"],
+            duration_minutes: durationMinutes,
+          },
+        };
+      } else {
+        const promptout = await PromptProposal.newExpiringSoonProposalTweet(
+          fastify,
+          {
+            stu,
+            event,
+            durationMinutes: durationMinutes,
+          }
+        );
+        const tweet = await this.openrouterAgent.generateText({
+          system: promptout.system,
+          prompt: promptout.prompt,
+        });
+        tweetInput = {
+          xprofile: event.xprofile,
+          daocode: event.daocode,
+          proposalId: proposal.id,
+          chainId: proposal.chainId,
+          text: tweet,
+        };
       }
-      const tweetInput: SendTweetInput = {
-        xprofile: event.xprofile,
-        daocode: event.daocode,
-        proposalId: proposal.id,
-        chainId: proposal.chainId,
-        text: tweet,
-        poll: {
-          options: ["For", "Against", "Abstain"],
-          duration_minutes: durationMinutes,
-        },
-      };
+
       const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
       fastify.log.info(
         `Posted new proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${event.daoname}, Proposal URL: ${proposal.url}`

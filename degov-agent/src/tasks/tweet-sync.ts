@@ -3,7 +3,7 @@ import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
 import { DegovService } from "../services/degov";
-import { DegovMcpDao, DegovTweetStatus } from "../types";
+import { DegovMcpDao, ProposalState } from "../types";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { degov_tweet } from "../generated/prisma";
 import { DaoService } from "../services/dao";
@@ -25,7 +25,9 @@ export class DegovTweetSyncTask {
           defaultValue: "true",
         });
         if (!enableFeature) {
-          fastify.log.warn("FEATURE_TASK_TWEET_SYNC is disabled, skipping task.");
+          fastify.log.warn(
+            "FEATURE_TASK_TWEET_SYNC is disabled, skipping task."
+          );
           return;
         }
 
@@ -47,27 +49,30 @@ export class DegovTweetSyncTask {
   }
 
   private async run(fastify: FastifyInstance) {
-    const postedTweets = await this.degovService.listPollTweetsByStatus(fastify, {
-      status: DegovTweetStatus.Posted,
-    });
-    for (const postedTweet of postedTweets) {
+    const trackTweets = await this.degovService.listPollTweetsByStatus(
+      fastify,
+      {
+        status: [ProposalState.Active],
+      }
+    );
+    for (const trackTweet of trackTweets) {
       try {
         const dao = await this.daoService.dao(fastify, {
-          daocode: postedTweet.daocode,
+          daocode: trackTweet.daocode,
         });
         if (!dao || !dao.xprofile) {
           fastify.log.warn(
-            `No DAO profile found for tweet ${postedTweet.id}, skipping conversation sync.`
+            `No DAO profile found for tweet ${trackTweet.id}, skipping conversation sync.`
           );
           return;
         }
 
-        await this.syncTweet(fastify, { tweet: postedTweet, dao });
-        await this.syncConversation(fastify, { tweet: postedTweet, dao });
+        await this.syncTweet(fastify, { tweet: trackTweet, dao });
+        await this.syncConversation(fastify, { tweet: trackTweet, dao });
       } catch (err) {
         fastify.log.error(
           `Failed to sync conversation for tweet ${
-            postedTweet.id
+            trackTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(err)}`
         );
       }
@@ -169,7 +174,7 @@ export class DegovTweetSyncTask {
       });
       await this.degovService.updateDegovTweetSyncTweet(fastify, {
         id: tweet.id,
-        syncNextTimeTweet: new Date(Date.now() + 1000 * 5), // Sync again in 5 minutes
+        syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 5), // Sync again in 5 minutes
       });
       fastify.log.info(
         `Updated reply next token for tweet ${tweet.id}, next token: ${nextToken}`
@@ -177,10 +182,10 @@ export class DegovTweetSyncTask {
     } else {
       await this.degovService.updateDegovTweetSyncTweet(fastify, {
         id: tweet.id,
-        syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 60), // Sync again in 1 hour
+        syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 10), // Sync again in 10 minutes
       });
       fastify.log.info(
-        `No next token for tweet ${tweet.id}, wait 1 hour reply sync.`
+        `No next token for tweet ${tweet.id}, wait 10 minutes reply sync.`
       );
     }
   }

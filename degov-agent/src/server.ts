@@ -24,12 +24,9 @@ import { DegovRouter } from "./routes/degov";
 import {
   DegovProposalNewTask,
   DegovProposalVoteTask,
-  DegovProposalCanceledTask,
-  DegovProposalExecutedTask,
   DegovProposalStatusTask,
   DegovTweetSyncTask,
   DegovProposalFulfillTask,
-  DegovProposalQueuedTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
 
@@ -43,9 +40,6 @@ export class DegovMcpHttpServer {
     private readonly degovRouter: DegovRouter,
     private readonly degovProposalNewTask: DegovProposalNewTask,
     private readonly degovProposalVoteTask: DegovProposalVoteTask,
-    private readonly degovProposalCanceledTask: DegovProposalCanceledTask,
-    private readonly degovProposalQueuedTask: DegovProposalQueuedTask,
-    private readonly degovProposalExecutedTask: DegovProposalExecutedTask,
     private readonly degovProposalFulfillTask: DegovProposalFulfillTask,
     private readonly degovTweetSyncTask: DegovTweetSyncTask,
     private readonly degovProposalStatusTask: DegovProposalStatusTask
@@ -146,9 +140,6 @@ export class DegovMcpHttpServer {
   private async task(fastify: FastifyInstance) {
     await this.degovProposalNewTask.start(fastify);
     await this.degovProposalVoteTask.start(fastify);
-    await this.degovProposalCanceledTask.start(fastify);
-    await this.degovProposalQueuedTask.start(fastify);
-    await this.degovProposalExecutedTask.start(fastify);
     await this.degovProposalFulfillTask.start(fastify);
     await this.degovTweetSyncTask.start(fastify);
     await this.degovProposalStatusTask.start(fastify);

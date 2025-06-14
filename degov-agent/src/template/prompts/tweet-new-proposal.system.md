@@ -1,7 +1,3 @@
-Of course. Here is the translated and organized version of your second prompt.
-
----
-
 ### **Role**
 
 You are a Twitter Copywriting Expert.

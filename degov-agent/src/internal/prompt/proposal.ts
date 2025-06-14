@@ -32,6 +32,36 @@ Generate a poll tweet use above data
     };
   }
 
+  static async newExpiringSoonProposalTweet(
+    fastify: FastifyInstance,
+    options: {
+      stu: SimpleTweetUser;
+      event: NewProposalEvent;
+      durationMinutes?: number;
+    }
+  ): Promise<PromptOutput> {
+    const { event, stu } = options;
+    const proposal = event.proposal;
+    const rawData = {
+      daoname: event.daoname,
+      url: proposal.url,
+      description: proposal.description,
+      verified: stu.verified,
+      durationMinutes: options.durationMinutes,
+    };
+    return {
+      system: await getBuiltInPrompt(
+        fastify,
+        "prompts/tweet-new-expiring-soon-proposal.system.md"
+      ),
+      prompt: `
+${JSON.stringify(rawData)}
+
+Generate a tweet use above data
+    `,
+    };
+  }
+
   static async newVoteCastTweet(
     fastify: FastifyInstance,
     options: NewVoteCastTweetOptioins

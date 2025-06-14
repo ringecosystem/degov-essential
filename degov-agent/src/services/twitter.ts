@@ -1,6 +1,6 @@
 import { Service } from "typedi";
 import {
-  DegovTweetStatus,
+  ProposalState,
   QueryTwitterCallback,
   TwitterAuthorizeForm,
   TwitterOAuthType,
@@ -383,6 +383,8 @@ export class TwitterService {
         raw: null,
         from_agent: 1,
       };
+      await tx.twitter_tweet.create({ data: tweetForm });
+
       let type = "text";
       if (
         tweet.poll &&
@@ -391,26 +393,28 @@ export class TwitterService {
       ) {
         type = "poll";
       }
-      const degovTweetForm: degov_tweet = {
-        id: result.data.id,
-        daocode: tweet.daocode,
-        proposal_id: tweet.proposalId,
-        chain_id: tweet.chainId,
-        status: DegovTweetStatus.Posted,
-        fulfilled: 0,
-        reply_next_token: null,
-        sync_next_time_reply: null,
-        sync_next_time_tweet: null,
-        sync_stop_tweet: 0,
-        sync_stop_reply: 0,
-        times_processed: 0,
-        message: null,
-        type,
-        ctime: new Date(),
-        utime: new Date(),
-      };
-      await tx.twitter_tweet.create({ data: tweetForm });
-      await tx.degov_tweet.create({ data: degovTweetForm });
+      if (type === "poll") {
+        const degovTweetForm: degov_tweet = {
+          id: result.data.id,
+          daocode: tweet.daocode,
+          proposal_id: tweet.proposalId,
+          chain_id: tweet.chainId,
+          status: ProposalState.Pending,
+          fulfilled: 0,
+          errored: 0,
+          reply_next_token: null,
+          sync_next_time_reply: null,
+          sync_next_time_tweet: null,
+          sync_stop_tweet: 0,
+          sync_stop_reply: 0,
+          times_processed: 0,
+          message: null,
+          type,
+          ctime: new Date(),
+          utime: new Date(),
+        };
+        await tx.degov_tweet.create({ data: degovTweetForm });
+      }
     });
   }
 

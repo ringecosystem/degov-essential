@@ -24,14 +24,11 @@ export class DegovProposalVoteTask {
   ) {}
 
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask("task-post-tweet-proposal-vote", async () => {
+    const task = new AsyncTask("task-proposal-vote", async () => {
       try {
-        const enableFeature = EnvReader.envBool(
-          "FEATURE_TASK_PROPOSAL_VOTE",
-          {
-            defaultValue: "true",
-          }
-        );
+        const enableFeature = EnvReader.envBool("FEATURE_TASK_PROPOSAL_VOTE", {
+          defaultValue: "true",
+        });
         if (!enableFeature) {
           fastify.log.warn(
             "FEATURE_TASK_PROPOSAL_VOTE is disabled, skipping task."

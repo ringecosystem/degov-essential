@@ -107,9 +107,10 @@ model degov_tweet {
   proposal_id String
   chain_id    Int
 
-  status               String // posted, canceled, queued, executed, error
+  status               String // pending, active, canceled, defeated, succeeded, queued, expired, executed
+  errored              Int       @default(0) // indicates if the tweet has an error (1) or not (0)
   fulfilled            Int       @default(0) // indicates if the tweet has been fulfilled (1) or not (0)
-  type                 String // text, poll
+  type                 String // poll
   reply_next_token     String? // token for the next reply in a thread
   sync_stop_tweet      Int? // indicates if the tweet should be synced (1) or not (0)
   sync_stop_reply      Int? // indicates if the replies should be synced (1) or not (0)

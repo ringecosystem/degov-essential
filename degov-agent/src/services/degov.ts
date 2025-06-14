@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { Service } from "typedi";
 import {
   AddVoteProgressForm,
-  DegovTweetStatus,
+  ProposalState,
   UpdateVoteProgressForm,
 } from "../types";
 import { degov_tweet, degov_vote_progress } from "../generated/prisma";
@@ -11,7 +11,7 @@ import { degov_tweet, degov_vote_progress } from "../generated/prisma";
 export class DegovService {
   async updateTweetStatus(
     fastify: FastifyInstance,
-    options: { proposalId: string; status: DegovTweetStatus }
+    options: { proposalId: string; status: ProposalState }
   ) {
     const prisma = fastify.prisma;
     await prisma.degov_tweet.updateMany({
@@ -37,7 +37,7 @@ export class DegovService {
       },
       data: {
         times_processed,
-        ...(times_processed > 3 && { status: DegovTweetStatus.Error }),
+        ...(times_processed > 3 && { errored: 1 }),
         ...(message && { message: message }),
       },
     });
@@ -45,12 +45,14 @@ export class DegovService {
 
   async listPollTweetsByStatus(
     fastify: FastifyInstance,
-    options: { status: DegovTweetStatus }
+    options: { status: ProposalState[] }
   ): Promise<degov_tweet[]> {
     const prisma = fastify.prisma;
     const results = await prisma.degov_tweet.findMany({
       where: {
-        status: options.status,
+        status: {
+          in: options.status,
+        },
         type: "poll",
       },
       orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
@@ -64,7 +66,7 @@ export class DegovService {
     const prisma = fastify.prisma;
     const results = await prisma.degov_tweet.findMany({
       where: {
-        status: DegovTweetStatus.Posted,
+        status: ProposalState.Active,
         type: "poll",
         fulfilled: 0,
         times_processed: {
@@ -84,7 +86,7 @@ export class DegovService {
     const take = options?.limit ?? 10;
     const tweets = await prisma.degov_tweet.findMany({
       where: {
-        status: DegovTweetStatus.Posted,
+        status: ProposalState.Active,
         type: "poll",
         times_processed: {
           lt: 3, // Only check proposals that have been processed less than 3 times
