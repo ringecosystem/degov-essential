@@ -9,6 +9,7 @@ export interface QueryNextProposalOptions extends BaseGraphqlQuery {
 export interface QueryProposalVotes extends BaseGraphqlQuery {
   proposalId: string;
   offset: number;
+  enableQueryFullData?: boolean;
 }
 
 export interface QueryProposalById extends BaseGraphqlQuery {

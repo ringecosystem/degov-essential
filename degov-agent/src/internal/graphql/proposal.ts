@@ -48,11 +48,12 @@ export class DegovIndexerProposal {
   }
 
   async queryProposalVotes(options: QueryProposalVotes): Promise<DIVoteCast[]> {
+    const limit = 10;
     const document = gql`
       query QueryProposalVotes($offset: Int!, $proposal_id: String!) {
         voteCasts(
           offset: $offset
-          limit: 10
+          limit: ${limit},
           orderBy: blockNumber_ASC
           where: { proposalId_eq: $proposal_id }
         ) {
@@ -68,19 +69,33 @@ export class DegovIndexerProposal {
         }
       }
     `;
-    const response = await request<{ voteCasts: DIVoteCast[] }>(
-      options.endpoint,
-      document,
-      {
-        offset: options.offset,
-        proposal_id: options.proposalId,
+
+    const enableQueryFullData = options.enableQueryFullData ?? false;
+    let offset = options.offset;
+    const result = [];
+    while (true) {
+      const response = await request<{ voteCasts: DIVoteCast[] }>(
+        options.endpoint,
+        document,
+        {
+          offset,
+          proposal_id: options.proposalId,
+        }
+      );
+      const voteCasts = response.voteCasts;
+      if (voteCasts.length === 0) {
+        break;
       }
-    );
-    const voteCasts = response.voteCasts;
-    if (voteCasts.length === 0) {
-      return []; // No votes found
+      result.push(...voteCasts);
+      if (!enableQueryFullData) {
+        break;
+      }
+      offset += voteCasts.length;
+      if (voteCasts.length < limit) {
+        break; // No more votes to fetch
+      }
     }
-    return voteCasts;
+    return result;
   }
 
   async queryProposalCanceled(

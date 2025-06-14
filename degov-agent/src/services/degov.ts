@@ -210,4 +210,19 @@ export class DegovService {
       },
     });
   }
+
+  async getDegovTweetById(
+    fastify: FastifyInstance,
+    options: {
+      id: string;
+    }
+  ): Promise<degov_tweet | undefined> {
+    const prisma = fastify.prisma;
+    const result = await prisma.degov_tweet.findUnique({
+      where: {
+        id: options.id,
+      },
+    });
+    return result ?? undefined;
+  }
 }

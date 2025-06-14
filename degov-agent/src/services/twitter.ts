@@ -14,7 +14,7 @@ import {
   twitter_tweet,
   twitter_user,
 } from "../generated/prisma";
-import { TwitterApi } from "twitter-api-v2";
+import { PollV2, TwitterApi } from "twitter-api-v2";
 import { ConfigReader } from "../integration/config-reader";
 import {
   AgentClient,
@@ -22,6 +22,7 @@ import {
   TwitterAgent,
 } from "../internal/x-agent";
 import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
+import { DegovHelpers } from "../helpers";
 
 export interface AuthorizeResult {
   method: "API";
@@ -369,6 +370,7 @@ export class TwitterService {
     const prisma = fastify.prisma;
     const { user, result, tweet } = input;
     prisma.$transaction(async (tx) => {
+      const reply = tweet.reply;
       const tweetForm: twitter_tweet = {
         id: result.data.id,
         text: result.data.text,
@@ -379,7 +381,7 @@ export class TwitterService {
         reply_count: 0,
         ctime: new Date(),
         utime: new Date(),
-        conversation_id: null,
+        conversation_id: reply?.in_reply_to_tweet_id ?? null,
         raw: null,
         from_agent: 1,
       };
@@ -433,7 +435,54 @@ export class TwitterService {
     });
   }
 
-  async modifyPoll(
+  async modifyPolls(
+    fastify: FastifyInstance,
+    form: {
+      tweetId: string;
+      polls: PollV2[];
+    }
+  ): Promise<void> {
+    const polls = form.polls;
+    const tweetId = form.tweetId;
+    if (!polls || polls.length === 0) return;
+
+    for (const poll of polls) {
+      const pollForm: twitter_poll = {
+        id: poll.id,
+        tweet_id: tweetId,
+        duration_minutes: poll.duration_minutes ?? null,
+        end_datetime: poll.end_datetime ? new Date(poll.end_datetime) : null,
+        voting_status: poll.voting_status ?? null,
+        ctime: new Date(),
+        utime: new Date(),
+      };
+      const pollOptionsForm = [];
+      for (const option of poll.options) {
+        const optionCode = DegovHelpers.pollOptionCode({
+          id: poll.id,
+          label: option.label,
+          position: option.position,
+        });
+        const optionForm: twitter_poll_option = {
+          id: "",
+          code: optionCode,
+          poll_id: poll.id,
+          label: option.label,
+          votes: option.votes,
+          position: option.position,
+          ctime: new Date(),
+          utime: new Date(),
+        };
+        pollOptionsForm.push(optionForm);
+      }
+      await this._modifyPoll(fastify, {
+        poll: pollForm,
+        options: pollOptionsForm,
+      });
+    }
+  }
+
+  private async _modifyPoll(
     fastify: FastifyInstance,
     form: {
       poll: twitter_poll;

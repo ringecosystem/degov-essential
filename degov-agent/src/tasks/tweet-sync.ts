@@ -7,7 +7,6 @@ import { DegovMcpDao, ProposalState } from "../types";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { degov_tweet } from "../generated/prisma";
 import { DaoService } from "../services/dao";
-import { error } from "console";
 import { DegovHelpers } from "../helpers";
 
 @Service()
@@ -79,7 +78,7 @@ export class DegovTweetSyncTask {
     }
   }
 
-  private async syncTweet(
+  async syncTweet(
     fastify: FastifyInstance,
     options: {
       tweet: degov_tweet;
