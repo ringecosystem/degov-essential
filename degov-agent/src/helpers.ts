@@ -40,6 +40,19 @@ export class DegovHelpers {
     }
   }
 
+  static voteSupportNumber(support: string): number {
+    switch (support.toLowerCase()) {
+      case "against":
+        return 0;
+      case "for":
+        return 1;
+      case "abstain":
+        return 2;
+      default:
+        throw new Error(`Unknown support type: ${support}`);
+    }
+  }
+
   static explorerLink(input?: string[]): ExplorerLink {
     if (!input || input.length === 0) {
       return new ExplorerLink(undefined);
