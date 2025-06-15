@@ -7,11 +7,12 @@ import { degov_tweet } from "../generated/prisma";
 import { DegovIndexerProposal } from "../internal/graphql";
 import { DaoService } from "../services/dao";
 import { OpenrouterAgent } from "../internal/openrouter";
-import { PromptProposal } from "../internal/prompt";
+import { DegovPrompt } from "../internal/prompt";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { setTimeout } from "timers/promises";
+import { generateText } from "ai";
 
 @Service()
 export class DegovProposalVoteTask {
@@ -136,11 +137,13 @@ export class DegovProposalVoteTask {
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
         };
-        const promptout = await PromptProposal.newVoteCastTweet(
+        const promptout = await DegovPrompt.newVoteCastTweet(
           fastify,
           promptInput
         );
-        const tweet = await this.openrouterAgent.generateText({
+
+        const aiResp = await generateText({
+          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
           system: promptout.system,
           prompt: promptout.prompt,
         });
@@ -159,7 +162,7 @@ export class DegovProposalVoteTask {
           daocode: degovTweet.daocode,
           proposalId: degovTweet.proposal_id,
           chainId: degovTweet.chain_id,
-          text: tweet,
+          text: aiResp.text,
           reply: {
             in_reply_to_tweet_id: degovTweet.id,
           },

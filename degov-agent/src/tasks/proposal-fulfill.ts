@@ -5,7 +5,6 @@ import { EnvReader } from "../integration/env-reader";
 import { DegovService } from "../services/degov";
 import {
   degov_tweet,
-  twitter_poll,
   twitter_poll_option,
   twitter_tweet,
 } from "../generated/prisma";
@@ -15,6 +14,10 @@ import { TwitterService } from "../services/twitter";
 import { DegovIndexerProposal } from "../internal/graphql";
 import { DegovTweetSyncTask } from "./tweet-sync";
 import { DegovHelpers } from "../helpers";
+import { generateObject } from "ai";
+import { DegovPrompt } from "../internal/prompt";
+import { OpenrouterAgent } from "../internal/openrouter";
+import { z } from "zod";
 
 @Service()
 export class DegovProposalFulfillTask {
@@ -23,7 +26,8 @@ export class DegovProposalFulfillTask {
     private readonly twitterService: TwitterService,
     private readonly daoService: DaoService,
     private readonly degovIndexerProposal: DegovIndexerProposal,
-    private readonly degovTweetSyncTask: DegovTweetSyncTask
+    private readonly degovTweetSyncTask: DegovTweetSyncTask,
+    private readonly openrouterAgent: OpenrouterAgent
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -195,10 +199,10 @@ export class DegovProposalFulfillTask {
     });
     const filteredReplies = allUserReplies.map((item) => {
       return {
-        text: item.text,
-        like_count: item.like_count,
-        retweet_count: item.retweet_count,
-        reply_count: item.reply_count,
+        text: item.text ?? "",
+        like_count: item.like_count ?? 0,
+        retweet_count: item.retweet_count ?? 0,
+        reply_count: item.reply_count ?? 0,
         ctime: item.ctime,
       };
     });
@@ -208,12 +212,34 @@ export class DegovProposalFulfillTask {
         reason: item.reason,
         voter: item.voter,
         weight: item.weight,
-        blockTimestamp: item.blockTimestamp,
+        blockTimestamp: new Date(+item.blockTimestamp),
       };
     });
-    console.log("===> ", filteredPollOptions);
-    console.log("===> ", filteredReplies);
-    console.log("===> ", filteredVoteCasts);
+
+    const promptout = await DegovPrompt.fulfillContract(fastify, {
+      pollOptions: filteredPollOptions,
+      tweetReplies: filteredReplies,
+      voteCasts: filteredVoteCasts,
+    });
+    fastify.log.info(
+      `Fulfill contract prompt for proposal ${tweet.proposal_id}: ${promptout.prompt}`
+    );
+
+    const aiResp = await generateObject({
+      model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
+      schema: AnalysisResultSchema,
+      system: promptout.system,
+      prompt: promptout.prompt,
+    });
+
+    fastify.log.info(`Analysis result for proposal ${tweet.proposal_id}:`);
+    console.log({
+      result: aiResp.object.finalResult,
+      confidence: aiResp.object.confidence,
+      reasoning: aiResp.object.reasoning,
+      votingBreakdown: aiResp.object.votingBreakdown,
+    });
+    console.log(aiResp.object.reasoning);
   }
 
   private filterTweetReplies(tweet: twitter_tweet): twitter_tweet[] {
@@ -225,15 +251,25 @@ export class DegovProposalFulfillTask {
   }
 }
 
-// interface VotingIntention {
-//   decide?: 'for' | 'against' | 'abstain';
-//   type: 'tweet-poll' | 'tweet-reply' | 'contract-vote';
-// }
-
-enum TweetPollResult {
-  For = "for",
-  Against = "against",
-  Abstain = "abstain",
-  NoVote = "no_vote",
-  Draw = "draw",
-}
+const AnalysisResultSchema = z.object({
+  finalResult: z.enum(["For", "Against", "Abstain"]),
+  confidence: z.number().min(0).max(1),
+  reasoning: z.string(),
+  votingBreakdown: z.object({
+    twitterPoll: z.object({
+      for: z.number(),
+      against: z.number(),
+      abstain: z.number(),
+    }),
+    twitterComments: z.object({
+      positive: z.number(),
+      negative: z.number(),
+      neutral: z.number(),
+    }),
+    onChainVotes: z.object({
+      for: z.number(),
+      against: z.number(),
+      abstain: z.number(),
+    }),
+  }),
+});

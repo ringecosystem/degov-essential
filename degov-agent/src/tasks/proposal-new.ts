@@ -6,11 +6,12 @@ import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { SendTweetInput } from "../internal/x-agent";
 import { OpenrouterAgent } from "../internal/openrouter";
 import { setTimeout } from "timers/promises";
-import { PromptProposal } from "../internal/prompt";
+import { DegovPrompt } from "../internal/prompt";
 import { EnvReader } from "../integration/env-reader";
 import { NewProposalEvent } from "../types";
 import { DegovIndexerProposal } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
+import { generateText } from "ai";
 
 @Service()
 export class DegovProposalNewTask {
@@ -67,11 +68,12 @@ export class DegovProposalNewTask {
       const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
       let tweetInput: SendTweetInput | undefined;
       if (durationMinutes && durationMinutes > 0) {
-        const promptout = await PromptProposal.newProposalTweet(fastify, {
+        const promptout = await DegovPrompt.newProposalTweet(fastify, {
           stu,
           event,
         });
-        const tweet = await this.openrouterAgent.generateText({
+        const aiResp = await generateText({
+          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
           system: promptout.system,
           prompt: promptout.prompt,
         });
@@ -81,14 +83,14 @@ export class DegovProposalNewTask {
           daocode: event.daocode,
           proposalId: proposal.id,
           chainId: proposal.chainId,
-          text: tweet,
+          text: aiResp.text,
           poll: {
             options: ["For", "Against", "Abstain"],
             duration_minutes: durationMinutes,
           },
         };
       } else {
-        const promptout = await PromptProposal.newExpiringSoonProposalTweet(
+        const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
           fastify,
           {
             stu,
@@ -97,7 +99,8 @@ export class DegovProposalNewTask {
             durationMinutes: durationMinutes,
           }
         );
-        const tweet = await this.openrouterAgent.generateText({
+        const aiResp = await generateText({
+          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
           system: promptout.system,
           prompt: promptout.prompt,
         });
@@ -106,7 +109,7 @@ export class DegovProposalNewTask {
           daocode: event.daocode,
           proposalId: proposal.id,
           chainId: proposal.chainId,
-          text: tweet,
+          text: aiResp.text,
         };
       }
 

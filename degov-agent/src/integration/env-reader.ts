@@ -28,4 +28,10 @@ export class EnvReader {
     }
     return value.trim().toLowerCase() === "true" || value === "1";
   }
+
+  static aiModel(): string {
+    return EnvReader.env("OPENROUTER_DEFAULT_MODEL", {
+      defaultValue: "google/gemini-2.5-flash-preview",
+    })!;
+  }
 }
