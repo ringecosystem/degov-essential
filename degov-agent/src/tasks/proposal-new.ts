@@ -9,7 +9,7 @@ import { setTimeout } from "timers/promises";
 import { DegovPrompt } from "../internal/prompt";
 import { EnvReader } from "../integration/env-reader";
 import { NewProposalEvent } from "../types";
-import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovIndexer } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
 import { generateText } from "ai";
 
@@ -19,7 +19,7 @@ export class DegovProposalNewTask {
     private readonly daoService: DaoService,
     private readonly twitterAgent: TwitterAgentW,
     private readonly openrouterAgent: OpenrouterAgent,
-    private readonly degovIndexerProposal: DegovIndexerProposal
+    private readonly degovIndexer: DegovIndexer
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -142,7 +142,7 @@ export class DegovProposalNewTask {
         );
         continue;
       }
-      const proposal = await this.degovIndexerProposal.queryNextProposal({
+      const proposal = await this.degovIndexer.queryNextProposal({
         endpoint: dao.links.indexer,
         lastBlockNumber: dao.lastProcessedBlock ?? 0,
       });

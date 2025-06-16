@@ -112,6 +112,27 @@ Please analyze these data comprehensively and give final governance decision rec
       `,
     };
   }
+
+  static async proposalSummary(
+    fastify: FastifyInstance,
+    options: ProposalSummaryOptions
+  ): Promise<PromptOutput> {
+    return {
+      system: await getBuiltInPrompt(
+        fastify,
+        "prompts/proposal-summary.system.md"
+      ),
+      prompt: `
+${options.description}
+
+Generate a comprehensive summary of the proposal based on the description provided.
+      `,
+    };
+  }
+}
+
+export interface ProposalSummaryOptions {
+  description: string;
 }
 
 export interface FulfillContractOptions {

@@ -12,7 +12,37 @@ import {
 } from "./types";
 
 @Service()
-export class DegovIndexerProposal {
+export class DegovIndexer {
+  async queryProposalById(
+    options: QueryProposalById
+  ): Promise<DIProposal | undefined> {
+    const document = gql`
+      query QueryProposal($proposal_id: String!) {
+        proposals(where: { proposalId_eq: $proposal_id }) {
+          proposalId
+          proposer
+          blockNumber
+          blockTimestamp
+          voteStart
+          voteEnd
+          description
+        }
+      }
+    `;
+    const response = await request<{ proposals: DIProposal[] }>(
+      options.endpoint,
+      document,
+      {
+        proposal_id: options.proposalId,
+      }
+    );
+    const proposals = response.proposals;
+    if (proposals.length === 0) {
+      return undefined; // No proposal found
+    }
+    return proposals[0]; // Return the first proposal
+  }
+
   async queryNextProposal(
     options: QueryNextProposalOptions
   ): Promise<DIProposal | undefined> {

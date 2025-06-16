@@ -1,12 +1,11 @@
 import { Service } from "typedi";
 import Fastify, { FastifyInstance } from "fastify";
-import { Sessions, streamableHttp, fastifyMCPSSE } from "fastify-mcp";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+// import { Sessions, streamableHttp, fastifyMCPSSE } from "fastify-mcp";
+// import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { DEFINED_LOGGER_RULE } from "./integration/logger";
 import { DegovHelpers } from "./helpers";
 import { Resp, RuntimeProfile } from "./types";
-import { DegovMcpServer } from "./mcp/mcpserver";
 import { DegovMcpServerInitializer } from "./initialize";
 import { HelloRouter } from "./routes/hello";
 import { TwitterRouter } from "./routes/twitter";
@@ -34,7 +33,7 @@ import { fastifySchedule } from "@fastify/schedule";
 export class DegovMcpHttpServer {
   constructor(
     private readonly initializer: DegovMcpServerInitializer,
-    private readonly mcpServer: DegovMcpServer,
+    // private readonly mcpServer: DegovMcpServer,
     private readonly helloRouter: HelloRouter,
     private readonly twitterRouter: TwitterRouter,
     private readonly degovRouter: DegovRouter,
@@ -145,35 +144,35 @@ export class DegovMcpHttpServer {
     await this.degovProposalStatusTask.start(fastify);
   }
 
-  private async mcp(fastify: FastifyInstance) {
-    const sessions = new Sessions<StreamableHTTPServerTransport>();
+  // private async mcp(fastify: FastifyInstance) {
+  //   const sessions = new Sessions<StreamableHTTPServerTransport>();
 
-    sessions.on("connected", (sessionId) => {
-      fastify.log.info(`Session ${sessionId} connected`);
-    });
+  //   sessions.on("connected", (sessionId) => {
+  //     fastify.log.info(`Session ${sessionId} connected`);
+  //   });
 
-    sessions.on("terminated", (sessionId) => {
-      fastify.log.info(`Session ${sessionId} terminated`);
-    });
+  //   sessions.on("terminated", (sessionId) => {
+  //     fastify.log.info(`Session ${sessionId} terminated`);
+  //   });
 
-    const transportType = (
-      process.env.MCP_TRANSPORT_TYPE || "sse"
-    ).toLowerCase();
+  //   const transportType = (
+  //     process.env.MCP_TRANSPORT_TYPE || "sse"
+  //   ).toLowerCase();
 
-    switch (transportType) {
-      case "sse":
-        fastify.register(fastifyMCPSSE, {
-          server: await this.mcpServer.create(fastify),
-        });
-        break;
-      case "streamable_http":
-        fastify.register(streamableHttp, {
-          stateful: true,
-          mcpEndpoint: "/mcp",
-          sessions,
-          createServer: async () => await this.mcpServer.create(fastify),
-        });
-        break;
-    }
-  }
+  //   switch (transportType) {
+  //     case "sse":
+  //       fastify.register(fastifyMCPSSE, {
+  //         server: await this.mcpServer.create(fastify),
+  //       });
+  //       break;
+  //     case "streamable_http":
+  //       fastify.register(streamableHttp, {
+  //         stateful: true,
+  //         mcpEndpoint: "/mcp",
+  //         sessions,
+  //         createServer: async () => await this.mcpServer.create(fastify),
+  //       });
+  //       break;
+  //   }
+  // }
 }

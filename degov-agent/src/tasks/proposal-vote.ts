@@ -4,7 +4,7 @@ import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
 import { DegovService } from "../services/degov";
 import { degov_tweet } from "../generated/prisma";
-import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovIndexer } from "../internal/graphql";
 import { DaoService } from "../services/dao";
 import { OpenrouterAgent } from "../internal/openrouter";
 import { DegovPrompt } from "../internal/prompt";
@@ -20,7 +20,7 @@ export class DegovProposalVoteTask {
     private readonly degovService: DegovService,
     private readonly twitterAgent: TwitterAgentW,
     private readonly daoService: DaoService,
-    private readonly degovIndexerProposal: DegovIndexerProposal,
+    private readonly degovIndexer: DegovIndexer,
     private readonly openrouterAgent: OpenrouterAgent
   ) {}
 
@@ -118,7 +118,7 @@ export class DegovProposalVoteTask {
       }
     );
     const offset = currentVoteProgress?.offset ?? 0;
-    const voteCasts = await this.degovIndexerProposal.queryProposalVotes({
+    const voteCasts = await this.degovIndexer.queryProposalVotes({
       endpoint: dao.links.indexer,
       proposalId: degovTweet.proposal_id,
       offset,

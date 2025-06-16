@@ -10,7 +10,7 @@ import { DaoService } from "../services/dao";
 import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
-import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovIndexer } from "../internal/graphql";
 
 @Service()
 export class DegovProposalStatusTask {
@@ -19,7 +19,7 @@ export class DegovProposalStatusTask {
     private readonly daoService: DaoService,
     private readonly governorContract: GovernorContract,
     private readonly twitterAgent: TwitterAgentW,
-    private readonly degovIndexerProposal: DegovIndexerProposal
+    private readonly degovIndexer: DegovIndexer
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -175,7 +175,7 @@ export class DegovProposalStatusTask {
     let transactionHash: string | undefined;
     switch (options.status) {
       case ProposalState.Canceled:
-        const pcanceled = await this.degovIndexerProposal.queryProposalCanceled(
+        const pcanceled = await this.degovIndexer.queryProposalCanceled(
           {
             endpoint: options.dao.links.indexer,
             proposalId: options.degovTweet.proposal_id,
@@ -184,7 +184,7 @@ export class DegovProposalStatusTask {
         transactionHash = pcanceled?.transactionHash;
         break;
       case ProposalState.Queued:
-        const pqueued = await this.degovIndexerProposal.queryProposalQueued({
+        const pqueued = await this.degovIndexer.queryProposalQueued({
           endpoint: options.dao.links.indexer,
           proposalId: options.degovTweet.proposal_id,
         });
@@ -198,7 +198,7 @@ export class DegovProposalStatusTask {
         }
         break;
       case ProposalState.Executed:
-        const pexecuted = await this.degovIndexerProposal.queryProposalExecuted(
+        const pexecuted = await this.degovIndexer.queryProposalExecuted(
           {
             endpoint: options.dao.links.indexer,
             proposalId: options.degovTweet.proposal_id,

@@ -11,7 +11,7 @@ import {
 import { DaoService } from "../services/dao";
 import { DegovMcpDao } from "../types";
 import { TwitterService } from "../services/twitter";
-import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovIndexer } from "../internal/graphql";
 import { DegovTweetSyncTask } from "./tweet-sync";
 import { DegovHelpers } from "../helpers";
 import { generateObject } from "ai";
@@ -26,7 +26,7 @@ export class DegovProposalFulfillTask {
     private readonly degovService: DegovService,
     private readonly twitterService: TwitterService,
     private readonly daoService: DaoService,
-    private readonly degovIndexerProposal: DegovIndexerProposal,
+    private readonly degovIndexer: DegovIndexer,
     private readonly degovTweetSyncTask: DegovTweetSyncTask,
     private readonly openrouterAgent: OpenrouterAgent,
     private readonly governorContract: GovernorContract
@@ -190,7 +190,7 @@ export class DegovProposalFulfillTask {
       );
     }
 
-    const voteCasts = await this.degovIndexerProposal.queryProposalVotes({
+    const voteCasts = await this.degovIndexer.queryProposalVotes({
       endpoint: dao.links.indexer,
       proposalId: tweet.proposal_id,
       offset: 0,

@@ -76,6 +76,11 @@ export interface TwitterAuthorizeForm {
   method: "api";
 }
 
+export interface DegovSummaryForm {
+  indexer: string;
+  id: string;
+}
+
 export interface TwitterOAuthType {
   oauth_token: string;
   oauth_token_secret: string;

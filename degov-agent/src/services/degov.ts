@@ -2,13 +2,24 @@ import { FastifyInstance } from "fastify";
 import { Service } from "typedi";
 import {
   AddVoteProgressForm,
+  DegovSummaryForm,
   ProposalState,
   UpdateVoteProgressForm,
 } from "../types";
 import { degov_tweet, degov_vote_progress } from "../generated/prisma";
+import { OpenrouterAgent } from "../internal/openrouter";
+import { DegovIndexer } from "../internal/graphql";
+import { DegovPrompt } from "../internal/prompt";
+import { generateText } from "ai";
+import { EnvReader } from "../integration/env-reader";
 
 @Service()
 export class DegovService {
+  constructor(
+    private readonly openrouterAgent: OpenrouterAgent,
+    private readonly degovIndexer: DegovIndexer
+  ) {}
+
   async updateTweetStatus(
     fastify: FastifyInstance,
     options: { proposalId: string; status: ProposalState }
@@ -246,5 +257,29 @@ export class DegovService {
       },
     });
     fastify.log.info(`Updated degov tweet ${options.id} as fulfilled`);
+  }
+
+  async generateProposalSummary(
+    fastify: FastifyInstance,
+    options: DegovSummaryForm
+  ): Promise<string> {
+    const proposal = await this.degovIndexer.queryProposalById({
+      proposalId: options.id,
+      endpoint: options.indexer,
+    });
+    if (!proposal) {
+      throw new Error(`Proposal with ID ${options.id} not found`);
+    }
+    const promptInput = {
+      description: proposal.description,
+    };
+    const promptout = await DegovPrompt.proposalSummary(fastify, promptInput);
+    const aiResp = await generateText({
+      model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
+      system: promptout.system,
+      prompt: promptout.prompt,
+    });
+
+    return aiResp.text;
   }
 }
