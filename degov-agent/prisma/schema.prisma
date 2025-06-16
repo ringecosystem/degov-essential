@@ -118,6 +118,7 @@ model degov_tweet {
   sync_next_time_reply DateTime? // next time to sync replies
   times_processed      Int       @default(0) // number of times this tweet has been processed
   message              String?
+  fulfilled_explain    String? // explanation of why the tweet was fulfilled or errored
 
   ctime DateTime @default(now())
   utime DateTime @updatedAt

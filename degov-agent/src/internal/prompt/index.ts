@@ -130,7 +130,7 @@ export interface FulfillContractOptions {
   voteCasts: {
     support: string;
     reason: string;
-    voter: string;
+    voter?: string;
     weight: string;
     blockTimestamp: Date;
   }[];

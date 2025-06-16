@@ -18,6 +18,7 @@ import { generateObject } from "ai";
 import { DegovPrompt } from "../internal/prompt";
 import { OpenrouterAgent } from "../internal/openrouter";
 import { z } from "zod";
+import { GovernorContract } from "../internal/governor";
 
 @Service()
 export class DegovProposalFulfillTask {
@@ -27,7 +28,8 @@ export class DegovProposalFulfillTask {
     private readonly daoService: DaoService,
     private readonly degovIndexerProposal: DegovIndexerProposal,
     private readonly degovTweetSyncTask: DegovTweetSyncTask,
-    private readonly openrouterAgent: OpenrouterAgent
+    private readonly openrouterAgent: OpenrouterAgent,
+    private readonly governorContract: GovernorContract
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -115,6 +117,13 @@ export class DegovProposalFulfillTask {
     }
   ) {
     const { tweet, dao } = options;
+
+    const daoConfig = dao.config;
+    if (!daoConfig || !daoConfig.links) {
+      throw new Error(
+        `DAO config or links not found for DAO ${dao.code}, cannot fulfill tweet poll.`
+      );
+    }
 
     let tweetPoll = await this.twitterService.queryPoll(fastify, {
       tweetId: tweet.id,
@@ -210,7 +219,7 @@ export class DegovProposalFulfillTask {
       return {
         support: DegovHelpers.voteSupportText(item.support),
         reason: item.reason,
-        voter: item.voter,
+        // voter: item.voter,
         weight: item.weight,
         blockTimestamp: new Date(+item.blockTimestamp),
       };
@@ -232,14 +241,28 @@ export class DegovProposalFulfillTask {
       prompt: promptout.prompt,
     });
 
-    fastify.log.info(`Analysis result for proposal ${tweet.proposal_id}:`);
-    console.log({
-      result: aiResp.object.finalResult,
-      confidence: aiResp.object.confidence,
-      reasoning: aiResp.object.reasoning,
-      votingBreakdown: aiResp.object.votingBreakdown,
+    // await this.governorContract.castVoteWithReason({
+    //   chainId: daoConfig.chain.id,
+    //   contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
+    //   proposalId: BigInt(tweet.proposal_id),
+    //   support: DegovHelpers.voteSupportNumber(aiResp.object.finalResult),
+    //   reason: aiResp.object.reasoning,
+    // });
+    const fulfilledExplain = {
+      input: {
+        pollOptions: filteredPollOptions,
+        tweetReplies: filteredReplies,
+        voteCasts: filteredVoteCasts,
+      },
+      output: aiResp.object,
+    };
+    await this.degovService.updateProposalFulfilled(fastify, {
+      id: tweet.id,
+      fulfilledExplain: JSON.stringify(fulfilledExplain),
     });
-    console.log(aiResp.object.reasoning);
+    fastify.log.info(
+      `Proposal ${tweet.proposal_id} fulfilled with result: ${aiResp.object.finalResult}, confidence: ${aiResp.object.confidence}`
+    );
   }
 
   private filterTweetReplies(tweet: twitter_tweet): twitter_tweet[] {

@@ -410,6 +410,7 @@ export class TwitterService {
           sync_stop_tweet: 0,
           sync_stop_reply: 0,
           times_processed: 0,
+          fulfilled_explain: null,
           message: null,
           type,
           ctime: new Date(),

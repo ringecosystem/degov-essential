@@ -7,7 +7,7 @@ export interface BaseContractOptions {
 }
 
 export interface BaseWriteContraceOptions extends BaseContractOptions {
-  account: Account | Address;
+  account?: Account | Address;
   gas?: bigint;
   gasPrice?: bigint;
   maxFeePerGas?: bigint;
@@ -24,5 +24,4 @@ export interface CastVoteOptions extends BaseWriteContraceOptions {
   proposalId: bigint;
   support: number; // 0 = Against, 1 = For, 2 = Abstain
   reason: string;
-  account: Account;
 }

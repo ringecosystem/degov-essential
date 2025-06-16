@@ -106,14 +106,15 @@ export class GovernorContract {
 
   async castVoteWithReason(options: CastVoteOptions): Promise<string> {
     const wallet = this.wallet(options);
+    const account = options.account; // todo: set real account
     const hash = await wallet.writeContract({
       address: options.contractAddress,
       abi: ABI_FUNCTION_CAST_VOTE_WITH_REASON,
       chain: wallet.chain,
       functionName: "castVoteWithReason",
       args: [options.proposalId, options.support, options.reason],
+      account: account as Address,
     });
-
     return hash;
   }
 }
