@@ -2,6 +2,8 @@
 
 ## OpenZeppelin Status Lifecycle
 
+https://github.com/OpenZeppelin/openzeppelin-contracts/blob/f27019d48eee32551e5c9d31849afcaa99944545/contracts/governance/IGovernor.sol#L16
+
 ```typescript
 enum ProposalState {
   Pending,
@@ -14,6 +16,7 @@ enum ProposalState {
   Executed,
 }
 ```
+
 
 ```mathematia
                       ┌────────────┐

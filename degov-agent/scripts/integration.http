@@ -2,3 +2,12 @@
 
 GET http://localhost:13000/twitter/authorize
 
+
+## proposal summary
+POST http://localhost:13000/degov/summary/proposal
+Content-Type: application/json
+
+{
+  "id": "0xf8620cdaeeffa292b6b399cce458c320b2a725308e79664af7e54f9298c30331",
+  "indexer": "https://gov.ringdao.com/indexer/graphql"
+}

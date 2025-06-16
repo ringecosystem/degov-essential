@@ -17,11 +17,12 @@ export class DegovRouter {
       return Resp.ok(daos);
     });
 
-    fastify.get(
-      "/degov/summary",
+    fastify.post(
+      "/degov/summary/proposal",
       DegovSummaryRequestSchema,
       async (request: FastifyRequest<{ Body: DegovSummaryForm }>, reply) => {
         const body = request.body;
+        console.log("Generating proposal summary for:", body);
         const summary = await this.degovService.generateProposalSummary(
           fastify,
           body
