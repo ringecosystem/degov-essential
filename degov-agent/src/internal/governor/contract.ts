@@ -1,5 +1,6 @@
 import { Service } from "typedi";
 import {
+  Account,
   createPublicClient,
   createWalletClient,
   http,
@@ -102,13 +103,17 @@ export class GovernorContract {
   }
 
   // todo: change to use kms
-  privateAccount(): PrivateKeyAccount {
+  private privateAccount(): PrivateKeyAccount {
     if (this.private_key) {
       return this.private_key;
     }
     const dapk = EnvReader.env("DEGOV_AGENT_PRIVATE_KEY");
     this.private_key = privateKeyToAccount(dapk as `0x${string}`);
     return this.private_key;
+  }
+
+  botAccoutAddress(): `0x${string}` {
+    return this.privateAccount().address;
   }
 
   async status(options: QueryStatusOptions): Promise<ProposalState> {
