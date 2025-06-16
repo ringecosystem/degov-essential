@@ -44,7 +44,7 @@ Please strictly adhere to the following four-step analysis process:
 
 ---
 
-### **Required Output Format**
+### **Reasoning Output Format**
 
 Important: In the `reasoning` field, please strictly follow the following Markdown format:
 
@@ -83,3 +83,9 @@ Important: In the `reasoning` field, please strictly follow the following Markdo
 
 [(Optional) Identify potential issues highlighted by this governance process, such as community division, bot influence, or risks of whale centralization, and offer follow-up recommendations for the project team.]
 ```
+
+### **Reasoning Lite**
+
+Also provide a brief solution for `reasoning`, one or two paragraphs, highlight the topic and clearly express the reason.
+
+Important: Output the result in the `reasoningLite` field.

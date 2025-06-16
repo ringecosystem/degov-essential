@@ -246,7 +246,7 @@ export class DegovProposalFulfillTask {
     //   contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
     //   proposalId: BigInt(tweet.proposal_id),
     //   support: DegovHelpers.voteSupportNumber(aiResp.object.finalResult),
-    //   reason: aiResp.object.reasoning,
+    //   reason: aiResp.object.reasoningLite,
     // });
     const fulfilledExplain = {
       input: {
@@ -276,8 +276,9 @@ export class DegovProposalFulfillTask {
 
 const AnalysisResultSchema = z.object({
   finalResult: z.enum(["For", "Against", "Abstain"]),
-  confidence: z.number().min(0).max(1),
-  reasoning: z.string(),
+  confidence: z.number().min(0).max(10),
+  reasoning: z.string().describe("Detailed reasoning for the vote decision"),
+  reasoningLite: z.string().describe("Concise reasoning for the vote decision"),
   votingBreakdown: z.object({
     twitterPoll: z.object({
       for: z.number(),
