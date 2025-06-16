@@ -65,31 +65,20 @@ export class DegovProposalNewTask {
         proposalVoteEnd: voteEnd,
       });
 
+      if (durationMinutes && durationMinutes < 0) {
+        await this.daoService.updateProgress(fastify, {
+          code: event.daocode,
+          lastBlockNumber: event.blockNumber,
+        });
+        fastify.log.info(
+          `Skipping proposal tweet for DAO: ${event.daoname}, Proposal ID: ${proposal.id} - Vote ended in the past.`
+        );
+        continue;
+      }
+
       const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
       let tweetInput: SendTweetInput | undefined;
-      if (durationMinutes && durationMinutes > 0) {
-        const promptout = await DegovPrompt.newProposalTweet(fastify, {
-          stu,
-          event,
-        });
-        const aiResp = await generateText({
-          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
-          system: promptout.system,
-          prompt: promptout.prompt,
-        });
-
-        tweetInput = {
-          xprofile: event.xprofile,
-          daocode: event.daocode,
-          proposalId: proposal.id,
-          chainId: proposal.chainId,
-          text: aiResp.text,
-          poll: {
-            options: ["For", "Against", "Abstain"],
-            duration_minutes: durationMinutes,
-          },
-        };
-      } else {
+      if (!durationMinutes) {
         const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
           fastify,
           {
@@ -110,6 +99,28 @@ export class DegovProposalNewTask {
           proposalId: proposal.id,
           chainId: proposal.chainId,
           text: aiResp.text,
+        };
+      } else {
+        const promptout = await DegovPrompt.newProposalTweet(fastify, {
+          stu,
+          event,
+        });
+        const aiResp = await generateText({
+          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
+          system: promptout.system,
+          prompt: promptout.prompt,
+        });
+
+        tweetInput = {
+          xprofile: event.xprofile,
+          daocode: event.daocode,
+          proposalId: proposal.id,
+          chainId: proposal.chainId,
+          text: aiResp.text,
+          poll: {
+            options: ["For", "Against", "Abstain"],
+            duration_minutes: durationMinutes,
+          },
         };
       }
 
@@ -142,32 +153,34 @@ export class DegovProposalNewTask {
         );
         continue;
       }
-      const proposal = await this.degovIndexer.queryNextProposal({
+      const proposals = await this.degovIndexer.queryNextProposals({
         endpoint: dao.links.indexer,
         lastBlockNumber: dao.lastProcessedBlock ?? 0,
       });
-      if (!proposal) {
+      if (!proposals || !proposals.length) {
         fastify.log.info(
           `No new proposals found for DAO ${dao.name} with code ${dao.code}.`
         );
         continue; // No new proposals found
       }
-      const npe: NewProposalEvent = {
-        xprofile: dao.xprofile,
-        daocode: dao.code,
-        daoname: dao.name,
-        blockNumber: parseInt(proposal.blockNumber),
-        blockTimestamp: parseInt(proposal.blockTimestamp),
-        proposal: {
-          id: proposal.proposalId,
-          chainId,
-          url: `${dao.links.website}/proposal/${proposal.proposalId}`,
-          voteStart: parseInt(proposal.voteStart),
-          voteEnd: parseInt(proposal.voteEnd),
-          description: proposal.description,
-        },
-      };
-      results.push(npe);
+      for (const proposal of proposals) {
+        const npe: NewProposalEvent = {
+          xprofile: dao.xprofile,
+          daocode: dao.code,
+          daoname: dao.name,
+          blockNumber: parseInt(proposal.blockNumber),
+          blockTimestamp: parseInt(proposal.blockTimestamp),
+          proposal: {
+            id: proposal.proposalId,
+            chainId,
+            url: `${dao.links.website}/proposal/${proposal.proposalId}`,
+            voteStart: parseInt(proposal.voteStart),
+            voteEnd: parseInt(proposal.voteEnd),
+            description: proposal.description,
+          },
+        };
+        results.push(npe);
+      }
     }
 
     return results;

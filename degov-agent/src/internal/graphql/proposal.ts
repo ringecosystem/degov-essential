@@ -43,14 +43,14 @@ export class DegovIndexer {
     return proposals[0]; // Return the first proposal
   }
 
-  async queryNextProposal(
+  async queryNextProposals(
     options: QueryNextProposalOptions
-  ): Promise<DIProposal | undefined> {
+  ): Promise<DIProposal[]> {
     const document = gql`
       query QueryProposals($last_block_number: BigInt) {
         proposals(
           orderBy: blockNumber_ASC
-          limit: 1
+          limit: 10
           where: { blockNumber_gt: $last_block_number }
         ) {
           proposalId
@@ -71,10 +71,7 @@ export class DegovIndexer {
       }
     );
     const proposals = response.proposals;
-    if (proposals.length === 0) {
-      return undefined; // No new proposals found
-    }
-    return proposals[0];
+    return proposals ?? [];
   }
 
   async queryProposalVotes(options: QueryProposalVotes): Promise<DIVoteCast[]> {

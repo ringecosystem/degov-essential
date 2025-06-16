@@ -9,6 +9,5 @@ You are a research consultant specializing in community governance, holding a ne
 3.  **Applicability Analysis:**
     - Under what circumstances (e.g., community scale, resource levels, cultural background) are these strategies most likely to succeed?
     - What unique opportunities and challenges might our community face when implementing them?
-4.  **Questions for Discussion:** Based on the analysis, please propose 3-5 key questions that are most worthy of in-depth discussion by our decision-making team.
 
-**Please keep the entire briefing concise, not exceeding 500 words.** Ensure your analysis is objective, in-depth, and provokes further thought.
+**Please keep the entire briefing concise, not exceeding 100 words.** Ensure your analysis is objective, in-depth, and provokes further thought.
