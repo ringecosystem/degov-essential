@@ -9,5 +9,6 @@ Content-Type: application/json
 
 {
   "id": "0xf8620cdaeeffa292b6b399cce458c320b2a725308e79664af7e54f9298c30331",
+  "chain": 46,
   "indexer": "https://gov.ringdao.com/indexer/graphql"
 }

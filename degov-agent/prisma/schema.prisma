@@ -148,3 +148,18 @@ model degov_dao_progress {
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 }
+
+model proposal_summary {
+  id String @id
+
+  daocode     String?
+  proposal_id String
+  chain_id    Int
+  indexer     String?
+
+  description String
+  summary     String
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+}

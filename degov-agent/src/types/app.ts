@@ -78,6 +78,7 @@ export interface TwitterAuthorizeForm {
 
 export interface DegovSummaryForm {
   indexer: string;
+  chain: number;
   id: string;
 }
 
@@ -110,12 +111,12 @@ export interface PromptOutput {
 }
 
 export enum ProposalState {
-  Pending = 'pending',
-  Active = 'active',
-  Canceled = 'canceled',
-  Defeated = 'defeated',
-  Succeeded = 'succeeded',
-  Queued = 'queued',
-  Expired = 'expired',
-  Executed = 'executed',
+  Pending = "pending",
+  Active = "active",
+  Canceled = "canceled",
+  Defeated = "defeated",
+  Succeeded = "succeeded",
+  Queued = "queued",
+  Expired = "expired",
+  Executed = "executed",
 }

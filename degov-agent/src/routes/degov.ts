@@ -38,9 +38,10 @@ const DegovSummaryRequestSchema = {
       type: "object",
       properties: {
         id: { type: "string" },
+        chain: { type: "number" },
         indexer: { type: "string" },
       },
-      required: ["id", "indexer"],
+      required: ["id", "chain", "indexer"],
     },
   },
 };

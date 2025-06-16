@@ -263,6 +263,21 @@ export class DegovService {
     fastify: FastifyInstance,
     options: DegovSummaryForm
   ): Promise<string> {
+    const prisma = fastify.prisma;
+
+    const storedSummary = await prisma.proposal_summary.findFirst({
+      where: {
+        proposal_id: options.id,
+        chain_id: options.chain,
+      },
+    });
+    if (storedSummary) {
+      fastify.log.debug(
+        `Proposal summary for ID ${options.id} already exists, returning cached summary`
+      );
+      return storedSummary.summary;
+    }
+
     const proposal = await this.degovIndexer.queryProposalById({
       proposalId: options.id,
       endpoint: options.indexer,
@@ -278,6 +293,19 @@ export class DegovService {
       model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
       system: promptout.system,
       prompt: promptout.prompt,
+    });
+    const summary = aiResp.text;
+
+    await prisma.proposal_summary.create({
+      data: {
+        id: fastify.snowflake.generate(),
+        daocode: null,
+        chain_id: options.chain,
+        proposal_id: options.id,
+        indexer: options.indexer,
+        summary,
+        description: proposal.description,
+      },
     });
 
     return aiResp.text;
