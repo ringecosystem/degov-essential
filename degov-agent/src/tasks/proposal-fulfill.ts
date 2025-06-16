@@ -241,13 +241,13 @@ export class DegovProposalFulfillTask {
       prompt: promptout.prompt,
     });
 
-    // await this.governorContract.castVoteWithReason({
-    //   chainId: daoConfig.chain.id,
-    //   contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
-    //   proposalId: BigInt(tweet.proposal_id),
-    //   support: DegovHelpers.voteSupportNumber(aiResp.object.finalResult),
-    //   reason: aiResp.object.reasoningLite,
-    // });
+    await this.governorContract.castVoteWithReason({
+      chainId: daoConfig.chain.id,
+      contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
+      proposalId: BigInt(tweet.proposal_id),
+      support: DegovHelpers.voteSupportNumber(aiResp.object.finalResult),
+      reason: aiResp.object.reasoningLite,
+    });
     const fulfilledExplain = {
       input: {
         pollOptions: filteredPollOptions,

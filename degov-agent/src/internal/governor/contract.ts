@@ -1,5 +1,10 @@
 import { Service } from "typedi";
-import { createPublicClient, createWalletClient, http, Address } from "viem";
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  PrivateKeyAccount,
+} from "viem";
 import * as viemChain from "viem/chains";
 import {
   BaseContractOptions,
@@ -9,6 +14,8 @@ import {
 } from "./types";
 import { ProposalState } from "../../types";
 import { DegovHelpers } from "../../helpers";
+import { privateKeyToAccount } from "viem/accounts";
+import { EnvReader } from "../../integration/env-reader";
 
 const ABI_FUNCTION_STATE = [
   {
@@ -42,6 +49,8 @@ const ABI_FUNCTION_CAST_VOTE_WITH_REASON = [
 
 @Service()
 export class GovernorContract {
+  private private_key: PrivateKeyAccount | undefined;
+
   private client(options: BaseContractOptions) {
     const chain = Object.values(viemChain).find(
       (chain) => chain.id === options.chainId
@@ -70,24 +79,36 @@ export class GovernorContract {
       (chain) => chain.id === options.chainId
     );
 
+    const account = options.account ?? this.privateAccount();
+
     if (chain) {
       return createWalletClient({
         chain,
         transport: options.endpoint ? http(options.endpoint) : http(),
-        account: options.account,
+        account: account,
       });
     }
 
     if (options.endpoint) {
       return createWalletClient({
         transport: http(options.endpoint),
-        account: options.account,
+        account: account,
       });
     }
 
     throw new Error(
       `Chain with id ${options.chainId} not found and no endpoint provided.`
     );
+  }
+
+  // todo: change to use kms
+  privateAccount(): PrivateKeyAccount {
+    if (this.private_key) {
+      return this.private_key;
+    }
+    const dapk = EnvReader.env("DEGOV_AGENT_PRIVATE_KEY");
+    this.private_key = privateKeyToAccount(dapk as `0x${string}`);
+    return this.private_key;
   }
 
   async status(options: QueryStatusOptions): Promise<ProposalState> {
@@ -106,14 +127,14 @@ export class GovernorContract {
 
   async castVoteWithReason(options: CastVoteOptions): Promise<string> {
     const wallet = this.wallet(options);
-    const account = options.account; // todo: set real account
+    const account = options.account ?? this.privateAccount();
     const hash = await wallet.writeContract({
       address: options.contractAddress,
       abi: ABI_FUNCTION_CAST_VOTE_WITH_REASON,
       chain: wallet.chain,
       functionName: "castVoteWithReason",
       args: [options.proposalId, options.support, options.reason],
-      account: account as Address,
+      account: account,
     });
     return hash;
   }
