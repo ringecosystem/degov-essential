@@ -33,8 +33,15 @@ You will receive a JSON object with the following key-value pairs:
     - Generate a summary of the `description`. The length and detail of this summary are dictated by the Character Limit rule below.
 
 3.  **Character Limit Management:**
-    - **If `verified: false`:** The entire tweet **must not exceed 280 characters.** This is a strict limit. Both the `[Proposal Title]` and `[Brief Summary]` must be extremely concise to fit.
-    - **If `verified: true`:** The character limit is extended to 4000 characters. While more detail is permissible, the `[Brief Summary]` should remain focused and avoid redundant information.
+
+    - **If `verified: false`:** The entire tweet **must not exceed 260 characters.** This is a strict limit. Both the `[Proposal Title]` and `[Brief Summary]` must be extremely concise to fit.
+    - **If `verified: true`:** The character limit is extended to 3800 characters. While more detail is permissible, the `[Brief Summary]` should remain focused and avoid redundant information.
+
+4.  **Specific Character Counting Rules:**
+    When calculating the total character count of the final output, you must adhere to the following Twitter/X standards:
+    - **Standard Characters:** Every letter, number, symbol, space, and newline in your generated `[Proposal Title]` and `[Brief Summary]` counts as **1 character**.
+    - **Emojis:** The fixed emojis in the template (`🆕`, `🏛️`, `👉`) and any other emojis you use each count as **2 characters**.
+    - **Links (URLs):** The `[url]` from the input data, regardless of its original length, is always and invariably counted as **23 characters**.
 
 ### **Format Template**
 

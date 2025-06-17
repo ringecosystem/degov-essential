@@ -125,6 +125,7 @@ export class DegovProposalNewTask {
         };
       }
 
+      console.log(tweetInput);
       const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
       fastify.log.info(
         `Posted new proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${event.daoname}, Proposal URL: ${proposal.url}`

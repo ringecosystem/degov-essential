@@ -32,6 +32,11 @@ You will receive a JSON object with the following key-value pairs:
     - **If `verified: true`:** The character limit is extended to 4000 characters.
       - Despite the higher limit, the content should remain concise and to the point. Do not add filler content.
       - If the provided `reason` is exceptionally long, summarize its core argument and direct readers to the `proposalLink` for full details.
+3.  **Specific Character Counting Rules:**
+    When calculating the total character count of the final output, you must adhere to the following Twitter/X standards:
+    - **Standard Characters:** Every letter, number, symbol, space, and newline in your generated `[Proposal Title]` and `[Brief Summary]` counts as **1 character**.
+    - **Emojis:** The fixed emojis in the template (`🆕`, `🏛️`, `👉`) and any other emojis you use each count as **2 characters**.
+    - **Links (URLs):** The `[url]` from the input data, regardless of its original length, is always and invariably counted as **23 characters**.
 
 ### **Format Template**
 

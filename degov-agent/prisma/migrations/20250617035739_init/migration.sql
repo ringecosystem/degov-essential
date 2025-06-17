@@ -82,6 +82,7 @@ CREATE TABLE "degov_tweet" (
     "proposal_id" TEXT NOT NULL,
     "chain_id" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
+    "errored" INTEGER NOT NULL DEFAULT 0,
     "fulfilled" INTEGER NOT NULL DEFAULT 0,
     "type" TEXT NOT NULL,
     "reply_next_token" TEXT,
@@ -91,6 +92,7 @@ CREATE TABLE "degov_tweet" (
     "sync_next_time_reply" TIMESTAMP(3),
     "times_processed" INTEGER NOT NULL DEFAULT 0,
     "message" TEXT,
+    "fulfilled_explain" TEXT,
     "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "utime" TIMESTAMP(3) NOT NULL,
 
@@ -119,6 +121,21 @@ CREATE TABLE "degov_dao_progress" (
     "utime" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "degov_dao_progress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "proposal_summary" (
+    "id" TEXT NOT NULL,
+    "daocode" TEXT,
+    "proposal_id" TEXT NOT NULL,
+    "chain_id" INTEGER NOT NULL,
+    "indexer" TEXT,
+    "description" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "ctime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "utime" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "proposal_summary_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
