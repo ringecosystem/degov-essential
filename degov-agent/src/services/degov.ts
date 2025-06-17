@@ -56,7 +56,7 @@ export class DegovService {
 
   async listPollTweetsByStatus(
     fastify: FastifyInstance,
-    options: { status: ProposalState[]; fulfilled?: number }
+    options: { status: ProposalState[]; fulfilleds?: number[] }
   ): Promise<degov_tweet[]> {
     const prisma = fastify.prisma;
     const results = await prisma.degov_tweet.findMany({
@@ -65,7 +65,7 @@ export class DegovService {
           in: options.status,
         },
         type: "poll",
-        fulfilled: options.fulfilled ?? 0,
+        fulfilled: options.fulfilleds ? { in: options.fulfilleds } : undefined,
       },
       orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
     });

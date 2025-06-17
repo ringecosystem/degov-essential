@@ -32,7 +32,7 @@ export class DegovProposalVoteTask {
         });
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_TASK_PROPOSAL_VOTE is disabled, skipping task."
+            "[task-vote] FEATURE_TASK_PROPOSAL_VOTE is disabled, skipping task."
           );
           return;
         }
@@ -61,7 +61,7 @@ export class DegovProposalVoteTask {
         limit: queryLimit,
       });
       if (tweets.length === 0) {
-        fastify.log.info("No tweets to process, waiting for next cycle.");
+        fastify.log.info("[task-vote] No tweets to process, waiting for next cycle.");
         break; // Exit the loop if no tweets are found
       }
       for (const tweet of tweets) {
@@ -90,7 +90,7 @@ export class DegovProposalVoteTask {
       }
       if (tweets.length < queryLimit) {
         fastify.log.info(
-          "Processed all available tweets, exiting loop and waiting for next cycle."
+          "[task-vote] Processed all available tweets, exiting loop and waiting for next cycle."
         );
         break; // Exit the loop if fewer tweets than limit were found
       }
@@ -107,7 +107,7 @@ export class DegovProposalVoteTask {
     });
     if (!dao) {
       fastify.log.warn(
-        `DAO with code ${daocode} not found for tweet ${degovTweet.id}, skipping.`
+        `[task-vote] DAO with code ${daocode} not found for tweet ${degovTweet.id}, skipping.`
       );
       return;
     }
@@ -171,13 +171,13 @@ export class DegovProposalVoteTask {
         console.log(tweetInput);
         const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
         fastify.log.info(
-          `Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
+          `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
         await setTimeout(1000);
         nextOffset += 1;
       } catch (error) {
         fastify.log.error(
-          `Error processing vote cast for tweet ${
+          `[task-vote] Error processing vote cast for tweet ${
             degovTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(error)}`
         );

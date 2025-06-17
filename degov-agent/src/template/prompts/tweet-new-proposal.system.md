@@ -44,7 +44,7 @@ Your entire process is governed by the `verified` status and a multi-step conten
 #### **Condition B: If `verified: false`**
 
 1.  **Summary Detail:** Generate an extremely concise summary (1-2 sentences) of the clean-text `description`. It should act as a hook to encourage users to click the link.
-2.  **Character Limit:** The entire tweet **must not exceed 260 characters.** This is a strict and absolute limit.
+2.  **Character Limit:** The entire tweet **must not exceed 255 characters.** This is a strict and absolute limit.
 
 ### **Mandatory Formatting & Character Counting**
 

@@ -25,7 +25,7 @@ export class DegovTweetSyncTask {
         });
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_TASK_TWEET_SYNC is disabled, skipping task."
+            "[task-sync] FEATURE_TASK_TWEET_SYNC is disabled, skipping task."
           );
           return;
         }
@@ -52,6 +52,7 @@ export class DegovTweetSyncTask {
       fastify,
       {
         status: [ProposalState.Active],
+        fulfilleds: [0],
       }
     );
     for (const trackTweet of trackTweets) {
@@ -61,7 +62,7 @@ export class DegovTweetSyncTask {
         });
         if (!dao || !dao.xprofile) {
           fastify.log.warn(
-            `No DAO profile found for tweet ${trackTweet.id}, skipping conversation sync.`
+            `[task-sync] No DAO profile found for tweet ${trackTweet.id}, skipping conversation sync.`
           );
           return;
         }
@@ -70,7 +71,7 @@ export class DegovTweetSyncTask {
         await this.syncConversation(fastify, { tweet: trackTweet, dao });
       } catch (err) {
         fastify.log.error(
-          `Failed to sync conversation for tweet ${
+          `[task-sync] Failed to sync conversation for tweet ${
             trackTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(err)}`
         );
@@ -90,14 +91,14 @@ export class DegovTweetSyncTask {
     const syncStop = tweet.sync_stop_tweet ?? 1;
     if (syncStop) {
       fastify.log.info(
-        `Skipping tweet ${tweet.id} sync, sync_stop_tweet is set to ${syncStop}`
+        `[task-sync] Skipping tweet ${tweet.id} sync, sync_stop_tweet is set to ${syncStop}`
       );
       return;
     }
     const now = new Date();
     if (sntt && sntt > now) {
       fastify.log.info(
-        `Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
+        `[task-sync] Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
       );
       return;
     }
@@ -113,7 +114,7 @@ export class DegovTweetSyncTask {
         syncStopTweet: 1, // Stop syncing this tweet
       });
       fastify.log.info(
-        `No polls found for tweet ${tweet.id}, stop sync this tweet.`
+        `[task-sync] No polls found for tweet ${tweet.id}, stop sync this tweet.`
       );
       return;
     }
@@ -125,7 +126,7 @@ export class DegovTweetSyncTask {
         syncNextTimeTweet: new Date(end_datetime.getTime() - 1000 * 60 * 8), // 8 minutes before poll end
       });
       fastify.log.info(
-        `Updated sync next time for tweet ${tweet.id} to 8 minutes before poll end: ${end_datetime}`
+        `[task-sync] Updated sync next time for tweet ${tweet.id} to 8 minutes before poll end: ${end_datetime}`
       );
     } else {
       await this.degovService.updateDegovTweetSyncTweet(fastify, {
@@ -133,7 +134,7 @@ export class DegovTweetSyncTask {
         syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 60 * 2), // Sync again in 2 hours
       });
       fastify.log.info(
-        `Poll for tweet ${tweet.id} has no end datetime, wait 2 hours to sync this tweet.`
+        `[task-sync] Poll for tweet ${tweet.id} has no end datetime, wait 2 hours to sync this tweet.`
       );
     }
   }
@@ -148,14 +149,14 @@ export class DegovTweetSyncTask {
     const syncStop = tweet.sync_stop_reply ?? 1;
     if (syncStop) {
       fastify.log.info(
-        `Skipping tweet ${tweet.id} sync, sync_stop_reply is set to ${syncStop}`
+        `[task-sync] Skipping tweet ${tweet.id} sync, sync_stop_reply is set to ${syncStop}`
       );
       return;
     }
     const now = new Date();
     if (sntt && sntt > now) {
       fastify.log.info(
-        `Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
+        `[task-sync] Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
       );
       return;
     }
@@ -176,7 +177,7 @@ export class DegovTweetSyncTask {
         syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 5), // Sync again in 5 minutes
       });
       fastify.log.info(
-        `Updated reply next token for tweet ${tweet.id}, next token: ${nextToken}`
+        `[task-sync] Updated reply next token for tweet ${tweet.id}, next token: ${nextToken}`
       );
     } else {
       await this.degovService.updateDegovTweetSyncTweet(fastify, {
@@ -184,7 +185,7 @@ export class DegovTweetSyncTask {
         syncNextTimeTweet: new Date(Date.now() + 1000 * 60 * 10), // Sync again in 10 minutes
       });
       fastify.log.info(
-        `No next token for tweet ${tweet.id}, wait 10 minutes reply sync.`
+        `[task-sync] No next token for tweet ${tweet.id}, wait 10 minutes reply sync.`
       );
     }
   }

@@ -39,7 +39,7 @@ Your process must be governed by the `verified` status in the input JSON.
 1.  **Content Inclusion:**
     - The tweet **must not** include the `voterAddressLink` or `transactionLink`.
 2.  **Character Limit:**
-    - The total character count must not exceed **270 characters**. This limit is strict.
+    - The total character count must not exceed **255 characters**. This limit is strict.
 3.  **Reason Handling:**
     - If the `reason` field is not empty, it must be included.
     - If the `reason` is too long, you must summarize it. Keep it under 200 characters.

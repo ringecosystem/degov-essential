@@ -26,14 +26,14 @@ export class DegovProposalStatusTask {
     const task = new AsyncTask("task-proposal-status", async () => {
       try {
         const enableFeature = EnvReader.envBool(
-          "FEATURE_TASK_PROPOSAL_STATUS",
+          "[task-status] FEATURE_TASK_PROPOSAL_STATUS",
           {
             defaultValue: "true",
           }
         );
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_TASK_PROPOSAL_STATUS is disabled, skipping task."
+            "[task-status] FEATURE_TASK_PROPOSAL_STATUS is disabled, skipping task."
           );
           return;
         }
@@ -65,10 +65,13 @@ export class DegovProposalStatusTask {
           ProposalState.Succeeded,
           ProposalState.Queued,
         ],
+        fulfilleds: [0, 1],
       }
     );
     if (trackTweets.length === 0) {
-      fastify.log.info("No tweets to track for proposal status updates.");
+      fastify.log.info(
+        "[task-status] No tweets to track for proposal status updates."
+      );
       return;
     }
     for (const trackTweet of trackTweets) {
@@ -78,7 +81,7 @@ export class DegovProposalStatusTask {
         });
         if (!dao) {
           fastify.log.warn(
-            `DAO not found for tweet ${trackTweet.id}, skipping tweet processing.`
+            `[task-status] DAO not found for tweet ${trackTweet.id}, skipping tweet processing.`
           );
           continue;
         }
@@ -88,7 +91,7 @@ export class DegovProposalStatusTask {
         });
       } catch (err) {
         fastify.log.error(
-          `Error fetching status for tweet ${
+          `[task-status] Error fetching status for tweet ${
             trackTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(err)}`
         );
@@ -106,7 +109,9 @@ export class DegovProposalStatusTask {
     const { degovTweet, dao } = options;
     const daoConfig = dao.config;
     if (!daoConfig) {
-      throw new Error(`DAO config not found for DAO ${dao.code}.`);
+      throw new Error(
+        `[task-status] DAO config not found for DAO ${dao.code}.`
+      );
     }
     const daoContracts = daoConfig.contracts;
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
@@ -119,7 +124,7 @@ export class DegovProposalStatusTask {
     });
     if (degovTweet.status === result) {
       fastify.log.info(
-        `No status change for tweet ${degovTweet.id} (proposal ID: ${degovTweet.proposal_id}), current status: ${result}`
+        `[task-status] No status change for tweet ${degovTweet.id} (proposal ID: ${degovTweet.proposal_id}), current status: ${result}`
       );
       return; // No status change, skip further processing
     }
@@ -145,7 +150,7 @@ export class DegovProposalStatusTask {
       }
     } catch (err) {
       fastify.log.warn(
-        `Error fetching more tweet infos for tweet ${degovTweet.id}: ${err}`
+        `[task-status] Error fetching more tweet infos for tweet ${degovTweet.id}: ${err}`
       );
     }
 
@@ -168,7 +173,7 @@ export class DegovProposalStatusTask {
 
     const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
     fastify.log.info(
-      `Posted proposal status tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal URL: ${promptInput.proposalLink}`
+      `[task-status] Posted proposal status tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal URL: ${promptInput.proposalLink}`
     );
   }
 

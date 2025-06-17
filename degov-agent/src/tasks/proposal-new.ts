@@ -30,7 +30,7 @@ export class DegovProposalNewTask {
         });
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_TASK_PROPOSAL_NEW is disabled, skipping task."
+            "[task-new] FEATURE_TASK_PROPOSAL_NEW is disabled, skipping task."
           );
           return;
         }
@@ -38,7 +38,7 @@ export class DegovProposalNewTask {
         await this.run(fastify);
       } catch (err) {
         fastify.log.error(
-          `Error in ProposalNewTask: ${DegovHelpers.helpfulErrorMessage(
+          `[task-new] Error in ProposalNewTask: ${DegovHelpers.helpfulErrorMessage(
             err,
             { printTrace: true }
           )}`
@@ -72,7 +72,7 @@ export class DegovProposalNewTask {
           lastBlockNumber: event.blockNumber,
         });
         fastify.log.info(
-          `Skipping proposal tweet for DAO: ${event.daoname}, Proposal ID: ${proposal.id} - Vote ended in the past.`
+          `[task-new] Skipping proposal tweet for DAO: ${event.daoname}, Proposal ID: ${proposal.id} - Vote ended in the past.`
         );
         continue;
       }
@@ -128,7 +128,7 @@ export class DegovProposalNewTask {
       console.log(tweetInput);
       const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
       fastify.log.info(
-        `Posted new proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${event.daoname}, Proposal URL: ${proposal.url}`
+        `[task-new] Posted new proposal tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${event.daoname}, Proposal URL: ${proposal.url}`
       );
       await this.daoService.updateProgress(fastify, {
         code: event.daocode,
@@ -151,7 +151,7 @@ export class DegovProposalNewTask {
       const chainId = dao.config?.chain?.id;
       if (!chainId) {
         fastify.log.warn(
-          `Chain ID not found for DAO ${dao.name}. Skipping proposal processing.`
+          `[task-new] Chain ID not found for DAO ${dao.name}. Skipping proposal processing.`
         );
         continue;
       }
@@ -161,7 +161,7 @@ export class DegovProposalNewTask {
       });
       if (!proposals || !proposals.length) {
         fastify.log.info(
-          `No new proposals found for DAO ${dao.name} with code ${dao.code}.`
+          `[task-new] No new proposals found for DAO ${dao.name} with code ${dao.code}.`
         );
         continue; // No new proposals found
       }

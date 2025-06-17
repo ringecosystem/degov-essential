@@ -19,6 +19,7 @@ import { DegovPrompt } from "../internal/prompt";
 import { OpenrouterAgent } from "../internal/openrouter";
 import { z } from "zod";
 import { GovernorContract } from "../internal/governor";
+import { setTimeout } from "timers/promises";
 
 @Service()
 export class DegovProposalFulfillTask {
@@ -36,14 +37,14 @@ export class DegovProposalFulfillTask {
     const task = new AsyncTask("task-proposal-fulfill", async () => {
       try {
         const enableFeature = EnvReader.envBool(
-          "FEATURE_TASK_PROPOSAL_FULFILL",
+          "[task-fulfill] FEATURE_TASK_PROPOSAL_FULFILL",
           {
             defaultValue: "true",
           }
         );
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_TASK_PROPOSAL_FULFILL is disabled, skipping task."
+            "[task-fulfill] FEATURE_TASK_PROPOSAL_FULFILL is disabled, skipping task."
           );
           return;
         }
@@ -69,6 +70,12 @@ export class DegovProposalFulfillTask {
     const unfulfilledTweets = await this.degovService.listUnfulfilledTweets(
       fastify
     );
+    if (!unfulfilledTweets || unfulfilledTweets.length === 0) {
+      fastify.log.info(
+        "[task-fulfill] No unfulfilled tweets found, skipping task."
+      );
+      return;
+    }
     for (const unfulfilledTweet of unfulfilledTweets) {
       try {
         const dao = await this.daoService.dao(fastify, {
@@ -76,7 +83,7 @@ export class DegovProposalFulfillTask {
         });
         if (!dao) {
           throw new Error(
-            `DAO not found for tweet ${unfulfilledTweet.id}, cannot fulfill tweet poll.`
+            `[task-fulfill] DAO not found for tweet ${unfulfilledTweet.id}, cannot fulfill tweet poll.`
           );
         }
         await this.fulfillGovernorFromTweet(fastify, {
@@ -121,7 +128,7 @@ export class DegovProposalFulfillTask {
     const daoConfig = dao.config;
     if (!daoConfig || !daoConfig.links) {
       throw new Error(
-        `DAO config or links not found for DAO ${dao.code}, cannot fulfill tweet poll.`
+        `[task-fulfill] DAO config or links not found for DAO ${dao.code}, cannot fulfill tweet poll.`
       );
     }
 
@@ -130,12 +137,12 @@ export class DegovProposalFulfillTask {
     });
     if (!tweetPoll) {
       throw new Error(
-        `No poll found for tweet ${tweet.id}, cannot fulfill tweet poll.`
+        `[task-fulfill] No poll found for tweet ${tweet.id}, cannot fulfill tweet poll.`
       );
     }
     if (!tweetPoll.end_datetime) {
       throw new Error(
-        `Poll end time not found for tweet ${tweet.id}, cannot fulfill tweet poll.`
+        `[task-fulfill] Poll end time not found for tweet ${tweet.id}, cannot fulfill tweet poll.`
       );
     }
 
@@ -145,7 +152,7 @@ export class DegovProposalFulfillTask {
 
     if (pollEndTime > now) {
       fastify.log.info(
-        `Tweet poll ${
+        `[task-fulfill] Tweet poll ${
           tweet.id
         } has not ended yet. End time: ${pollEndTime.toISOString()}, Current time: ${now.toISOString()}`
       );
@@ -157,7 +164,7 @@ export class DegovProposalFulfillTask {
     });
     if (!degovTweet) {
       throw new Error(
-        `Degov tweet not found for tweet ID ${tweetId}, cannot fulfill tweet poll.`
+        `[task-fulfill] Degov tweet not found for tweet ID ${tweetId}, cannot fulfill tweet poll.`
       );
     }
     await this.degovTweetSyncTask.syncTweet(fastify, {
@@ -169,7 +176,7 @@ export class DegovProposalFulfillTask {
     });
     if (!tweetPoll) {
       throw new Error(
-        `No poll found for tweet ${tweet.id} after sync, cannot fulfill tweet poll.`
+        `[task-fulfill] No poll found for tweet ${tweet.id} after sync, cannot fulfill tweet poll.`
       );
     }
     // tweetPoll.twitter_poll_option
@@ -186,7 +193,7 @@ export class DegovProposalFulfillTask {
     });
     if (!fullTweet) {
       throw new Error(
-        `Full tweet not found for tweet ID ${tweet.id}, cannot fulfill tweet poll.`
+        `[task-fulfill] Full tweet not found for tweet ID ${tweet.id}, cannot fulfill tweet poll.`
       );
     }
 
@@ -231,16 +238,39 @@ export class DegovProposalFulfillTask {
       voteCasts: filteredVoteCasts,
     });
     fastify.log.info(
-      `Fulfill contract prompt for proposal ${tweet.proposal_id}: ${promptout.prompt}`
+      `[task-fulfill] Fulfill contract prompt for proposal ${tweet.proposal_id}: ${promptout.prompt}`
     );
 
-    const aiResp = await generateObject({
-      model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
-      schema: AnalysisResultSchema,
-      system: promptout.system,
-      prompt: promptout.prompt,
-    });
-    console.log(aiResp.object);
+    let _aiResp;
+    for (let i = 0; i < 3; i++) {
+      try {
+        _aiResp = await generateObject({
+          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
+          schema: AnalysisResultSchema,
+          system: promptout.system,
+          prompt: promptout.prompt,
+        });
+        break;
+      } catch (err) {
+        fastify.log.error(
+          `[task-fulfill] Error generating AI response for proposal ${tweet.proposal_id}: ${err}`
+        );
+        if (i < 2) {
+          fastify.log.info(
+            `[task-fulfill] Retrying AI generation for proposal ${
+              tweet.proposal_id
+            } (${i + 1}/3)`
+          );
+          await setTimeout(1000); // Wait 1 second before retrying
+          continue; // Retry up to 2 more times
+        } else {
+          throw new Error(
+            `[task-fulfill] Failed to generate AI response for proposal ${tweet.proposal_id} after 3 attempts`
+          );
+        }
+      }
+    }
+    const aiResp = _aiResp!;
 
     await this.governorContract.castVoteWithReason({
       chainId: daoConfig.chain.id,
@@ -262,7 +292,7 @@ export class DegovProposalFulfillTask {
       fulfilledExplain: JSON.stringify(fulfilledExplain),
     });
     fastify.log.info(
-      `Proposal ${tweet.proposal_id} fulfilled with result: ${aiResp.object.finalResult}, confidence: ${aiResp.object.confidence}`
+      `[task-fulfill] Proposal ${tweet.proposal_id} fulfilled with result: ${aiResp.object.finalResult}, confidence: ${aiResp.object.confidence}`
     );
   }
 
