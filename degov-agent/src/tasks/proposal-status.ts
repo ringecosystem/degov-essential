@@ -67,6 +67,10 @@ export class DegovProposalStatusTask {
         ],
       }
     );
+    if (trackTweets.length === 0) {
+      fastify.log.info("No tweets to track for proposal status updates.");
+      return;
+    }
     for (const trackTweet of trackTweets) {
       try {
         const dao = await this.daoService.dao(fastify, {
@@ -84,7 +88,9 @@ export class DegovProposalStatusTask {
         });
       } catch (err) {
         fastify.log.error(
-          `Error fetching status for tweet ${trackTweet.id}: ${err}`
+          `Error fetching status for tweet ${
+            trackTweet.id
+          }: ${DegovHelpers.helpfulErrorMessage(err)}`
         );
       }
     }
@@ -175,12 +181,10 @@ export class DegovProposalStatusTask {
     let transactionHash: string | undefined;
     switch (options.status) {
       case ProposalState.Canceled:
-        const pcanceled = await this.degovIndexer.queryProposalCanceled(
-          {
-            endpoint: options.dao.links.indexer,
-            proposalId: options.degovTweet.proposal_id,
-          }
-        );
+        const pcanceled = await this.degovIndexer.queryProposalCanceled({
+          endpoint: options.dao.links.indexer,
+          proposalId: options.degovTweet.proposal_id,
+        });
         transactionHash = pcanceled?.transactionHash;
         break;
       case ProposalState.Queued:
@@ -198,12 +202,10 @@ export class DegovProposalStatusTask {
         }
         break;
       case ProposalState.Executed:
-        const pexecuted = await this.degovIndexer.queryProposalExecuted(
-          {
-            endpoint: options.dao.links.indexer,
-            proposalId: options.degovTweet.proposal_id,
-          }
-        );
+        const pexecuted = await this.degovIndexer.queryProposalExecuted({
+          endpoint: options.dao.links.indexer,
+          proposalId: options.degovTweet.proposal_id,
+        });
         transactionHash = pexecuted?.transactionHash;
         break;
 
