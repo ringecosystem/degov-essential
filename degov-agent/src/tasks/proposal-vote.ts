@@ -168,6 +168,7 @@ export class DegovProposalVoteTask {
           },
         };
 
+        console.log(tweetInput);
         const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
         fastify.log.info(
           `Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
