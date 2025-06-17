@@ -99,7 +99,7 @@ export class DegovHelpers {
         ).toISOString()}`;
       }
       if (status) {
-        output = `[${status}]: ${output}`;
+        output = `[${status}]: ${output} => ${JSON.stringify(data)}`;
       }
     }
     if ("rateLimit" in error) {

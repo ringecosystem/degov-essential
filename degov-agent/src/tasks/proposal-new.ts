@@ -38,8 +38,9 @@ export class DegovProposalNewTask {
         await this.run(fastify);
       } catch (err) {
         fastify.log.error(
-          `Error in PostTweetProposalNewTask: ${DegovHelpers.helpfulErrorMessage(
-            err
+          `Error in ProposalNewTask: ${DegovHelpers.helpfulErrorMessage(
+            err,
+            { printTrace: true }
           )}`
         );
       }
