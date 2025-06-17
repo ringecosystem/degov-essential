@@ -81,6 +81,7 @@ export class DegovService {
         status: ProposalState.Active,
         type: "poll",
         fulfilled: 0,
+        errored: 0,
         times_processed: {
           lte: 4, // Only check proposals that have been processed less than 3 times
         },

@@ -52,13 +52,11 @@ You must populate the template below exactly as specified.
 
 **1. Output Template:**
 
-```
 🆕 [Proposal Title]
 🏛️ [daoname]
 👉 [url]
 
 [Brief Summary]
-```
 
 **2. Formatting Rules:**
 

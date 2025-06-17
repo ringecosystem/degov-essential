@@ -240,6 +240,7 @@ export class DegovProposalFulfillTask {
       system: promptout.system,
       prompt: promptout.prompt,
     });
+    console.log(aiResp.object);
 
     await this.governorContract.castVoteWithReason({
       chainId: daoConfig.chain.id,
