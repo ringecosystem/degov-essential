@@ -25,6 +25,12 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: pnpm install
 
+      - name: Setup prisma
+        working-directory: ${{ matrix.package }}
+        if: ${{ matrix.package == 'ai-agent' }}
+        run: |
+          npx prisma generate
+
       - name: Build
         working-directory: ${{ matrix.package }}
         run: yarn build
