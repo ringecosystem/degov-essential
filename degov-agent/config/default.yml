@@ -1,9 +1,4 @@
 
-twitter:
-  api_key: your-api-key-here
-  secret_key: your-api-secret-key-here
-  callback_host: https://mcp.degov.ai
-
 daos:
   - name: DeGov Development Test DAO
     code: degov-test-dao

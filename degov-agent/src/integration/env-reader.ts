@@ -19,10 +19,14 @@ export class EnvReader {
   }
 
   static envRequired(key: string, options?: { defaultValue?: string }): string {
-    return EnvReader.env(key, {
+    const v = EnvReader.env(key, {
       defaultValue: options?.defaultValue,
       optional: false,
-    })!;
+    });
+    if (!v) {
+      throw new Error(`Environment variable ${key} is not set`);
+    }
+    return v;
   }
 
   static envBool(key: string, options?: { defaultValue?: string }): boolean {
@@ -44,8 +48,22 @@ export class EnvReader {
   }
 
   static aiModel(): string {
-    return EnvReader.env("OPENROUTER_DEFAULT_MODEL", {
+    return EnvReader.envRequired("OPENROUTER_DEFAULT_MODEL", {
       defaultValue: "google/gemini-2.5-flash-preview",
     })!;
   }
+
+  static twitterEnv(): TwittterEnv {
+    return {
+      apiKey: EnvReader.envRequired("X_API_KEY"),
+      apiSecretKey: EnvReader.envRequired("X_API_SECRET_KEY"),
+      callbackHost: EnvReader.envRequired("X_CALLBACK_HOST"),
+    };
+  }
+}
+
+export interface TwittterEnv {
+  apiKey: string;
+  apiSecretKey: string;
+  callbackHost: string;
 }

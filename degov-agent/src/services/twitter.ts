@@ -23,6 +23,7 @@ import {
 } from "../internal/x-agent";
 import { TwitterApiRateLimitPlugin } from "@twitter-api-v2/plugin-rate-limit";
 import { DegovHelpers } from "../helpers";
+import { EnvReader } from "../integration/env-reader";
 
 export interface AuthorizeResult {
   method: "API";
@@ -51,7 +52,7 @@ export class TwitterService {
     let oauthUrl: string | undefined;
     switch (method) {
       case "API": {
-        const twenv = ConfigReader.twitterEnv();
+        const twenv = EnvReader.twitterEnv();
 
         const storedAuthorization =
           await prisma.twitter_authorization.findFirst({
@@ -161,7 +162,7 @@ export class TwitterService {
       );
     }
 
-    const twenv = ConfigReader.twitterEnv();
+    const twenv = EnvReader.twitterEnv();
 
     const unauthorizedClient = new TwitterApi({
       appKey: twenv.apiKey!,
@@ -228,7 +229,7 @@ export class TwitterService {
       },
       orderBy: { ctime: "desc" },
     });
-    const twenv = ConfigReader.twitterEnv();
+    const twenv = EnvReader.twitterEnv();
     const agentClients: AgentClient[] = [];
     for (const auth of authorizations) {
       if (!auth.user) {
