@@ -29,6 +29,7 @@ import {
   DegovUpdateSourceTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
+import handlebars from "handlebars";
 
 @Service()
 export class DegovMcpHttpServer {
@@ -96,7 +97,7 @@ export class DegovMcpHttpServer {
     // render
     fastify.register(fastifyView, {
       engine: {
-        handlebars: require("handlebars"),
+        handlebars: handlebars,
       },
       root: path.join(__dirname, "template"),
       // layout: "./templates/template",
@@ -131,6 +132,7 @@ export class DegovMcpHttpServer {
       reply.status(error.statusCode || 500).send(resp);
     });
   }
+
 
   private async routes(fastify: FastifyInstance) {
     await this.helloRouter.regist(fastify);
