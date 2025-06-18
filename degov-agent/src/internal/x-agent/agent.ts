@@ -9,12 +9,36 @@ import {
   SimpleTweetUser,
 } from "./types";
 import {
+  TTweetv2TweetField,
   TweetV2PostTweetResult,
   Tweetv2SearchResult,
   TweetV2SingleResult,
   TwitterApi,
   UserV2Result,
 } from "twitter-api-v2";
+
+const DEFAULT_TWEET_FIELDS: TTweetv2TweetField[] = [
+  "article",
+  "attachments",
+  "author_id",
+  "context_annotations",
+  "conversation_id",
+  "created_at",
+  "id",
+  "in_reply_to_user_id",
+  "lang",
+  "public_metrics",
+  "organic_metrics",
+  "edit_controls",
+  "possibly_sensitive",
+  "referenced_tweets",
+  "reply_settings",
+  "source",
+  "text",
+  "withheld",
+  "note_tweet",
+  "edit_history_tweet_ids",
+];
 
 @Service()
 export class TwitterAgent {
@@ -68,7 +92,18 @@ export class TwitterAgent {
 
   async searchTweets(options: SearchTweetsInput): Promise<Tweetv2SearchResult> {
     const client = this.agentClient(options);
-    const result = await client.v2.search(options.query, cleanTwitterParameter(options));
+    const result = await client.v2.search(options.query, {
+      ...cleanTwitterParameter(options),
+      expansions: ["author_id"], //  "attachments.poll_ids"
+      // "poll.fields": [
+      //   "id",
+      //   "duration_minutes",
+      //   "end_datetime",
+      //   "options",
+      //   "voting_status",
+      // ],
+      "tweet.fields": DEFAULT_TWEET_FIELDS,
+    });
 
     return result.data;
   }
@@ -84,6 +119,7 @@ export class TwitterAgent {
         "options",
         "voting_status",
       ],
+      "tweet.fields": DEFAULT_TWEET_FIELDS,
     });
     return result;
   }

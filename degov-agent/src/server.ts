@@ -1,12 +1,11 @@
 import { Service } from "typedi";
 import Fastify, { FastifyInstance } from "fastify";
-import { Sessions, streamableHttp, fastifyMCPSSE } from "fastify-mcp";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+// import { Sessions, streamableHttp, fastifyMCPSSE } from "fastify-mcp";
+// import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { DEFINED_LOGGER_RULE } from "./integration/logger";
 import { DegovHelpers } from "./helpers";
 import { Resp, RuntimeProfile } from "./types";
-import { DegovMcpServer } from "./mcp/mcpserver";
 import { DegovMcpServerInitializer } from "./initialize";
 import { HelloRouter } from "./routes/hello";
 import { TwitterRouter } from "./routes/twitter";
@@ -22,31 +21,27 @@ import { PrismaClient } from "./generated/prisma";
 import path from "path";
 import { DegovRouter } from "./routes/degov";
 import {
-  PostTweetProposalNewTask,
-  PostTweetProposalVoteTask,
-  PostTweetProposalCanceledTask,
-  PostTweetProposalExecutedTask,
+  DegovProposalNewTask,
+  DegovProposalVoteTask,
+  DegovProposalStatusTask,
+  DegovTweetSyncTask,
+  DegovProposalFulfillTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
-import { PostTweetProposalQueuedTask } from "./tasks/post-tweet-queued";
-import { FullfillTweetPollTask } from "./tasks/fulfill-tweet-poll";
-import { SyncTweetTask } from "./tasks/sync-tweet";
 
 @Service()
 export class DegovMcpHttpServer {
   constructor(
     private readonly initializer: DegovMcpServerInitializer,
-    private readonly mcpServer: DegovMcpServer,
+    // private readonly mcpServer: DegovMcpServer,
     private readonly helloRouter: HelloRouter,
     private readonly twitterRouter: TwitterRouter,
     private readonly degovRouter: DegovRouter,
-    private readonly postTweetProposalNewTask: PostTweetProposalNewTask,
-    private readonly postTweetProposalVoteTask: PostTweetProposalVoteTask,
-    private readonly postTweetProposalCanceledTask: PostTweetProposalCanceledTask,
-    private readonly postTweetProposalQueuedTask: PostTweetProposalQueuedTask,
-    private readonly postTweetProposalExecutedTask: PostTweetProposalExecutedTask,
-    private readonly fullfillTweetPollTask: FullfillTweetPollTask,
-    private readonly syncTweetTask: SyncTweetTask
+    private readonly degovProposalNewTask: DegovProposalNewTask,
+    private readonly degovProposalVoteTask: DegovProposalVoteTask,
+    private readonly degovProposalFulfillTask: DegovProposalFulfillTask,
+    private readonly degovTweetSyncTask: DegovTweetSyncTask,
+    private readonly degovProposalStatusTask: DegovProposalStatusTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -142,44 +137,42 @@ export class DegovMcpHttpServer {
   }
 
   private async task(fastify: FastifyInstance) {
-    await this.postTweetProposalNewTask.start(fastify);
-    await this.postTweetProposalVoteTask.start(fastify);
-    await this.postTweetProposalCanceledTask.start(fastify);
-    await this.postTweetProposalQueuedTask.start(fastify);
-    await this.postTweetProposalExecutedTask.start(fastify);
-    await this.fullfillTweetPollTask.start(fastify);
-    await this.syncTweetTask.start(fastify);
+    await this.degovProposalNewTask.start(fastify);
+    await this.degovProposalVoteTask.start(fastify);
+    await this.degovProposalFulfillTask.start(fastify);
+    await this.degovTweetSyncTask.start(fastify);
+    await this.degovProposalStatusTask.start(fastify);
   }
 
-  private async mcp(fastify: FastifyInstance) {
-    const sessions = new Sessions<StreamableHTTPServerTransport>();
+  // private async mcp(fastify: FastifyInstance) {
+  //   const sessions = new Sessions<StreamableHTTPServerTransport>();
 
-    sessions.on("connected", (sessionId) => {
-      fastify.log.info(`Session ${sessionId} connected`);
-    });
+  //   sessions.on("connected", (sessionId) => {
+  //     fastify.log.info(`Session ${sessionId} connected`);
+  //   });
 
-    sessions.on("terminated", (sessionId) => {
-      fastify.log.info(`Session ${sessionId} terminated`);
-    });
+  //   sessions.on("terminated", (sessionId) => {
+  //     fastify.log.info(`Session ${sessionId} terminated`);
+  //   });
 
-    const transportType = (
-      process.env.MCP_TRANSPORT_TYPE || "sse"
-    ).toLowerCase();
+  //   const transportType = (
+  //     process.env.MCP_TRANSPORT_TYPE || "sse"
+  //   ).toLowerCase();
 
-    switch (transportType) {
-      case "sse":
-        fastify.register(fastifyMCPSSE, {
-          server: await this.mcpServer.create(fastify),
-        });
-        break;
-      case "streamable_http":
-        fastify.register(streamableHttp, {
-          stateful: true,
-          mcpEndpoint: "/mcp",
-          sessions,
-          createServer: async () => await this.mcpServer.create(fastify),
-        });
-        break;
-    }
-  }
+  //   switch (transportType) {
+  //     case "sse":
+  //       fastify.register(fastifyMCPSSE, {
+  //         server: await this.mcpServer.create(fastify),
+  //       });
+  //       break;
+  //     case "streamable_http":
+  //       fastify.register(streamableHttp, {
+  //         stateful: true,
+  //         mcpEndpoint: "/mcp",
+  //         sessions,
+  //         createServer: async () => await this.mcpServer.create(fastify),
+  //       });
+  //       break;
+  //   }
+  // }
 }

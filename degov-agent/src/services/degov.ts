@@ -2,16 +2,27 @@ import { FastifyInstance } from "fastify";
 import { Service } from "typedi";
 import {
   AddVoteProgressForm,
-  DegovTweetStatus,
+  DegovSummaryForm,
+  ProposalState,
   UpdateVoteProgressForm,
 } from "../types";
 import { degov_tweet, degov_vote_progress } from "../generated/prisma";
+import { OpenrouterAgent } from "../internal/openrouter";
+import { DegovIndexer } from "../internal/graphql";
+import { DegovPrompt } from "../internal/prompt";
+import { generateText } from "ai";
+import { EnvReader } from "../integration/env-reader";
 
 @Service()
 export class DegovService {
+  constructor(
+    private readonly openrouterAgent: OpenrouterAgent,
+    private readonly degovIndexer: DegovIndexer
+  ) {}
+
   async updateTweetStatus(
     fastify: FastifyInstance,
-    options: { proposalId: string; status: DegovTweetStatus }
+    options: { proposalId: string; status: ProposalState }
   ) {
     const prisma = fastify.prisma;
     await prisma.degov_tweet.updateMany({
@@ -37,7 +48,7 @@ export class DegovService {
       },
       data: {
         times_processed,
-        ...(times_processed > 3 && { status: DegovTweetStatus.Error }),
+        ...(times_processed > 3 && { errored: 1 }),
         ...(message && { message: message }),
       },
     });
@@ -45,13 +56,16 @@ export class DegovService {
 
   async listPollTweetsByStatus(
     fastify: FastifyInstance,
-    options: { status: DegovTweetStatus }
+    options: { status: ProposalState[]; fulfilleds?: number[] }
   ): Promise<degov_tweet[]> {
     const prisma = fastify.prisma;
     const results = await prisma.degov_tweet.findMany({
       where: {
-        status: options.status,
+        status: {
+          in: options.status,
+        },
         type: "poll",
+        fulfilled: options.fulfilleds ? { in: options.fulfilleds } : undefined,
       },
       orderBy: [{ ctime: "asc" }, { times_processed: "asc" }],
     });
@@ -64,9 +78,10 @@ export class DegovService {
     const prisma = fastify.prisma;
     const results = await prisma.degov_tweet.findMany({
       where: {
-        status: DegovTweetStatus.Posted,
+        status: ProposalState.Active,
         type: "poll",
         fulfilled: 0,
+        errored: 0,
         times_processed: {
           lte: 4, // Only check proposals that have been processed less than 3 times
         },
@@ -84,7 +99,7 @@ export class DegovService {
     const take = options?.limit ?? 10;
     const tweets = await prisma.degov_tweet.findMany({
       where: {
-        status: DegovTweetStatus.Posted,
+        status: ProposalState.Active,
         type: "poll",
         times_processed: {
           lt: 3, // Only check proposals that have been processed less than 3 times
@@ -207,5 +222,93 @@ export class DegovService {
         utime: new Date(),
       },
     });
+  }
+
+  async getDegovTweetById(
+    fastify: FastifyInstance,
+    options: {
+      id: string;
+    }
+  ): Promise<degov_tweet | undefined> {
+    const prisma = fastify.prisma;
+    const result = await prisma.degov_tweet.findUnique({
+      where: {
+        id: options.id,
+      },
+    });
+    return result ?? undefined;
+  }
+
+  async updateProposalFulfilled(
+    fastify: FastifyInstance,
+    options: {
+      id: string;
+      fulfilledExplain: string;
+    }
+  ) {
+    const prisma = fastify.prisma;
+    await prisma.degov_tweet.update({
+      where: {
+        id: options.id,
+      },
+      data: {
+        fulfilled: 1,
+        fulfilled_explain: options.fulfilledExplain,
+        utime: new Date(),
+      },
+    });
+    fastify.log.info(`Updated degov tweet ${options.id} as fulfilled`);
+  }
+
+  async generateProposalSummary(
+    fastify: FastifyInstance,
+    options: DegovSummaryForm
+  ): Promise<string> {
+    const prisma = fastify.prisma;
+
+    const storedSummary = await prisma.proposal_summary.findFirst({
+      where: {
+        proposal_id: options.id,
+        chain_id: options.chain,
+      },
+    });
+    if (storedSummary) {
+      fastify.log.debug(
+        `Proposal summary for ID ${options.id} already exists, returning cached summary`
+      );
+      return storedSummary.summary;
+    }
+
+    const proposal = await this.degovIndexer.queryProposalById({
+      proposalId: options.id,
+      endpoint: options.indexer,
+    });
+    if (!proposal) {
+      throw new Error(`Proposal with ID ${options.id} not found`);
+    }
+    const promptInput = {
+      description: proposal.description,
+    };
+    const promptout = await DegovPrompt.proposalSummary(fastify, promptInput);
+    const aiResp = await generateText({
+      model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
+      system: promptout.system,
+      prompt: promptout.prompt,
+    });
+    const summary = aiResp.text;
+
+    await prisma.proposal_summary.create({
+      data: {
+        id: fastify.snowflake.generate(),
+        daocode: null,
+        chain_id: options.chain,
+        proposal_id: options.id,
+        indexer: options.indexer,
+        summary,
+        description: proposal.description,
+      },
+    });
+
+    return aiResp.text;
   }
 }

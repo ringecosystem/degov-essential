@@ -19,7 +19,7 @@ export class EnvReader {
   }
 
   static envBool(key: string, options?: { defaultValue?: string }): boolean {
-    const value = this.env(key, {
+    const value = EnvReader.env(key, {
       defaultValue: options?.defaultValue,
       optional: true,
     });
@@ -27,5 +27,11 @@ export class EnvReader {
       return false;
     }
     return value.trim().toLowerCase() === "true" || value === "1";
+  }
+
+  static aiModel(): string {
+    return EnvReader.env("OPENROUTER_DEFAULT_MODEL", {
+      defaultValue: "google/gemini-2.5-flash-preview",
+    })!;
   }
 }

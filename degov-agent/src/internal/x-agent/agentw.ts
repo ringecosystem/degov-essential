@@ -75,6 +75,13 @@ export class TwitterAgentW {
       }
     }
     const result = await this.twitterAgent.getUserById(options);
+    if (result.errors) {
+      throw new Error(
+        `Error fetching user by ID ${options.id}: ${JSON.stringify(
+          result.errors
+        )}`
+      );
+    }
     const form: twitter_user = this.toTwitterUser(result.data);
     await this.twitterService.modifyUser(fastify, form);
     return result;
@@ -99,6 +106,13 @@ export class TwitterAgentW {
       }
     }
     const result = await this.twitterAgent.getUserByUsername(options);
+    if (result.errors) {
+      throw new Error(
+        `Error fetching user by username "${
+          options.username
+        }": ${JSON.stringify(result.errors)}`
+      );
+    }
     const form: twitter_user = this.toTwitterUser(result.data);
     await this.twitterService.modifyUser(fastify, form);
     return result;
@@ -109,6 +123,13 @@ export class TwitterAgentW {
     options: SearchTweetsInput
   ): Promise<Tweetv2SearchResult> {
     const result = await this.twitterAgent.searchTweets(options);
+    if (result.errors) {
+      throw new Error(
+        `Error searching tweets with query "${options.query}": ${JSON.stringify(
+          result.errors
+        )}`
+      );
+    }
     if (result.meta.result_count > 0) {
       const tweets: twitter_tweet[] = [];
       for (const tweet of result.data) {
@@ -151,60 +172,34 @@ export class TwitterAgentW {
       }
     }
     const result = await this.twitterAgent.getTweetById(options);
+    if (result.errors) {
+      throw new Error(
+        `Error fetching tweet by ID ${options.id}: ${JSON.stringify(
+          result.errors
+        )}`
+      );
+    }
+    const tweet = result.data;
     const form: twitter_tweet = {
-      id: result.data.id,
-      text: result.data.text ?? null,
-      created_at: result.data.created_at
-        ? new Date(result.data.created_at)
-        : new Date(),
-      author_id: result.data.author_id ?? null,
-      retweet_count: 0,
-      like_count: 0,
-      reply_count: 0,
+      id: tweet.id,
+      text: tweet.text ?? null,
+      created_at: tweet.created_at ? new Date(tweet.created_at) : new Date(),
+      author_id: tweet.author_id ?? null,
+      retweet_count: tweet.public_metrics?.retweet_count ?? 0,
+      like_count: tweet.public_metrics?.like_count ?? 0,
+      reply_count: tweet.public_metrics?.reply_count ?? 0,
       ctime: new Date(),
       utime: new Date(),
-      raw: JSON.stringify(result.data),
-      conversation_id: result.data.conversation_id ?? null,
+      raw: JSON.stringify(tweet),
+      conversation_id: tweet.conversation_id ?? null,
       from_agent: 0,
     };
     await this.twitterService.modifyTweets(fastify, [form]);
     const polls = result.includes?.polls;
-    if (polls && polls.length) {
-      for (const poll of polls) {
-        const pollForm: twitter_poll = {
-          id: poll.id,
-          tweet_id: result.data.id,
-          duration_minutes: poll.duration_minutes ?? null,
-          end_datetime: poll.end_datetime ? new Date(poll.end_datetime) : null,
-          voting_status: poll.voting_status ?? null,
-          ctime: new Date(),
-          utime: new Date(),
-        };
-        const pollOptionsForm = [];
-        for (const option of poll.options) {
-          const optionCode = DegovHelpers.pollOptionCode({
-            id: poll.id,
-            label: option.label,
-            position: option.position,
-          });
-          const optionForm: twitter_poll_option = {
-            id: "",
-            code: optionCode,
-            poll_id: poll.id,
-            label: option.label,
-            votes: option.votes,
-            position: option.position,
-            ctime: new Date(),
-            utime: new Date(),
-          };
-          pollOptionsForm.push(optionForm);
-        }
-        await this.twitterService.modifyPoll(fastify, {
-          poll: pollForm,
-          options: pollOptionsForm,
-        });
-      }
-    }
+    await this.twitterService.modifyPolls(fastify, {
+      tweetId: tweet.id,
+      polls: polls ?? [],
+    });
     return result;
   }
 
@@ -213,6 +208,9 @@ export class TwitterAgentW {
     options: SendTweetInput
   ): Promise<TweetV2PostTweetResult> {
     const result = await this.twitterAgent.sendTweet(options);
+    if (result.errors) {
+      throw new Error(`Error sending tweet: ${JSON.stringify(result.errors)}`);
+    }
     const user = this.twitterAgent.currentUser(options);
     const input: SentTweetHookInput = {
       result: result,

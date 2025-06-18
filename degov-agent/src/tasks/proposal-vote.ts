@@ -4,37 +4,35 @@ import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
 import { DegovService } from "../services/degov";
 import { degov_tweet } from "../generated/prisma";
-import { DegovIndexerProposal } from "../internal/graphql";
+import { DegovIndexer } from "../internal/graphql";
 import { DaoService } from "../services/dao";
 import { OpenrouterAgent } from "../internal/openrouter";
-import { PromptProposal } from "../internal/prompt";
+import { DegovPrompt } from "../internal/prompt";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { setTimeout } from "timers/promises";
+import { generateText } from "ai";
 
 @Service()
-export class PostTweetProposalVoteTask {
+export class DegovProposalVoteTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly twitterAgent: TwitterAgentW,
     private readonly daoService: DaoService,
-    private readonly degovIndexerProposal: DegovIndexerProposal,
+    private readonly degovIndexer: DegovIndexer,
     private readonly openrouterAgent: OpenrouterAgent
   ) {}
 
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask("task-post-tweet-proposal-vote", async () => {
+    const task = new AsyncTask("task-proposal-vote", async () => {
       try {
-        const enableFeature = EnvReader.envBool(
-          "FEATURE_POST_TWEET_PROPOSAL_VOTE",
-          {
-            defaultValue: "true",
-          }
-        );
+        const enableFeature = EnvReader.envBool("FEATURE_TASK_PROPOSAL_VOTE", {
+          defaultValue: "true",
+        });
         if (!enableFeature) {
           fastify.log.warn(
-            "FEATURE_POST_TWEET_PROPOSAL_VOTE is disabled, skipping task."
+            "[task-vote] FEATURE_TASK_PROPOSAL_VOTE is disabled, skipping task."
           );
           return;
         }
@@ -63,7 +61,7 @@ export class PostTweetProposalVoteTask {
         limit: queryLimit,
       });
       if (tweets.length === 0) {
-        fastify.log.info("No tweets to process, waiting for next cycle.");
+        fastify.log.info("[task-vote] No tweets to process, waiting for next cycle.");
         break; // Exit the loop if no tweets are found
       }
       for (const tweet of tweets) {
@@ -92,7 +90,7 @@ export class PostTweetProposalVoteTask {
       }
       if (tweets.length < queryLimit) {
         fastify.log.info(
-          "Processed all available tweets, exiting loop and waiting for next cycle."
+          "[task-vote] Processed all available tweets, exiting loop and waiting for next cycle."
         );
         break; // Exit the loop if fewer tweets than limit were found
       }
@@ -109,7 +107,7 @@ export class PostTweetProposalVoteTask {
     });
     if (!dao) {
       fastify.log.warn(
-        `DAO with code ${daocode} not found for tweet ${degovTweet.id}, skipping.`
+        `[task-vote] DAO with code ${daocode} not found for tweet ${degovTweet.id}, skipping.`
       );
       return;
     }
@@ -120,7 +118,7 @@ export class PostTweetProposalVoteTask {
       }
     );
     const offset = currentVoteProgress?.offset ?? 0;
-    const voteCasts = await this.degovIndexerProposal.queryProposalVotes({
+    const voteCasts = await this.degovIndexer.queryProposalVotes({
       endpoint: dao.links.indexer,
       proposalId: degovTweet.proposal_id,
       offset,
@@ -139,11 +137,13 @@ export class PostTweetProposalVoteTask {
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
         };
-        const promptout = await PromptProposal.newVoteCastTweet(
+        const promptout = await DegovPrompt.newVoteCastTweet(
           fastify,
           promptInput
         );
-        const tweet = await this.openrouterAgent.generateText({
+
+        const aiResp = await generateText({
+          model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
           system: promptout.system,
           prompt: promptout.prompt,
         });
@@ -162,21 +162,22 @@ export class PostTweetProposalVoteTask {
           daocode: degovTweet.daocode,
           proposalId: degovTweet.proposal_id,
           chainId: degovTweet.chain_id,
-          text: tweet,
+          text: aiResp.text,
           reply: {
             in_reply_to_tweet_id: degovTweet.id,
           },
         };
 
+        console.log(tweetInput);
         const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
         fastify.log.info(
-          `Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
+          `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
         await setTimeout(1000);
         nextOffset += 1;
       } catch (error) {
         fastify.log.error(
-          `Error processing vote cast for tweet ${
+          `[task-vote] Error processing vote cast for tweet ${
             degovTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(error)}`
         );

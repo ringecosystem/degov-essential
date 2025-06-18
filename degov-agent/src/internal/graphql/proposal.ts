@@ -12,15 +12,45 @@ import {
 } from "./types";
 
 @Service()
-export class DegovIndexerProposal {
-  async queryNextProposal(
-    options: QueryNextProposalOptions
+export class DegovIndexer {
+  async queryProposalById(
+    options: QueryProposalById
   ): Promise<DIProposal | undefined> {
+    const document = gql`
+      query QueryProposal($proposal_id: String!) {
+        proposals(where: { proposalId_eq: $proposal_id }) {
+          proposalId
+          proposer
+          blockNumber
+          blockTimestamp
+          voteStart
+          voteEnd
+          description
+        }
+      }
+    `;
+    const response = await request<{ proposals: DIProposal[] }>(
+      options.endpoint,
+      document,
+      {
+        proposal_id: options.proposalId,
+      }
+    );
+    const proposals = response.proposals;
+    if (proposals.length === 0) {
+      return undefined; // No proposal found
+    }
+    return proposals[0]; // Return the first proposal
+  }
+
+  async queryNextProposals(
+    options: QueryNextProposalOptions
+  ): Promise<DIProposal[]> {
     const document = gql`
       query QueryProposals($last_block_number: BigInt) {
         proposals(
           orderBy: blockNumber_ASC
-          limit: 1
+          limit: 10
           where: { blockNumber_gt: $last_block_number }
         ) {
           proposalId
@@ -41,18 +71,16 @@ export class DegovIndexerProposal {
       }
     );
     const proposals = response.proposals;
-    if (proposals.length === 0) {
-      return undefined; // No new proposals found
-    }
-    return proposals[0];
+    return proposals ?? [];
   }
 
   async queryProposalVotes(options: QueryProposalVotes): Promise<DIVoteCast[]> {
+    const limit = 10;
     const document = gql`
-      query QueryProposalVotes($offset: Int!, $proposal_id: String!) {
+      query QueryProposalVotes($offset: Int!, $limit: Int!, $proposal_id: String!) {
         voteCasts(
           offset: $offset
-          limit: 10
+          limit: $limit,
           orderBy: blockNumber_ASC
           where: { proposalId_eq: $proposal_id }
         ) {
@@ -68,19 +96,34 @@ export class DegovIndexerProposal {
         }
       }
     `;
-    const response = await request<{ voteCasts: DIVoteCast[] }>(
-      options.endpoint,
-      document,
-      {
-        offset: options.offset,
-        proposal_id: options.proposalId,
+
+    const enableQueryFullData = options.enableQueryFullData ?? false;
+    let offset = options.offset;
+    const result = [];
+    while (true) {
+      const response = await request<{ voteCasts: DIVoteCast[] }>(
+        options.endpoint,
+        document,
+        {
+          offset,
+          limit,
+          proposal_id: options.proposalId,
+        }
+      );
+      const voteCasts = response.voteCasts;
+      if (voteCasts.length === 0) {
+        break;
       }
-    );
-    const voteCasts = response.voteCasts;
-    if (voteCasts.length === 0) {
-      return []; // No votes found
+      result.push(...voteCasts);
+      if (!enableQueryFullData) {
+        break;
+      }
+      offset += voteCasts.length;
+      if (voteCasts.length < limit) {
+        break; // No more votes to fetch
+      }
     }
-    return voteCasts;
+    return result;
   }
 
   async queryProposalCanceled(

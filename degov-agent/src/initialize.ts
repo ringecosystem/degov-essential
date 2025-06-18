@@ -13,7 +13,8 @@ export class DegovMcpServerInitializer {
   }
 
   private async ensureEnv() {
-    EnvReader.env('OPENROUTER_API_KEY');
+    EnvReader.env("OPENROUTER_API_KEY");
+    EnvReader.env("DEGOV_AGENT_PRIVATE_KEY");
   }
 
   private async initTwitterApi(fastify: FastifyInstance) {
