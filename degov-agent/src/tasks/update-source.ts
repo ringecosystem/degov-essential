@@ -7,7 +7,7 @@ import { DegovAgentSource } from "../internal/agent-source";
 export class DegovUpdateSourceTask {
   constructor(private readonly degovAgentSource: DegovAgentSource) {}
   async start(fastify: FastifyInstance) {
-    const task = new AsyncTask("task-udpate-source", async () => {
+    const task = new AsyncTask("task-update-source", async () => {
       try {
         await this.degovAgentSource.refresh(fastify);
         fastify.log.info(
