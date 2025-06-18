@@ -33,4 +33,4 @@ jobs:
 
       - name: Build
         working-directory: ${{ matrix.package }}
-        run: yarn build
+        run: pnpm build
