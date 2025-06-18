@@ -26,8 +26,10 @@ import {
   DegovProposalStatusTask,
   DegovTweetSyncTask,
   DegovProposalFulfillTask,
+  DegovUpdateSourceTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
+import handlebars from "handlebars";
 
 @Service()
 export class DegovMcpHttpServer {
@@ -41,7 +43,8 @@ export class DegovMcpHttpServer {
     private readonly degovProposalVoteTask: DegovProposalVoteTask,
     private readonly degovProposalFulfillTask: DegovProposalFulfillTask,
     private readonly degovTweetSyncTask: DegovTweetSyncTask,
-    private readonly degovProposalStatusTask: DegovProposalStatusTask
+    private readonly degovProposalStatusTask: DegovProposalStatusTask,
+    private readonly degovUpdateSourceTask: DegovUpdateSourceTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -94,7 +97,7 @@ export class DegovMcpHttpServer {
     // render
     fastify.register(fastifyView, {
       engine: {
-        handlebars: require("handlebars"),
+        handlebars: handlebars,
       },
       root: path.join(__dirname, "template"),
       // layout: "./templates/template",
@@ -130,6 +133,7 @@ export class DegovMcpHttpServer {
     });
   }
 
+
   private async routes(fastify: FastifyInstance) {
     await this.helloRouter.regist(fastify);
     await this.twitterRouter.regist(fastify);
@@ -142,6 +146,7 @@ export class DegovMcpHttpServer {
     await this.degovProposalFulfillTask.start(fastify);
     await this.degovTweetSyncTask.start(fastify);
     await this.degovProposalStatusTask.start(fastify);
+    await this.degovUpdateSourceTask.start(fastify);
   }
 
   // private async mcp(fastify: FastifyInstance) {
@@ -155,9 +160,9 @@ export class DegovMcpHttpServer {
   //     fastify.log.info(`Session ${sessionId} terminated`);
   //   });
 
-  //   const transportType = (
-  //     process.env.MCP_TRANSPORT_TYPE || "sse"
-  //   ).toLowerCase();
+  //   const transportType = EnvReader.env("MCP_TRANSPORT_TYPE", {
+  //     defaultValue: "sse",
+  //   }).toLowerCase();
 
   //   switch (transportType) {
   //     case "sse":

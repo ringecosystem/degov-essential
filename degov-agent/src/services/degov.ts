@@ -54,6 +54,24 @@ export class DegovService {
     });
   }
 
+  async listFulfilledByChainWithSmartProposalId(
+    fastify: FastifyInstance,
+    options: { chainId: number; proposalId: string }
+  ): Promise<degov_tweet[]> {
+    const prisma = fastify.prisma;
+    const results = await prisma.degov_tweet.findMany({
+      where: {
+        chain_id: options.chainId,
+        proposal_id: {
+          startsWith: options.proposalId,
+        },
+        fulfilled: 1,
+      },
+      orderBy: [{ ctime: "desc" }],
+    });
+    return results;
+  }
+
   async listPollTweetsByStatus(
     fastify: FastifyInstance,
     options: { status: ProposalState[]; fulfilleds?: number[] }

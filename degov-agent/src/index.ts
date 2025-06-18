@@ -2,14 +2,11 @@ import "reflect-metadata";
 
 import Container from "typedi";
 import { DegovMcpHttpServer } from "./server";
-import { ConfigReader } from "./integration/config-reader";
+import { EnvReader } from "./integration/env-reader";
 
 async function main() {
-  const host = ConfigReader.read("app.host", { defaultValue: "127.0.0.1" })!;
-  const port = parseInt(
-    ConfigReader.read("app.port", { defaultValue: "3000" })!,
-    10
-  );
+  const host = EnvReader.envRequired("HOST", { defaultValue: "127.0.0.1" });
+  const port = EnvReader.envInt("PORT", { defaultValue: "3000" });
   const c = Container.get(DegovMcpHttpServer);
   await c.listen({ host, port });
 }

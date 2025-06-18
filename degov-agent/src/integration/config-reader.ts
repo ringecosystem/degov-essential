@@ -22,26 +22,13 @@ export class ConfigReader {
     throw new Error(`Environment variable ${key} is not set`);
   }
 
-  static twitterEnv(): TwittterEnv {
-    return {
-      apiKey: ConfigReader.read("twitter.api_key")!,
-      apiSecretKey: ConfigReader.read("twitter.secret_key")!,
-      callbackHost: ConfigReader.read("twitter.callback_host")!,
-    };
-  }
 
-  static degovDaos(): DegovDaoConfig[] {
-    return (
-      ConfigReader.read<DegovDaoConfig[]>("daos", {
-        defaultValue: [],
-        optional: true,
-      }) ?? []
-    );
-  }
-}
-
-export interface TwittterEnv {
-  apiKey: string;
-  apiSecretKey: string;
-  callbackHost: string;
+  // static degovDaos(): DegovDaoConfig[] {
+  //   return (
+  //     ConfigReader.read<DegovDaoConfig[]>("daos", {
+  //       defaultValue: [],
+  //       optional: true,
+  //     }) ?? []
+  //   );
+  // }
 }
