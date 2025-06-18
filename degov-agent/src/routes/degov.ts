@@ -50,7 +50,7 @@ export class DegovRouter {
         reply: FastifyReply
       ) => {
         const { chain, id } = request.params;
-        const format = request.query.format ?? "json";
+        const format = request.query.format ?? "html";
         if (id.length < 9) {
           return Resp.err("Invalid proposal ID");
         }

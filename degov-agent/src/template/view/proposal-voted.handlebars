@@ -4,7 +4,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Degov Vote Results</title>
+
+  <!-- base Meta -->
+  <title>{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote
+    Results{{/if}}</title>
+  <meta name="description"
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} governance proposal analysis powered by DeGov AI. View voting results, sentiment analysis, and AI-driven decisions for proposal {{proposal_id}}.{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title"
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote Results{{/if}}">
+  <meta property="og:description"
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}AI-powered governance analysis for {{dao.name}}. Final decision: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} with {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}high{{/if}} confidence. View detailed voting breakdown and reasoning.{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+  {{#if tweets}}
+  {{#with (lookup tweets 0)}}
+  {{#if dao.config.logo}}
+  {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
+  <meta property="og:image" content="{{dao.config.logo}}">
+  {{else}}
+  <meta property="og:image" content="{{dao.links.website}}{{dao.config.logo}}">
+  {{/if}}
+  {{else}}
+  <meta property="og:image" content="https://degov.ai/assets/degov-social-preview.png">
+  {{/if}}
+  {{/with}}
+  {{else}}
+  <meta property="og:image" content="https://degov.ai/assets/degov-social-preview.png">
+  {{/if}}
+  <meta property="og:site_name" content="DeGov AI">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@DeGovAI">
+  <meta name="twitter:creator" content="@DeGovAI">
+  <meta name="twitter:title"
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote Results{{/if}}">
+  <meta name="twitter:description"
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}🤖 AI Analysis: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{dao.name}}{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+  {{#if tweets}}
+  {{#with (lookup tweets 0)}}
+  {{#if dao.config.logo}}
+  {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
+  <meta name="twitter:image" content="{{dao.config.logo}}">
+  {{else}}
+  <meta name="twitter:image" content="{{dao.links.website}}{{dao.config.logo}}">
+  {{/if}}
+  {{else}}
+  <meta name="twitter:image" content="https://degov.ai/assets/degov-social-preview.png">
+  {{/if}}
+  {{/with}}
+  {{else}}
+  <meta name="twitter:image" content="https://degov.ai/assets/degov-social-preview.png">
+  {{/if}}
+
+  <!-- Additional Meta -->
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="DeGov AI">
+  <meta name="keywords"
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}}, {{/with}}{{/if}}governance, AI, blockchain, voting, DAO, decision making, DeGov, autonomous agents">
+
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote Results{{/if}}",
+    "description": "{{#if tweets}}{{#with (lookup tweets 0)}}AI-powered governance analysis for {{dao.name}} proposal {{proposal_id}}{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}",
+    "author": {
+      "@type": "Organization",
+      "name": "DeGov AI",
+      "url": "https://degov.ai"
+    },
+    {{#if tweets}}
+    {{#with (lookup tweets 0)}}
+    "about": {
+      "@type": "Thing",
+      "name": "{{dao.name}} Governance Proposal",
+      "description": "Blockchain governance proposal analysis with AI-driven decision making"
+    },
+    {{/with}}
+    {{/if}}
+    "provider": {
+      "@type": "Organization",
+      "name": "DeGov AI",
+      "url": "https://degov.ai"
+    }
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
   <style>
     * {
       margin: 0;
