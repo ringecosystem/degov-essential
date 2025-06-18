@@ -155,9 +155,9 @@ export class DegovMcpHttpServer {
   //     fastify.log.info(`Session ${sessionId} terminated`);
   //   });
 
-  //   const transportType = (
-  //     process.env.MCP_TRANSPORT_TYPE || "sse"
-  //   ).toLowerCase();
+  //   const transportType = EnvReader.env("MCP_TRANSPORT_TYPE", {
+  //     defaultValue: "sse",
+  //   }).toLowerCase();
 
   //   switch (transportType) {
   //     case "sse":

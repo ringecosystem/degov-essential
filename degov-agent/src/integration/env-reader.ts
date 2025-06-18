@@ -18,6 +18,13 @@ export class EnvReader {
     return value;
   }
 
+  static envRequired(key: string, options?: { defaultValue?: string }): string {
+    return EnvReader.env(key, {
+      defaultValue: options?.defaultValue,
+      optional: false,
+    })!;
+  }
+
   static envBool(key: string, options?: { defaultValue?: string }): boolean {
     const value = EnvReader.env(key, {
       defaultValue: options?.defaultValue,
@@ -27,6 +34,13 @@ export class EnvReader {
       return false;
     }
     return value.trim().toLowerCase() === "true" || value === "1";
+  }
+
+  static envInt(key: string, options?: { defaultValue?: string }): number {
+    const value = EnvReader.envRequired(key, {
+      defaultValue: options?.defaultValue,
+    });
+    return parseInt(value!, 10);
   }
 
   static aiModel(): string {
