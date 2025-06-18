@@ -1,0 +1,24 @@
+name: Check Code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-code:
+    name: Check Code
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - degov-agent
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: yarn build
