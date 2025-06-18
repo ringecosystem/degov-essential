@@ -10,7 +10,7 @@ export class DegovAgentSource {
   async refresh(fastify: FastifyInstance): Promise<void> {
     try {
       const resp = await fastify.axios.get(
-        "https://raw.githubusercontent.com/ringecosystem/degov-essential/refs/heads/improve-code/config/agent/config.yml"
+        "https://raw.githubusercontent.com/ringecosystem/degov-essential/refs/heads/main/config/agent/config.yml"
       );
       const configRawYml = resp.data;
       const parsedConfig: DegovAgentConfig = yaml.parse(configRawYml);
