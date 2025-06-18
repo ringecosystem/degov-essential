@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Governance Vote Results</title>
+  <title>Degov Vote Results</title>
   <style>
     * {
       margin: 0;
@@ -21,11 +21,18 @@
 
     .container {
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 0 auto 30px auto;
       background: white;
       border-radius: 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
       overflow: hidden;
+      animation: slideInFromTop 0.6s ease-out;
+      transition: all 0.3s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     .header {
@@ -43,8 +50,8 @@
     }
 
     .header-logo {
-      width: 48px;
-      height: 48px;
+      width: 65px;
+      height: 65px;
       border-radius: 12px;
       object-fit: cover;
       border: 2px solid rgba(255, 255, 255, 0.3);
@@ -61,24 +68,17 @@
     }
 
     .header-text h1 {
-      margin: 0;
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
     }
 
     .header-text p {
+      font-size: 1.1rem;
+      opacity: 0.9;
       margin: 0;
     }
 
-    .header h1 {
-      font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-
     .content {
       padding: 40px;
     }
@@ -89,58 +89,6 @@
       padding: 30px;
       margin-bottom: 30px;
       border-left: 5px solid #4facfe;
-      animation: slideInFromTop 0.6s ease-out;
-      transition: all 0.3s ease;
-    }
-
-    .proposal-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .proposal-card:hover .proposal-header {
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .header {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      color: white;
-      padding: 40px;
-      text-align: center;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-
-    .content {
-      padding: 40px;
-    }
-
-    .proposal-card {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 30px;
-      margin-bottom: 30px;
-      border-left: 5px solid #4facfe;
-      animation: slideInFromTop 0.6s ease-out;
-      transition: all 0.3s ease;
-    }
-
-    .proposal-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .proposal-card:hover .proposal-header {
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
 
     .proposal-header {
@@ -192,7 +140,6 @@
       background: rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 0;
-      max-width: none;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       overflow: hidden;
@@ -511,6 +458,11 @@
     }
 
     .no-data {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
       text-align: center;
       padding: 60px 20px;
       color: #64748b;
@@ -620,6 +572,24 @@
       .header-emoji {
         font-size: 40px;
       }
+
+      .meta-info {
+        grid-template-columns: 1fr;
+      }
+
+      .voting-breakdown {
+        grid-template-columns: 1fr;
+      }
+
+      .vote-stats {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .decision-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
     @keyframes slideInFromTop {
@@ -637,28 +607,28 @@
 </head>
 
 <body>
+  {{#if tweets}}
+  {{#each tweets}}
   <div class="container">
-    {{!-- <div class="header">
-      <h1>🗳️ Governance Vote Results</h1>
-      <p>Decentralized Decision Making Dashboard</p>
-    </div> --}}
     <div class="header">
       <div class="header-content">
         {{#if dao.config.logo}}
+        {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
         <img src="{{dao.config.logo}}" alt="{{dao.name}} Logo" class="header-logo">
+        {{else}}
+        <img src="{{dao.links.website}}{{dao.config.logo}}" alt="{{dao.name}} Logo" class="header-logo">
+        {{/if}}
         {{else}}
         <span class="header-emoji">🗳️</span>
         {{/if}}
         <div class="header-text">
-          <h1>DeGov AI Analysisx {{dao.name}}</h1>
+          <h1>DeGov AI Analysis</h1>
           <p>Autonomous governance decisions powered by multi-source intelligence</p>
         </div>
       </div>
     </div>
 
     <div class="content">
-      {{#if tweets}}
-      {{#each tweets}}
       <div class="proposal-card">
         <div class="proposal-header">
           <div class="proposal-info">
@@ -669,6 +639,7 @@
             <div class="proposal-id-container">
               <div class="proposal-id-label">Proposal ID</div>
               <div class="proposal-id">
+                {{#if dao.links.website}}
                 <a href="{{dao.links.website}}/proposal/{{proposal_id}}" target="_blank" class="proposal-link">
                   <span class="proposal-hash">{{proposal_id}}</span>
                   <svg class="external-link-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -679,11 +650,16 @@
                     </path>
                   </svg>
                 </a>
+                {{else}}
+                <div class="proposal-link">
+                  <span class="proposal-hash">{{proposal_id}}</span>
+                </div>
+                {{/if}}
               </div>
             </div>
           </div>
           <div class="status-container">
-            <div class="status-label">Status</div>
+            {{!-- <div class="status-label">Status</div> --}}
             <span class="status-badge status-{{status}}">
               {{#if (eq status "defeated")}}
               ❌ {{status}}
@@ -711,7 +687,9 @@
           </div>
           <div class="meta-item">
             <div class="meta-label">DAO</div>
-            <div class="meta-value">{{dao.name}}</div>
+            <div class="meta-value">
+              <a href="{{dao.links.website}}" target="_blank">{{dao.name}}</a>
+            </div>
           </div>
           <div class="meta-item">
             <div class="meta-label">Created</div>
@@ -855,18 +833,18 @@
         </div>
         {{/if}}
       </div>
-      {{/each}}
-      {{else}}
-      <div class="no-data">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3>No vote results found</h3>
-        <p>There are no governance proposals to display at this time.</p>
-      </div>
-      {{/if}}
     </div>
   </div>
+  {{/each}}
+  {{else}}
+  <div class="no-data">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <h3>No vote results found</h3>
+    <p>There are no governance proposals to display at this time.</p>
+  </div>
+  {{/if}}
 </body>
 
 </html>

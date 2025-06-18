@@ -102,5 +102,18 @@ export class DegovMcpServerInitializer {
         return text.substring(0, length) + "...";
       }
     );
+
+    handlebars.registerHelper(
+      "startsWith",
+      function (str: string, prefix: string) {
+        if (!str || !prefix) return false;
+        return str.startsWith(prefix);
+      }
+    );
+
+    handlebars.registerHelper("or", function (...args: any[]) {
+      const values = args.slice(0, -1);
+      return values.some((value) => !!value);
+    });
   }
 }
