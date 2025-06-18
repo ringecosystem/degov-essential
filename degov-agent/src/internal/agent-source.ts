@@ -15,7 +15,11 @@ export class DegovAgentSource {
       const configRawYml = resp.data;
       const parsedConfig: DegovAgentConfig = yaml.parse(configRawYml);
 
-      if (!Array.isArray(parsedConfig)) {
+      if (!parsedConfig || !parsedConfig.daos) {
+        throw new Error("Invalid config format: missing 'daos' property");
+      }
+
+      if (!Array.isArray(parsedConfig.daos)) {
         throw new Error(
           "Invalid config format: expected array of DAO configurations"
         );
