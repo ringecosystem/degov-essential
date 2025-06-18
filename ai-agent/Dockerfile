@@ -6,6 +6,7 @@ WORKDIR /code
 RUN corepack enable pnpm
 RUN \
   pnpm install \
+  && npx prisma generate \
   && pnpm build
 
 FROM node:22-alpine

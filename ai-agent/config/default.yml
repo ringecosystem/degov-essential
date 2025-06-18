@@ -1,9 +1,0 @@
-
-daos:
-  - name: DeGov Development Test DAO
-    code: degov-test-dao
-    xprofile: default
-    links:
-      website: https://demo.degov.ai
-      config: https://demo.degov.ai/degov.yml
-      indexer: https://degov-indexer.vercel.app/graphql
