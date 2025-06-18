@@ -10,8 +10,8 @@ env:
   DOCKER_REGISTRY: ghcr.io
 
 jobs:
-  release-relayer:
-    name: Release relayer
+  release-docker-image:
+    name: Release docker image
     runs-on: ubuntu-latest
     strategy:
       matrix:
