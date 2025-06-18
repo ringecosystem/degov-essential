@@ -51,11 +51,11 @@
   <meta name="twitter:image" content="{{dao.links.website}}{{dao.config.logo}}">
   {{/if}}
   {{else}}
-  <meta name="twitter:image" content="https://degov.ai/assets/degov-social-preview.png">
+  <meta name="twitter:image" content="https://degov.ai/images/og.png">
   {{/if}}
   {{/with}}
   {{else}}
-  <meta name="twitter:image" content="https://degov.ai/assets/degov-social-preview.png">
+  <meta name="twitter:image" content="https://degov.ai/images/og.png">
   {{/if}}
 
   <!-- Additional Meta -->
@@ -625,28 +625,18 @@
     }
 
     @media (max-width: 768px) {
-      .proposal-header {
-        flex-direction: column;
-        text-align: left;
+      /* Mobile optimization for screens 768px and below */
+      body {
+        padding: 10px; /* Reduced from 20px */
       }
 
-      .status-container {
-        text-align: left;
-        width: 100%;
+      .container {
+        margin: 0 auto 20px auto; /* Reduced from 30px */
+        border-radius: 12px; /* Reduced from 16px */
       }
 
-      .proposal-info {
-        min-width: auto;
-      }
-
-      .proposal-link {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-
-      .external-link-icon {
-        align-self: flex-end;
+      .header {
+        padding: 25px 20px; /* Reduced from 40px */
       }
 
       .header-content {
@@ -658,31 +648,311 @@
         text-align: center;
       }
 
+      .header-text h1 {
+        font-size: 1.8rem; /* Reduced from 2.5rem */
+        margin-bottom: 8px;
+      }
+
+      .header-text p {
+        font-size: 1rem; /* Reduced from 1.1rem */
+      }
+
       .header-logo {
-        width: 40px;
-        height: 40px;
+        width: 50px; /* Slightly increased from 40px */
+        height: 50px;
       }
 
       .header-emoji {
         font-size: 40px;
       }
 
+      .content {
+        padding: 20px; /* Reduced from 40px */
+      }
+
+      .proposal-card {
+        padding: 20px; /* Reduced from 30px */
+        margin-bottom: 20px; /* Reduced from 30px */
+      }
+
+      .proposal-header {
+        flex-direction: column;
+        text-align: left;
+        padding: 20px; /* Reduced from 25px */
+        margin-bottom: 20px; /* Reduced from 25px */
+        gap: 15px; /* Reduced from 20px */
+      }
+
+      .status-container {
+        text-align: left;
+        width: 100%;
+      }
+
+      .proposal-info {
+        min-width: auto;
+      }
+
+      .proposal-title h3 {
+        font-size: 1.3rem; /* Reduced from 1.5rem */
+      }
+
+      .proposal-subtitle {
+        font-size: 0.85rem; /* Reduced from 0.9rem */
+      }
+
+      .proposal-id-container {
+        margin-top: 12px; /* Reduced from 15px */
+      }
+
+      .proposal-id {
+        /* Enable text wrapping for long content */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .proposal-link {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 12px; /* Reduced from 12px 16px */
+      }
+
+      .proposal-hash {
+        /* Force long text to wrap */
+        word-break: break-all;
+        overflow-wrap: break-word;
+        line-height: 1.4;
+        width: 100%;
+      }
+
+      .external-link-icon {
+        align-self: flex-end;
+        margin-top: 5px;
+      }
+
+      .status-badge {
+        padding: 6px 16px; /* Reduced from 8px 20px */
+        font-size: 0.8rem; /* Reduced from 0.85rem */
+      }
+
       .meta-info {
         grid-template-columns: 1fr;
+        gap: 15px; /* Reduced from 20px */
+        margin: 15px 0; /* Reduced from 20px */
+      }
+
+      .meta-item {
+        padding: 12px; /* Reduced from 15px */
+      }
+
+      .meta-label {
+        font-size: 0.8rem; /* Reduced from 0.85rem */
+        margin-bottom: 4px; /* Reduced from 5px */
+      }
+
+      .meta-value {
+        font-size: 0.9rem; /* Reduced from 1rem */
+      }
+
+      .analysis-section {
+        margin-top: 25px; /* Reduced from 30px */
+      }
+
+      .section-title {
+        font-size: 1.3rem; /* Reduced from 1.5rem */
+        margin-bottom: 15px; /* Reduced from 20px */
+        padding-bottom: 8px; /* Reduced from 10px */
       }
 
       .voting-breakdown {
         grid-template-columns: 1fr;
+        gap: 15px; /* Reduced from 20px */
+        margin-bottom: 25px; /* Reduced from 30px */
+      }
+
+      .vote-category {
+        padding: 15px; /* Reduced from 20px */
+      }
+
+      .category-header {
+        font-size: 1rem; /* Reduced from 1.1rem */
+        margin-bottom: 12px; /* Reduced from 15px */
       }
 
       .vote-stats {
         flex-direction: column;
         gap: 5px;
+        font-size: 0.85rem; /* Reduced from 0.9rem */
+      }
+
+      .reasoning-section {
+        margin-top: 25px; /* Reduced from 30px */
+      }
+
+      .final-decision {
+        padding: 20px; /* Reduced from 25px */
+        margin-bottom: 15px; /* Reduced from 20px */
       }
 
       .decision-header {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px; /* Reduced from 15px */
+        margin-bottom: 12px; /* Reduced from 15px */
+      }
+
+      .decision-header h4 {
+        font-size: 1.1rem; /* Added font size control */
+      }
+
+      .confidence-score {
+        padding: 8px 12px; /* Reduced from 10px 15px */
+      }
+
+      .confidence-bar {
+        width: 80px; /* Reduced from 100px */
+      }
+
+      .reasoning-summary {
+        padding: 15px; /* Reduced from 20px */
+        margin-bottom: 20px; /* Reduced from 25px */
+      }
+
+      .reasoning-summary h4 {
+        font-size: 1rem; /* Reduced from 1.1rem */
+        margin-bottom: 8px; /* Reduced from 10px */
+      }
+
+      .reasoning-summary-content {
+        font-size: 0.9rem; /* Added font size control */
+      }
+
+      .reasoning-full {
+        padding: 20px; /* Reduced from 25px */
+      }
+
+      .reasoning-full h4 {
+        font-size: 1.1rem; /* Reduced from 1.2rem */
+        margin-bottom: 12px; /* Reduced from 15px */
+      }
+
+      .reasoning-full-content {
+        font-size: 0.9rem; /* Added font size control */
+      }
+
+      /* Markdown content optimization for small screens */
+      .reasoning-full-content h1,
+      .reasoning-full-content h2,
+      .reasoning-full-content h3,
+      .reasoning-full-content h4 {
+        margin: 15px 0 8px 0; /* Reduced from 20px 0 10px 0 */
+      }
+
+      .reasoning-full-content h2 {
+        font-size: 1.2rem; /* Reduced from 1.3rem */
+        padding-bottom: 4px; /* Reduced from 5px */
+      }
+
+      .reasoning-full-content h3 {
+        font-size: 1rem; /* Reduced from 1.1rem */
+      }
+
+      .reasoning-full-content p {
+        margin: 8px 0; /* Reduced from 10px 0 */
+      }
+
+      .reasoning-full-content ul,
+      .reasoning-full-content ol {
+        margin: 8px 0; /* Reduced from 10px 0 */
+        padding-left: 16px; /* Reduced from 20px */
+      }
+
+      .reasoning-full-content table {
+        margin: 12px 0; /* Reduced from 15px 0 */
+        font-size: 0.85rem; /* Added table font size control */
+      }
+
+      .reasoning-full-content th,
+      .reasoning-full-content td {
+        padding: 6px 8px; /* Reduced from 8px 12px */
+      }
+
+      .no-data {
+        padding: 40px 15px; /* Reduced from 60px 20px */
+      }
+
+      .no-data svg {
+        width: 48px; /* Reduced from 64px */
+        height: 48px;
+        margin-bottom: 15px; /* Reduced from 20px */
+      }
+
+      .no-data h3 {
+        font-size: 1.3rem; /* Added font size control */
+        margin-bottom: 10px;
+      }
+
+      .no-data p {
+        font-size: 0.9rem; /* Added font size control */
+      }
+    }
+
+    @media (max-width: 480px) {
+      /* Extra small screens optimization (320px - 480px) */
+      body {
+        padding: 8px;
+      }
+
+      .header {
+        padding: 20px 15px;
+      }
+
+      .header-text h1 {
+        font-size: 1.5rem;
+      }
+
+      .header-text p {
+        font-size: 0.9rem;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      .proposal-card {
+        padding: 15px;
+      }
+
+      .proposal-header {
+        padding: 15px;
+      }
+
+      .proposal-title h3 {
+        font-size: 1.2rem;
+      }
+
+      .proposal-hash {
+        font-size: 0.8rem;
+      }
+
+      .meta-item {
+        padding: 10px;
+      }
+
+      .vote-category {
+        padding: 12px;
+      }
+
+      .final-decision {
+        padding: 15px;
+      }
+
+      .reasoning-summary {
+        padding: 12px;
+      }
+
+      .reasoning-full {
+        padding: 15px;
       }
     }
 
