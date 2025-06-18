@@ -19,7 +19,7 @@ export class EnvReader {
   }
 
   static envBool(key: string, options?: { defaultValue?: string }): boolean {
-    const value = this.env(key, {
+    const value = EnvReader.env(key, {
       defaultValue: options?.defaultValue,
       optional: true,
     });

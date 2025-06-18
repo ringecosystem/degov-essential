@@ -17,8 +17,7 @@ enum ProposalState {
 }
 ```
 
-
-```mathematia
+```text
                       ┌────────────┐
                       │  Pending   │
                       └────┬───────┘

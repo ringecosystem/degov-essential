@@ -77,10 +77,10 @@ export class DegovIndexer {
   async queryProposalVotes(options: QueryProposalVotes): Promise<DIVoteCast[]> {
     const limit = 10;
     const document = gql`
-      query QueryProposalVotes($offset: Int!, $proposal_id: String!) {
+      query QueryProposalVotes($offset: Int!, $limit: Int!, $proposal_id: String!) {
         voteCasts(
           offset: $offset
-          limit: ${limit},
+          limit: $limit,
           orderBy: blockNumber_ASC
           where: { proposalId_eq: $proposal_id }
         ) {
@@ -106,6 +106,7 @@ export class DegovIndexer {
         document,
         {
           offset,
+          limit,
           proposal_id: options.proposalId,
         }
       );
