@@ -44,9 +44,6 @@ importers:
       axios:
         specifier: ^1.9.0
         version: 1.9.0
-      config:
-        specifier: ^4.0.0
-        version: 4.0.0
       fastify:
         specifier: ^5.3.3
         version: 5.3.3
@@ -1385,10 +1382,6 @@ packages:
     resolution: {integrity: sha512-H9MWcoPsYddwbOGM6difjVwVZHl63nwMEwDJG/L7VGtuaJhb12h2caPG2tVPWs7emuYix252iGfqOyrz1GczTQ==}
     engines: {node: '>=18'}
     hasBin: true
-
-  config@4.0.0:
-    resolution: {integrity: sha512-zOzfDfcpaBUMRvTH+pbj111Gfb+1BMvCy9EcE5ckuugfAcks3FIQMyt8TRA30dhuGnZNBxfbPBUKtuM03ih/nA==}
-    engines: {node: '>= 20.0.0'}
 
   content-disposition@0.5.2:
     resolution: {integrity: sha512-kRGRZw3bLlFISDBgwTSA1TMBFN6J6GWDeubmDE3AF+3+yXL8hTWv8r5rkLbqYXY4RjPk/EzHnClI3zQf1cFmHA==}
@@ -4518,10 +4511,6 @@ snapshots:
       supports-color: 8.1.1
       tree-kill: 1.2.2
       yargs: 17.7.2
-
-  config@4.0.0:
-    dependencies:
-      json5: 2.2.3
 
   content-disposition@0.5.2: {}
 

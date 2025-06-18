@@ -1,12 +1,12 @@
 import { Service } from "typedi";
 import { DegovConfig, DegovMcpDao } from "../types";
-import { ConfigReader } from "../integration/config-reader";
 import { FastifyInstance } from "fastify";
 import yaml from "yaml";
+import { DegovAgentSource } from "../internal/agent-source";
 
 @Service()
 export class DaoService {
-  constructor() {}
+  constructor(private readonly degovAgentSource: DegovAgentSource) {}
 
   private async fetchDegovConfig(
     fastify: FastifyInstance,
@@ -63,7 +63,8 @@ export class DaoService {
 
   async daos(fastify: FastifyInstance): Promise<DegovMcpDao[]> {
     const prisma = fastify.prisma;
-    const daos = ConfigReader.degovDaos();
+    const daos = this.degovAgentSource.getDaos();
+
     const result: DegovMcpDao[] = [];
 
     const daoCodes = daos.map((dao) => dao.code);

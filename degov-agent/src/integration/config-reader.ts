@@ -23,12 +23,12 @@ export class ConfigReader {
   }
 
 
-  static degovDaos(): DegovDaoConfig[] {
-    return (
-      ConfigReader.read<DegovDaoConfig[]>("daos", {
-        defaultValue: [],
-        optional: true,
-      }) ?? []
-    );
-  }
+  // static degovDaos(): DegovDaoConfig[] {
+  //   return (
+  //     ConfigReader.read<DegovDaoConfig[]>("daos", {
+  //       defaultValue: [],
+  //       optional: true,
+  //     }) ?? []
+  //   );
+  // }
 }
