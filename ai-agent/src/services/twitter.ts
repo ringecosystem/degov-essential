@@ -15,7 +15,6 @@ import {
   twitter_user,
 } from "../generated/prisma";
 import { PollV2, TwitterApi } from "twitter-api-v2";
-import { ConfigReader } from "../integration/config-reader";
 import {
   AgentClient,
   SentTweetHookInput,

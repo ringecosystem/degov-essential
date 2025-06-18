@@ -6,15 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- base Meta -->
-  <title>{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote
-    Results{{/if}}</title>
+  <title>{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - {{/with}}{{/if}}DeGov Agent voting comment details</title>
   <meta name="description"
     content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} governance proposal analysis powered by DeGov AI. View voting results, sentiment analysis, and AI-driven decisions for proposal {{proposal_id}}.{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:title"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote Results{{/if}}">
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - {{/with}}{{/if}}DeGov Agent voting comment details">
   <meta property="og:description"
     content="{{#if tweets}}{{#with (lookup tweets 0)}}AI-powered governance analysis for {{dao.name}}. Final decision: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} with {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}high{{/if}} confidence. View detailed voting breakdown and reasoning.{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
   {{#if tweets}}
@@ -39,7 +38,7 @@
   <meta name="twitter:site" content="@DeGovAI">
   <meta name="twitter:creator" content="@DeGovAI">
   <meta name="twitter:title"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote Results{{/if}}">
+    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - {{/with}}{{/if}}DeGov Agent voting comment details">
   <meta name="twitter:description"
     content="{{#if tweets}}{{#with (lookup tweets 0)}}🤖 AI Analysis: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{dao.name}}{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
   {{#if tweets}}
@@ -608,11 +607,8 @@
 
     .reasoning-full-content table {
       width: 100%;
-      max-width: 100%;
       border-collapse: collapse;
       margin: 15px 0;
-      table-layout: fixed;
-      font-size: 0.9rem;
     }
 
     .reasoning-full-content th,
@@ -620,47 +616,11 @@
       border: 1px solid #e2e8f0;
       padding: 8px 12px;
       text-align: left;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      max-width: 0;
-      overflow: hidden;
     }
 
     .reasoning-full-content th {
       background: #f8fafc;
       font-weight: 600;
-    }
-
-    /* Ensure containers don't overflow */
-    .reasoning-full,
-    .reasoning-full-content {
-      overflow-x: hidden;
-      word-wrap: break-word;
-    }
-
-    /* Mobile optimization */
-    @media (max-width: 768px) {
-      .reasoning-full-content table {
-        font-size: 0.8rem;
-      }
-
-      .reasoning-full-content th,
-      .reasoning-full-content td {
-        padding: 6px 8px;
-        font-size: 0.8rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .reasoning-full-content table {
-        font-size: 0.75rem;
-      }
-
-      .reasoning-full-content th,
-      .reasoning-full-content td {
-        padding: 4px 6px;
-        font-size: 0.75rem;
-      }
     }
 
     @media (max-width: 768px) {
@@ -1025,7 +985,7 @@
         <span class="header-emoji">🗳️</span>
         {{/if}}
         <div class="header-text">
-          <h1>DeGov AI Analysis</h1>
+          <h1>DeGov Agent voting comment details</h1>
           <p>Autonomous governance decisions powered by multi-source intelligence</p>
         </div>
       </div>

@@ -1,0 +1,36 @@
+name: Check Code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-code:
+    name: Check Code
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - ai-agent
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install deps
+        working-directory: ${{ matrix.package }}
+        run: pnpm install
+
+      - name: Setup prisma
+        working-directory: ${{ matrix.package }}
+        if: ${{ matrix.package == 'ai-agent' }}
+        run: |
+          npx prisma generate
+
+      - name: Build
+        working-directory: ${{ matrix.package }}
+        run: pnpm build
