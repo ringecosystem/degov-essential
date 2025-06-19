@@ -84,19 +84,21 @@ export class DegovTweetSyncTask {
     options: {
       tweet: degov_tweet;
       dao: DegovMcpDao;
+      force?: boolean;
     }
   ) {
     const { tweet } = options;
     const sntt = tweet.sync_next_time_tweet;
     const syncStop = tweet.sync_stop_tweet ?? 1;
-    if (syncStop) {
+    const force = options.force ?? false;
+    if (syncStop && !force) {
       fastify.log.info(
         `[task-sync] Skipping tweet ${tweet.id} sync, sync_stop_tweet is set to ${syncStop}`
       );
       return;
     }
     const now = new Date();
-    if (sntt && sntt > now) {
+    if (sntt && sntt > now && !force) {
       fastify.log.info(
         `[task-sync] Skipping tweet ${tweet.id} sync, next sync time is in the future: ${sntt}`
       );
