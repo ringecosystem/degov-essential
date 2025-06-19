@@ -56,24 +56,24 @@ The response **must be a single, valid JSON object** and adhere to the following
 ```json
 {
   "finalResult": "For" | "Against" | "Abstain",  // The final overall voting result.
-  "confidence": number,                         // Confidence score (0-10).
-  "reasoning": string,                           // Detailed analysis report in Markdown format (see below).
-  "reasoningLite": string,                       // Concise one-sentence summary of the reasoning.
+  "confidence": number,    // Confidence score (0-10).
+  "reasoning": string,     // Detailed analysis report in Markdown format (see below).
+  "reasoningLite": string, // Concise one-sentence summary of the reasoning.
   "votingBreakdown": {
     "twitterPoll": {
-      "for": number,                             // Percentage for 'For'
-      "against": number,                         // Percentage for 'Against'
-      "abstain": number                          // Percentage for 'Abstain'
+      "for": number,       // Percentage for 'For'
+      "against": number,   // Percentage for 'Against'
+      "abstain": number    // Percentage for 'Abstain'
     },
     "twitterComments": {
-      "positive": number,                        // Percentage of positive sentiment
-      "negative": number,                        // Percentage of negative sentiment
-      "neutral": number                          // Percentage of neutral sentiment
+      "positive": number,  // Percentage of positive sentiment
+      "negative": number,  // Percentage of negative sentiment
+      "neutral": number    // Percentage of neutral sentiment
     },
     "onChainVotes": {
-      "for": number,                             // Percentage or total votes for 'For'
-      "against": number,                         // Percentage or total votes for 'Against'
-      "abstain": number                          // Percentage or total votes for 'Abstain' (if applicable)
+      "for": number,      // Percentage or total votes for 'For'
+      "against": number,  // Percentage or total votes for 'Against'
+      "abstain": number   // Percentage or total votes for 'Abstain' (if applicable)
     }
   }
 }
