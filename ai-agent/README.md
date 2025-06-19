@@ -111,7 +111,7 @@ enum ProposalState {
 
 **Description**: Generate AI-powered proposal summary and analysis
 
-**Request Body**:
+**Response**:
 
 ```json
 {
