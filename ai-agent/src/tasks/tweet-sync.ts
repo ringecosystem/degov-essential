@@ -37,7 +37,7 @@ export class DegovTweetSyncTask {
     });
     const job = new SimpleIntervalJob(
       {
-        minutes: 2,
+        minutes: 5,
         runImmediately: true,
       },
       task
