@@ -45,23 +45,24 @@ export class DegovRouter {
       async (
         request: FastifyRequest<{
           Params: { chain: number; id: string };
-          Querystring: { format?: string };
+          Querystring: { format?: string; fulfilled?: number };
         }>,
         reply: FastifyReply
       ) => {
         const { chain, id } = request.params;
         const format = request.query.format ?? "html";
+        const fulfilled = request.query.fulfilled;
         if (id.length < 9) {
           return Resp.err("Invalid proposal ID");
         }
-        const tweets =
-          await this.degovService.listFulfilledByChainWithSmartProposalId(
-            fastify,
-            {
-              chainId: chain,
-              proposalId: id,
-            }
-          );
+        const tweets = await this.degovService.listByChainWithSmartProposalId(
+          fastify,
+          {
+            chainId: chain,
+            proposalId: id,
+            fulfilled,
+          }
+        );
         const parsedTweets = [];
 
         for (const tweet of tweets) {
@@ -130,6 +131,7 @@ const DegovVoteRequestSchema = {
       type: "object",
       properties: {
         format: { type: "string" },
+        fulfilled: { type: "number" },
       },
       required: [],
     },

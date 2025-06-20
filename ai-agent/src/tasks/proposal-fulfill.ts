@@ -56,7 +56,7 @@ export class DegovProposalFulfillTask {
     });
     const job = new SimpleIntervalJob(
       {
-        minutes: 3,
+        minutes: 2,
         runImmediately: true,
       },
       task
@@ -170,6 +170,7 @@ export class DegovProposalFulfillTask {
     await this.degovTweetSyncTask.syncTweet(fastify, {
       tweet: degovTweet,
       dao,
+      force: true,
     });
     tweetPoll = await this.twitterService.queryPoll(fastify, {
       tweetId: tweet.id,

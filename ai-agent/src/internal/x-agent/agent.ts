@@ -18,7 +18,6 @@ import {
 } from "twitter-api-v2";
 
 const DEFAULT_TWEET_FIELDS: TTweetv2TweetField[] = [
-  "article",
   "attachments",
   "author_id",
   "context_annotations",
@@ -28,15 +27,11 @@ const DEFAULT_TWEET_FIELDS: TTweetv2TweetField[] = [
   "in_reply_to_user_id",
   "lang",
   "public_metrics",
-  "organic_metrics",
-  "edit_controls",
-  "possibly_sensitive",
   "referenced_tweets",
   "reply_settings",
   "source",
   "text",
   "withheld",
-  "note_tweet",
   "edit_history_tweet_ids",
 ];
 

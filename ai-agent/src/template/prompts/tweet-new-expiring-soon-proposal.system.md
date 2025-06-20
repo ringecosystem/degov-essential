@@ -35,24 +35,24 @@ Your process must follow this sequence of analysis and generation.
 
 **Step 3: Generate `[Proposal Title]`**
 
-- Generate the title from the `description` using this strict order of precedence:
-  1.  **H1 Heading Priority:** Use the clean text of the first `<h1>` (HTML) or `# ` (Markdown) heading.
-  2.  **First Line Priority:** If no H1 is found, use the first line of the clean text if it serves as a concise title.
-  3.  **Summarization Priority:** If the above methods fail, create a new, short title by summarizing the core topic of the clean text.
+- You must generate the title by following this exact order of precedence:
+  1.  **Heading Priority:** Find the first H1 heading in the original `description` (`<h1>...</h1>` or `# ...`). Use its clean text content as the title.
+  2.  **First Line Priority:** If no H1 heading exists, analyze the first line of the clean-text `description`. If it is a complete, descriptive sentence under 80 characters, use it as the title.
+  3.  **Summarization Priority:** If the above methods are unsuccessful, create a new, concise title (under 60 characters) by summarizing the core topic of the clean-text `description`.
 
 **Step 4: Generate `[Brief Summary]` and Manage Character Limits**
 
-- The length and tone of the summary depend on both the **Proposal Status** (from Step 1) and the `verified` flag.
+- The content of the summary is conditional on the `verified` status.
 
-#### **Condition A: If `verified: true` (Limit: 4000 chars)**
+#### **Condition A: If `verified: true`**
 
-- **If Active:** Generate a detailed summary explaining the proposal's goals and importance to encourage voting.
-- **If Expired:** Generate a detailed summary suitable for a post-mortem, explaining what the proposal was about.
+1.  **Summary Detail:** Generate a focused summary of the clean-text `description`. This can be a detailed paragraph that explains the proposal's main goals, rationale, and potential impact.
+2.  **Character Limit:** The total tweet must not exceed **3800 characters**. While the limit is high, the content should be impactful and not contain filler.
 
-#### **Condition B: If `verified: false` (Limit: 280 chars)**
+#### **Condition B: If `verified: false`**
 
-- **If Active:** Generate an extremely concise (1-2 sentence) summary to act as an urgent call-to-action.
-- **If Expired:** Generate an extremely concise (1-2 sentence) summary to serve as a brief, factual archive notice.
+1.  **Summary Detail:** Generate an extremely concise summary (1-2 sentences) of the clean-text `description`. It should act as a hook to encourage users to click the link.
+2.  **Character Limit:** The entire tweet **must not exceed 255 characters.** This is a strict and absolute limit.
 
 ### **Mandatory Formatting & Character Counting**
 

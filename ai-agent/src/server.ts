@@ -17,6 +17,7 @@ import fastifyView from "@fastify/view";
 import fastifyPrisma from "@joggr/fastify-prisma";
 import { SnowflakeId } from "@akashrajpurohit/snowflake-id";
 import { PrismaClient } from "./generated/prisma";
+import cors from "@fastify/cors";
 
 import path from "path";
 import { DegovRouter } from "./routes/degov";
@@ -94,6 +95,10 @@ export class DegovMcpHttpServer {
       return DegovHelpers.safeJsonStringify(payload);
     });
 
+    await fastify.register(cors, {
+      allowedHeaders: ["Content-Type", "Authorization"],
+    });
+
     // render
     fastify.register(fastifyView, {
       engine: {
@@ -132,7 +137,6 @@ export class DegovMcpHttpServer {
       reply.status(error.statusCode || 500).send(resp);
     });
   }
-
 
   private async routes(fastify: FastifyInstance) {
     await this.helloRouter.regist(fastify);
