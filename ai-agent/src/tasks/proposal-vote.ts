@@ -61,7 +61,9 @@ export class DegovProposalVoteTask {
         limit: queryLimit,
       });
       if (tweets.length === 0) {
-        fastify.log.info("[task-vote] No tweets to process, waiting for next cycle.");
+        fastify.log.info(
+          "[task-vote] No tweets to process, waiting for next cycle."
+        );
         break; // Exit the loop if no tweets are found
       }
       for (const tweet of tweets) {
@@ -130,7 +132,9 @@ export class DegovProposalVoteTask {
         const promptInput = {
           stu,
           voterAddressLink: `${dao.links.website}/delegate/${vote.voter}`,
-          proposalLink: `${dao.links.website}/proposal/${degovTweet.proposal_id}`,
+          proposalLink: `${dao.links.website}/proposal/${
+            degovTweet.proposal_id
+          }#${DegovHelpers.shortHash(vote.voter)}`,
           transactionLink: DegovHelpers.explorerLink(
             dao.config?.chain?.explorers
           ).transaction(vote.transactionHash),
@@ -168,7 +172,7 @@ export class DegovProposalVoteTask {
           },
         };
 
-        console.log(tweetInput);
+        fastify.log.debug(tweetInput);
         const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
         fastify.log.info(
           `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
