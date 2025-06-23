@@ -273,23 +273,12 @@ export class DegovProposalFulfillTask {
     }
     const aiResp = _aiResp!;
 
-    const bestReaoning = [
-      aiResp.object.reasoningLite,
-      `<p><a href="${dao.links.website}/agent-decision/${
-        tweet.proposal_id
-      }" id="agent-decision-${tweet.proposal_id.substring(
-        0,
-        9
-      )}">Decision Details</a></p>`,
-      `<p class="degov-ai-agent-powered">Powered by <a href="https://degov.ai">DeGov AI Agent</a></p>`,
-    ].join("<br/>");
-
     await this.governorContract.castVoteWithReason({
       chainId: daoConfig.chain.id,
       contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
       proposalId: BigInt(tweet.proposal_id),
       support: DegovHelpers.voteSupportNumber(aiResp.object.finalResult),
-      reason: bestReaoning,
+      reason: aiResp.object.reasoningLite,
     });
     const fulfilledExplain = {
       input: {
