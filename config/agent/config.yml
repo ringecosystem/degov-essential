@@ -4,7 +4,7 @@ daos:
     code: degov-test-dao
     # xprofile: roasted
     xprofile: official
-    artifacts:
+    carry:
       - '#DeGov'
       - '@DeGovRoasted'
     links:

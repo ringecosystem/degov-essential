@@ -77,7 +77,7 @@ export class DaoService {
     });
 
     for (const daoc of daos) {
-      const { name, code, xprofile, links } = daoc;
+      const { name, code, xprofile, links, carry } = daoc;
       const configLink = links.config;
       const degovConfig = await this.fetchDegovConfig(fastify, configLink);
       const daoProgress = daoProgresses.find((item) => item.code === code);
@@ -86,6 +86,7 @@ export class DaoService {
         code,
         xprofile,
         links,
+        carry: carry ?? [],
         config: degovConfig,
         lastProcessedBlock: daoProgress?.last_block_number ?? -1,
       };
