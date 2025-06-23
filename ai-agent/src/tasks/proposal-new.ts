@@ -170,6 +170,7 @@ export class DegovProposalNewTask {
           xprofile: dao.xprofile,
           daocode: dao.code,
           daoname: dao.name,
+          carry: dao.carry,
           blockNumber: parseInt(proposal.blockNumber),
           blockTimestamp: parseInt(proposal.blockTimestamp),
           proposal: {

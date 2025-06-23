@@ -40,6 +40,7 @@ export interface DegovDaoConfig {
   code: string;
   xprofile: string;
   links: DegovMcpDaoUrl;
+  carry: string[];
 }
 
 export interface DegovMcpDaoUrl {
@@ -57,6 +58,7 @@ export interface NewProposalEvent {
   xprofile: string;
   daocode: string;
   daoname: string;
+  carry: string[];
   proposal: SimpleProposal;
   blockNumber: number;
   blockTimestamp: number;

@@ -15,6 +15,7 @@ export class DegovPrompt {
     const proposal = event.proposal;
     const rawData = {
       daoname: event.daoname,
+      carry: event.carry,
       url: proposal.url,
       description: proposal.description,
       verified: stu.verified,
@@ -45,6 +46,7 @@ Generate a poll tweet use above data
     const proposal = event.proposal;
     const rawData = {
       daoname: event.daoname,
+      carry: event.carry,
       url: proposal.url,
       description: proposal.description,
       verified: stu.verified,
