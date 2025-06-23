@@ -247,6 +247,16 @@ export class DegovHelpers {
 
     return undefined;
   }
+
+  static shortHash(input: string): `0x${string}` {
+    if (input.startsWith("0x")) {
+      input = input.slice(2);
+    }
+    if (input.length < 7) {
+      return `0x${input}`;
+    }
+    return `0x${input.substring(0, 7)}`;
+  }
 }
 
 export class ExplorerLink {

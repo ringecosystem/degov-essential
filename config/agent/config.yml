@@ -2,7 +2,11 @@
 daos:
   - name: DeGov Development Test DAO
     code: degov-test-dao
-    xprofile: roasted
+    # xprofile: roasted
+    xprofile: official
+    artifacts:
+      - '#DeGov'
+      - '@DeGovRoasted'
     links:
       website: https://demo.degov.ai
       config: https://demo.degov.ai/degov.yml

@@ -47,7 +47,7 @@ export class DegovProposalNewTask {
     });
     const job = new SimpleIntervalJob(
       {
-        minutes: 5,
+        minutes: 2,
         runImmediately: true,
       },
       task

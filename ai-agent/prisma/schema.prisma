@@ -41,7 +41,6 @@ model twitter_user {
 
   raw                   String
   twitter_authorization twitter_authorization[]
-  twitter_tweet         twitter_tweet[]
 }
 
 model twitter_tweet {
@@ -62,7 +61,6 @@ model twitter_tweet {
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 
-  author       twitter_user?   @relation(fields: [author_id], references: [id])
   conversation twitter_tweet?  @relation("TweetConversation", fields: [conversation_id], references: [id])
   replies      twitter_tweet[] @relation("TweetConversation")
   degov_tweet  degov_tweet[]
