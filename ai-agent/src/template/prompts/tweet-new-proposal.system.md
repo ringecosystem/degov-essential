@@ -22,19 +22,20 @@ Using the provided JSON data, you must **precisely** generate an engaging and in
 
 Your entire process is determined by the `verified` status and a multi-step content generation plan.
 
-**Step 1: Generate `[Proposal Title]`**
+**Step 1: Generate `[Title]`**
 
 - You must **strictly follow** the priority order below to generate the title:
   1.  **Heading Priority:** Find the first H1 heading (`<h1>...</h1>` or `# ...`) in the original `description`. Use its plain text content as the title.
   2.  **First Line Priority:** If no H1 heading exists, use the first line of the plain-text `description` as the title.
   3.  **Summarization Priority:** If both methods above are unsuccessful, create a new, concise title by summarizing the core theme of the plain-text `description`.
-  4.  **Final Fallback:** If the `description` is **completely empty**, use "**View the Latest Proposal**" as the title.
+- When `verified: false`, you must strictly limit the title length
+  1. Summarize the title generated in the previous step, and strictly limit the length to no more than 350 characters
 
 **Step 2: Sanitize Description**
 
 - Remove all HTML and Markdown tags (e.g., `<h1>`, `*`, `#`) from the `description` to create a plain-text version **for subsequent summary analysis**.
 
-**Step 3: Generate `[Brief Summary]`**
+**Step 3: Generate `[Summary]`**
 
 - Generate a summary based on the sanitized plain-text `description`. The style of the summary depends on the `verified` status:
   - **If `verified: true`**:
@@ -43,6 +44,7 @@ Your entire process is determined by the `verified` status and a multi-step cont
   - **If `verified: false`**:
     1. Generate an **extremely brief** summary (1-2 sentences). Its purpose is to **pique the reader's curiosity** to click the link, rather than providing a detailed explanation.
     2. The entire tweet must **absolutely and strictly adhere to the 240-character limit**, without any exceptions.
+- Summary must be plain text, not markdown/html and other formats.
 
 **Step 4: Append Carry Information**
 
@@ -57,20 +59,20 @@ You must populate the template exactly as specified below.
 
 **1. Output Template:**
 
-🆕 [Proposal Title]
+🆕 [Title]
 🏛️ [daoname]
 👉 [url]
 
-[Brief Summary]
+[Summary]
 
 [carry]
 
 **2. Formatting Rules:**
 
-- The tweet must begin with the `🆕 [Proposal Title]`, `🏛️ [daoname]`, and `👉 [url]` lines, in that exact order.
-- There **must** be one, and only one, blank line between the `👉 [url]` line and the `[Brief Summary]`.
-- The `[Brief Summary]` must start on the 5th line of the tweet.
-- The `[carry]` block (if it exists) must be at the very end of the tweet, with one blank line between it and the `[Brief Summary]`.
+- The tweet must begin with the `🆕 [Title]`, `🏛️ [daoname]`, and `👉 [url]` lines, in that exact order.
+- There **must** be one, and only one, blank line between the `👉 [url]` line and the `[Summary]`.
+- The `[Summary]` must start on the 5th line of the tweet.
+- The `[carry]` block (if it exists) must be at the very end of the tweet and `verified` must be `true`, with one blank line between it and the `[Summary]`.
 
 **3. Character Counting Standards (Twitter/X):**
 

@@ -25,19 +25,20 @@ Generate a tweet based on the proposal's status (Active/Expired), strictly adher
 
 - Determine the status based on `durationMinutes`: A value less than `0` means **Expired**; all other cases are **Active**.
 
-**Step 2: Generate `[Proposal Title]`**
+**Step 2: Generate `[Title]`**
 
 - You must **strictly follow** the priority order below to generate the title:
   1.  **Heading Priority:** Find the first H1 heading (`<h1>...</h1>` or `# ...`) in the original `description`. Use its plain text content as the title.
   2.  **First Line Priority:** If no H1 heading exists, use the first line of the plain-text `description` as the title.
   3.  **Summarization Priority:** If both methods above are unsuccessful, create a new, concise title by summarizing the core theme of the plain-text `description`.
-  4.  **Final Fallback:** If the `description` is **completely empty**, use "**View the Latest Proposal**" as the title.
+- When `verified: false`, you must strictly limit the title length
+  1. Summarize the title generated in the previous step, and strictly limit the length to no more than 350 characters
 
 **Step 3: Sanitize Description**
 
 - Remove all HTML and Markdown tags (e.g., `<h1>`, `*`, `#`) from the `description` to create a plain-text version for subsequent analysis.
 
-**Step 4: Generate `[Brief Summary]`**
+**Step 4: Generate `[Summary]`**
 
 - Generate a summary based on the sanitized plain-text `description`. The style of the summary depends on the `verified` status:
   - **If `verified: true`**:
@@ -46,6 +47,8 @@ Generate a tweet based on the proposal's status (Active/Expired), strictly adher
   - **If `verified: false`**:
     1. Generate an **extremely brief** summary (1-2 sentences). Its purpose is to **pique the reader's curiosity** to click the link, rather than providing a detailed explanation.
     2. The entire tweet must **absolutely and strictly adhere to the 240-character limit**, without any exceptions.
+- Summary must be plain text, not markdown/html and other formats.
+
 
 ### **Mandatory Formatting & Character Counting**
 
@@ -55,25 +58,25 @@ Choose the corresponding template based on the proposal's status from Step 1.
 
 #### **Template 1: For ACTIVE Proposals**
 
-🆕 [Proposal Title]
+🆕 [Title]
 🏛️ [daoname]
 🔚 [voteEnd]
 👉 [url]
 ⏰ Voting ends soon!
 
-[Brief Summary]
+[Summary]
 
 ---
 
 #### **Template 2: For EXPIRED Proposals**
 
-🆕 [Proposal Title]
+🆕 [Title]
 🏛️ [daoname]
 🔚 [voteEnd]
 👉 [url]
 🏁 Voting has closed.
 
-[Brief Summary]
+[Summary]
 
 ---
 
