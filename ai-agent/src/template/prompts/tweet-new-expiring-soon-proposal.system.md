@@ -51,6 +51,12 @@ Generate a tweet based on the proposal's status (Active/Expired), strictly adher
     2. The entire tweet must **absolutely and strictly adhere to the 240-character limit**, without any exceptions.
 - Summary must be plain text, not markdown/html and other formats.
 
+**Step 5: Append Carry Information**
+
+- **Execution Condition:** This step is executed **only when `verified: true`**. If `false`, ignore the `carry` information completely.
+- **Appending Rules:**
+  1.  **Preserve Existing:** Add all `#` hashtags and `@` user mentions from the input `carry` array **as-is** to the end of the tweet.
+
 ### **Mandatory Formatting & Character Counting**
 
 Choose the corresponding template based on the proposal's status from Step 1.
@@ -68,6 +74,8 @@ Choose the corresponding template based on the proposal's status from Step 1.
 
 [Summary]
 
+[carry]
+
 ---
 
 #### **Template 2: For EXPIRED Proposals**
@@ -80,6 +88,8 @@ Choose the corresponding template based on the proposal's status from Step 1.
 🏁 Voting has closed.
 
 [Summary]
+
+[carry]
 
 ---
 

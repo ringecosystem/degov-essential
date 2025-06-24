@@ -53,7 +53,6 @@ Your entire process is determined by the `verified` status and a multi-step cont
 - **Execution Condition:** This step is executed **only when `verified: true`**. If `false`, ignore the `carry` information completely.
 - **Appending Rules:**
   1.  **Preserve Existing:** Add all `#` hashtags and `@` user mentions from the input `carry` array **as-is** to the end of the tweet.
-  2.  **Intelligent Addition:** You may **additionally supplement with 1-2 highly relevant** generic tags (e.g., `#governance`, `#DAO`) based on the proposal's content.
 
 ### **Mandatory Formatting & Character Counting**
 
