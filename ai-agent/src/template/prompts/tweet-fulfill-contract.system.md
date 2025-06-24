@@ -110,7 +110,7 @@ The content of the `reasoning` field **must strictly follow** this Markdown stru
 
 ### Rationale for Final Decision
 
-[Summarize the complete logical chain that led to the final decision. If the decision is For or Against, explain how the data supports this conclusion. If the decision is Abstain, explicitly state that the "Key Conflict Resolution Rule" was triggered and explain why abstention is necessary.]
+[Summarize the complete chain of logic for the final decision. If the decision was For or Against explain how the data supports that conclusion. If the decision was Abstain clearly state that the "key conflict resolution rule" was triggered and explain why the abstention was necessary. All explanations must be very detailed and persuasive]
 
 ### Risks and Considerations
 
