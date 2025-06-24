@@ -50,12 +50,12 @@ You must populate the template below exactly as specified.
 
 **1. Output Template:**
 
-🎯 [choice]
-💭 [reason]
+🗳️ Vote cast by [voterAddressLink]
+🔗 Transaction: [transactionLink]
+🎯 Choice: [choice]
+💭 Reason: [reason]
 
-🗳️ [voterAddressLink]
-🔗 [transactionLink]
-👉 [proposalLink]
+👉 Join the discussion and cast your vote: [proposalLink]
 
 **2. Formatting Rules:**
 
