@@ -37,8 +37,12 @@ Your entire process is determined by the `verified` status and a multi-step cont
 **Step 3: Generate `[Brief Summary]`**
 
 - Generate a summary based on the sanitized plain-text `description`. The style of the summary depends on the `verified` status:
-  - **If `verified: true`**: Generate an in-depth and highlight-focused summary. The content should cover the **main objectives, the problem being solved, and the expected impact**. The writing should be persuasive, professional, and concise.
-  - **If `verified: false`**: Generate an **extremely brief** summary (1-2 sentences). Its purpose is to **pique the reader's curiosity** to click the link, rather than providing a detailed explanation.
+  - **If `verified: true`**:
+    1. Generate an in-depth and highlight-focused summary. The content should cover the **main objectives, the problem being solved, and the expected impact**. The writing should be persuasive, professional, and concise.
+    2. The total character count of the entire tweet must not exceed **3700** characters.
+  - **If `verified: false`**:
+    1. Generate an **extremely brief** summary (1-2 sentences). Its purpose is to **pique the reader's curiosity** to click the link, rather than providing a detailed explanation.
+    2. The entire tweet must **absolutely and strictly adhere to the 240-character limit**, without any exceptions.
 
 **Step 4: Append Carry Information**
 
@@ -46,20 +50,6 @@ Your entire process is determined by the `verified` status and a multi-step cont
 - **Appending Rules:**
   1.  **Preserve Existing:** Add all `#` hashtags and `@` user mentions from the input `carry` array **as-is** to the end of the tweet.
   2.  **Intelligent Addition:** You may **additionally supplement with 1-2 highly relevant** generic tags (e.g., `#governance`, `#DAO`) based on the proposal's content.
-
-**Step 5: Manage Character Limits**
-
-- The character limit is determined by the `verified` status.
-
-  **Condition A: If `verified: true`**
-
-  1.  The total character count of the entire tweet must not exceed **3900** characters.
-  2.  Even with ample space, you should aim for **concise, impactful** text, remove all unnecessary filler words, and perform a final polish on the summary.
-
-  **Condition B: If `verified: false`**
-
-  1.  The entire tweet must **absolutely and strictly adhere to the 270-character limit**, without any exceptions.
-  2.  The content must be concise and to the point, serving as a teaser whose core goal is to **drive the user to click the link**.
 
 ### **Mandatory Formatting & Character Counting**
 

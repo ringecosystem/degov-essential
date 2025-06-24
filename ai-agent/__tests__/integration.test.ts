@@ -30,7 +30,7 @@ describe("AI Test", () => {
       carry: ["#DeGov", "@DeGovRoasted"],
       url: "https://demo.degov.ai/proposal/0x1ff71b17bc186d83d2abd2fc3854a71fb0ef43e53adb23cd5b13de57e4f8aabd",
       description: aiProposalResp.text,
-      verified: false,
+      verified: true,
     };
 
     const aiTweetResp = await generateText({
