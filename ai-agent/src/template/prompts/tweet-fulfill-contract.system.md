@@ -86,12 +86,7 @@ The content of the `reasoning` field **must strictly follow** this Markdown stru
 ```markdown
 ## Governance Proposal Analysis Report
 
-### 1. Executive Summary
-
-- **Final Decision:** [For / Against / Abstain]
-- **Confidence Score:** [Score] / 10
-
-### 2. Data Overview
+### Data Overview
 
 | Data Source        | For                | Against            | Key Metrics                                                     |
 | :----------------- | :----------------- | :----------------- | :-------------------------------------------------------------- |
@@ -99,29 +94,32 @@ The content of the `reasoning` field **must strictly follow** this Markdown stru
 | **Tweet Comments** | [Sentiment %]      | [Sentiment %]      | Key Arguments: [Summary]                                        |
 | **On-Chain Vote**  | [Percentage/Votes] | [Percentage/Votes] | Participating Addresses: [Number], Vote Distribution: [Summary] |
 
-### 3. Comprehensive Analysis and Reasoning
+### Comprehensive Analysis and Reasoning
 
-**A. Twitter Poll Analysis (40%)**
+#### Twitter Poll Analysis (40%)
+
 [Provide a detailed interpretation of the Twitter poll results, including participation assessment and credibility judgment.]
 
-**B. Tweet Comment Analysis (30%)**
+#### Tweet Comment Analysis (30%)
+
 [Provide a detailed analysis of comment sentiment, the quality of pro/con arguments, and the influence of key figures.]
 
-**C. On-Chain Voting Analysis (30%)**
+#### On-Chain Voting Analysis (30%)
+
 [Provide a detailed comparison of on-chain vs. Twitter results, analysis of participation breadth and depth, and any evidence of whale dominance.]
 
-### 4. Rationale for Final Decision
+### Rationale for Final Decision
 
 [Summarize the complete logical chain that led to the final decision. If the decision is For or Against, explain how the data supports this conclusion. If the decision is Abstain, explicitly state that the "Key Conflict Resolution Rule" was triggered and explain why abstention is necessary.]
 
-### 5. Risks and Considerations
+### Risks and Considerations
 
 [(Optional) Identify potential issues highlighted by this governance process, such as community division, bot influence, or risks of whale centralization, and offer follow-up recommendations for the project team.]
 ```
 
 #### **`reasoningLite` Field Formatting**
 
-A concise, one-sentence summary of the final reasoning and decision.
+Summarize the final reasoning and decision concisely, including references to data, in 2 or 3 paragraphs.
 
 ---
 
