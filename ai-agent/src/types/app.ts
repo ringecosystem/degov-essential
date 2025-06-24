@@ -59,9 +59,8 @@ export interface NewProposalEvent {
   daocode: string;
   daoname: string;
   carry: string[];
+  daox?: string;
   proposal: SimpleProposal;
-  blockNumber: number;
-  blockTimestamp: number;
 }
 
 export interface SimpleProposal {
@@ -71,6 +70,10 @@ export interface SimpleProposal {
   voteStart: number;
   voteEnd: number;
   description: string;
+  blockNumber: number;
+  blockTimestamp: number;
+  transactionHash: string;
+  transactionLink?: string;
 }
 
 export interface TwitterAuthorizeForm {

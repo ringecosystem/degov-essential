@@ -69,7 +69,7 @@ export class DegovProposalNewTask {
       if (durationMinutes && durationMinutes < 0) {
         await this.daoService.updateProgress(fastify, {
           code: event.daocode,
-          lastBlockNumber: event.blockNumber,
+          lastBlockNumber: proposal.blockNumber,
         });
         fastify.log.info(
           `[task-new] Skipping proposal tweet for DAO: ${event.daoname}, Proposal ID: ${proposal.id} - Vote ended in the past.`
@@ -132,7 +132,7 @@ export class DegovProposalNewTask {
       );
       await this.daoService.updateProgress(fastify, {
         code: event.daocode,
-        lastBlockNumber: event.blockNumber,
+        lastBlockNumber: proposal.blockNumber,
       });
       await setTimeout(1000); // Wait for 1 second before processing the next proposal
     }
@@ -155,6 +155,14 @@ export class DegovProposalNewTask {
         );
         continue;
       }
+      let daox = dao.config?.links?.twitter;
+      if (daox) {
+        daox = daox.substring(daox.lastIndexOf("/") + 1);
+        daox = daox.substring(
+          0,
+          daox.indexOf("?") > -1 ? daox.indexOf("?") : daox.length
+        );
+      }
       const proposals = await this.degovIndexer.queryNextProposals({
         endpoint: dao.links.indexer,
         lastBlockNumber: dao.lastProcessedBlock ?? 0,
@@ -170,9 +178,8 @@ export class DegovProposalNewTask {
           xprofile: dao.xprofile,
           daocode: dao.code,
           daoname: dao.name,
+          daox: daox,
           carry: dao.carry,
-          blockNumber: parseInt(proposal.blockNumber),
-          blockTimestamp: parseInt(proposal.blockTimestamp),
           proposal: {
             id: proposal.proposalId,
             chainId,
@@ -180,6 +187,12 @@ export class DegovProposalNewTask {
             voteStart: parseInt(proposal.voteStart),
             voteEnd: parseInt(proposal.voteEnd),
             description: proposal.description,
+            blockNumber: parseInt(proposal.blockNumber),
+            blockTimestamp: parseInt(proposal.blockTimestamp),
+            transactionHash: proposal.transactionHash,
+            transactionLink: DegovHelpers.explorerLink(
+              dao.config?.chain?.explorers
+            ).transaction(proposal.transactionHash),
           },
         };
         results.push(npe);

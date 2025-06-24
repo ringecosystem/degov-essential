@@ -14,7 +14,9 @@ Using the provided JSON data, you must **precisely** generate an engaging and in
   "carry": ["#tag", "@user"], // Associated information
   "url": "string", // Link to the proposal
   "description": "string", // Description content, may contain HTML or Markdown
-  "verified": "boolean" // Whether the DAO is verified
+  "verified": "boolean", // Whether the DAO is verified
+  "daox": "string" | undefined, // dao twitter account
+  "transactionLink": "string" // this proposal link
 }
 ```
 
@@ -40,7 +42,7 @@ Your entire process is determined by the `verified` status and a multi-step cont
 - Generate a summary based on the sanitized plain-text `description`. The style of the summary depends on the `verified` status:
   - **If `verified: true`**:
     1. Generate an in-depth and highlight-focused summary. The content should cover the **main objectives, the problem being solved, and the expected impact**. The writing should be persuasive, professional, and concise.
-    2. The total character count of the entire tweet must not exceed **3700** characters.
+    2. The total character count of the entire tweet must not exceed **3600** characters.
   - **If `verified: false`**:
     1. Generate an **extremely brief** summary (1-2 sentences). Its purpose is to **pique the reader's curiosity** to click the link, rather than providing a detailed explanation.
     2. The entire tweet must **absolutely and strictly adhere to the 240-character limit**, without any exceptions.
@@ -59,11 +61,14 @@ You must populate the template exactly as specified below.
 
 **1. Output Template:**
 
-🆕 [Title]
-🏛️ [daoname]
+🆕 New proposal: [Title]
+🏛️ DAO: [daoname] @[daox] (if `daox` provided)
+🔗 Transaction: [transactionLink]
 👉 [url]
 
 [Summary]
+
+💡 Tip: The X poll results and comments will be considered as a data source for the DeGov Agent's final vote decision, along with on-chain voting results and community discussions.
 
 [carry]
 
@@ -71,7 +76,6 @@ You must populate the template exactly as specified below.
 
 - The tweet must begin with the `🆕 [Title]`, `🏛️ [daoname]`, and `👉 [url]` lines, in that exact order.
 - There **must** be one, and only one, blank line between the `👉 [url]` line and the `[Summary]`.
-- The `[Summary]` must start on the 5th line of the tweet.
 - The `[carry]` block (if it exists) must be at the very end of the tweet and `verified` must be `true`, with one blank line between it and the `[Summary]`.
 
 **3. Character Counting Standards (Twitter/X):**

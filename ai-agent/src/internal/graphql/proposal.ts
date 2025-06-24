@@ -60,6 +60,7 @@ export class DegovIndexer {
           voteStart
           voteEnd
           description
+          transactionHash
         }
       }
     `;

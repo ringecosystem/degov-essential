@@ -15,7 +15,9 @@ Generate a tweet based on the proposal's status (Active/Expired), strictly adher
   "description": "string", // May contain HTML or Markdown
   "verified": "boolean",
   "voteEnd": "string", // Proposal end time (ISO 8601 format)
-  "durationMinutes": -42 | undefined // A negative number means it has expired
+  "durationMinutes": -42 | undefined, // A negative number means it has expired
+  "daox": "string" | undefined, // dao twitter account
+  "transactionLink": "string" // this proposal link
 }
 ```
 
@@ -43,12 +45,11 @@ Generate a tweet based on the proposal's status (Active/Expired), strictly adher
 - Generate a summary based on the sanitized plain-text `description`. The style of the summary depends on the `verified` status:
   - **If `verified: true`**:
     1. Generate an in-depth and highlight-focused summary. The content should cover the **main objectives, the problem being solved, and the expected impact**. The writing should be persuasive, professional, and concise.
-    2. The total character count of the entire tweet must not exceed **3700** characters.
+    2. The total character count of the entire tweet must not exceed **3600** characters.
   - **If `verified: false`**:
     1. Generate an **extremely brief** summary (1-2 sentences). Its purpose is to **pique the reader's curiosity** to click the link, rather than providing a detailed explanation.
     2. The entire tweet must **absolutely and strictly adhere to the 240-character limit**, without any exceptions.
 - Summary must be plain text, not markdown/html and other formats.
-
 
 ### **Mandatory Formatting & Character Counting**
 
@@ -58,8 +59,9 @@ Choose the corresponding template based on the proposal's status from Step 1.
 
 #### **Template 1: For ACTIVE Proposals**
 
-🆕 [Title]
-🏛️ [daoname]
+🆕 New proposal: [Title]
+🏛️ DAO: [daoname] @[daox] (if `daox` provided)
+🔗 Transaction: [transactionLink]
 🔚 [voteEnd]
 👉 [url]
 ⏰ Voting ends soon!
@@ -70,8 +72,9 @@ Choose the corresponding template based on the proposal's status from Step 1.
 
 #### **Template 2: For EXPIRED Proposals**
 
-🆕 [Title]
-🏛️ [daoname]
+🆕 New proposal: [Title]
+🏛️ DAO: [daoname] @[daox] (if `daox` provided)
+🔗 Transaction: [transactionLink]
 🔚 [voteEnd]
 👉 [url]
 🏁 Voting has closed.

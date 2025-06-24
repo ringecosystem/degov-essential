@@ -19,6 +19,8 @@ export class DegovPrompt {
       url: proposal.url,
       description: proposal.description,
       verified: stu.verified,
+      daox: event.daox,
+      transactionLink: proposal.transactionLink,
     };
     return {
       system: await getBuiltInPrompt(
@@ -52,6 +54,8 @@ Generate a poll tweet use above data
       verified: stu.verified,
       durationMinutes: options.durationMinutes,
       voteEnd: options.voteEnd.toISOString(),
+      daox: event.daox,
+      transactionLink: proposal.transactionLink,
     };
     return {
       system: await getBuiltInPrompt(
