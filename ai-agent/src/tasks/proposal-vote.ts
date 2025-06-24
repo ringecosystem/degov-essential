@@ -141,7 +141,7 @@ export class DegovProposalVoteTask {
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
         };
-        console.log(promptInput);
+        fastify.log.debug(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(
           fastify,
           promptInput
