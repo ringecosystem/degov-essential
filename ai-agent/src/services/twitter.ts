@@ -173,7 +173,19 @@ export class TwitterService {
     const { accessToken, accessSecret, client } =
       await unauthorizedClient.login(oauth_verifier);
 
-    const twme = await client.v2.me();
+    const twme = await client.v2.me({
+      "user.fields": [
+        "created_at",
+        "description",
+        "id",
+        "name",
+        "url",
+        "username",
+        "verified",
+        "verified_type",
+        "profile_image_url",
+      ],
+    });
     if (twme.errors) {
       fastify.log.warn(
         `Failed to fetch Twitter user info for profile "${inputProfile}": ${JSON.stringify(
