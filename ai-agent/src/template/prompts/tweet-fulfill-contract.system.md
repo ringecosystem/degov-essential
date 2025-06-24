@@ -81,7 +81,8 @@ The response **must be a single, valid JSON object** and adhere to the following
 
 #### **`reasoning` Field Formatting (Internal Markdown)**
 
-The content of the `reasoning` field **must strictly follow** this Markdown structure:
+- The content of the `reasoning` field **must strictly follow** this Markdown structure:
+- The `reasoning` analysis should not miss any details. Please explain the decision very fully.
 
 ```markdown
 ## Governance Proposal Analysis Report
