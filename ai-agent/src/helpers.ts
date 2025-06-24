@@ -89,7 +89,7 @@ export class DegovHelpers {
     let output = error instanceof Error ? error.message : "Unknown error";
     if ("data" in error) {
       const data = error.data;
-      const status = data.status;
+      const status = data?.status ?? -1;
       if (status === 429) {
         const rateLimit = error.rateLimit;
         output += ` -> You just hit the rate limit! [limit]: ${

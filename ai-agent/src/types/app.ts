@@ -1,4 +1,5 @@
 import { DegovConfig } from "./degov-config";
+import { z } from "zod";
 
 export class Resp<T> {
   code: number;
@@ -59,9 +60,8 @@ export interface NewProposalEvent {
   daocode: string;
   daoname: string;
   carry: string[];
+  daox?: string;
   proposal: SimpleProposal;
-  blockNumber: number;
-  blockTimestamp: number;
 }
 
 export interface SimpleProposal {
@@ -71,6 +71,10 @@ export interface SimpleProposal {
   voteStart: number;
   voteEnd: number;
   description: string;
+  blockNumber: number;
+  blockTimestamp: number;
+  transactionHash: string;
+  transactionLink?: string;
 }
 
 export interface TwitterAuthorizeForm {
@@ -122,3 +126,27 @@ export enum ProposalState {
   Expired = "expired",
   Executed = "executed",
 }
+
+export const AnalysisResultSchema = z.object({
+  finalResult: z.enum(["For", "Against", "Abstain"]),
+  confidence: z.number().min(0).max(10),
+  reasoning: z.string().describe("Detailed reasoning for the vote decision"),
+  reasoningLite: z.string().describe("Concise reasoning for the vote decision"),
+  votingBreakdown: z.object({
+    twitterPoll: z.object({
+      for: z.number(),
+      against: z.number(),
+      abstain: z.number(),
+    }),
+    twitterComments: z.object({
+      positive: z.number(),
+      negative: z.number(),
+      neutral: z.number(),
+    }),
+    onChainVotes: z.object({
+      for: z.number(),
+      against: z.number(),
+      abstain: z.number(),
+    }),
+  }),
+});

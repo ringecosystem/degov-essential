@@ -11,6 +11,7 @@ import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { DegovIndexer } from "../internal/graphql";
+import * as changeCase from "change-case";
 
 @Service()
 export class DegovProposalStatusTask {
@@ -62,7 +63,6 @@ export class DegovProposalStatusTask {
         status: [
           ProposalState.Pending,
           ProposalState.Active,
-          ProposalState.Succeeded,
           ProposalState.Queued,
         ],
         fulfilleds: [0, 1],
@@ -116,22 +116,22 @@ export class DegovProposalStatusTask {
     const daoContracts = daoConfig.contracts;
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
 
-    const result = await this.governorContract.status({
+    const statusResult = await this.governorContract.status({
       chainId: daoConfig.chain.id,
       endpoint: daoConfig.chain.rpcs?.[0],
       contractAddress: DegovHelpers.stdHex(daoContracts.governor),
       proposalId: degovTweet.proposal_id,
     });
-    if (degovTweet.status === result) {
+    if (degovTweet.status === statusResult) {
       fastify.log.info(
-        `[task-status] No status change for tweet ${degovTweet.id} (proposal ID: ${degovTweet.proposal_id}), current status: ${result}`
+        `[task-status] No status change for tweet ${degovTweet.id} (proposal ID: ${degovTweet.proposal_id}), current status: ${statusResult}`
       );
       return; // No status change, skip further processing
     }
 
     await this.degovService.updateTweetStatus(fastify, {
       proposalId: degovTweet.proposal_id,
-      status: result,
+      status: statusResult,
     });
 
     const promptInput = {
@@ -143,7 +143,7 @@ export class DegovProposalStatusTask {
       const moreInfosResult = await this.moreTweetInfos({
         degovTweet,
         dao,
-        status: result,
+        status: statusResult,
       });
       if (moreInfosResult.length > 0) {
         moreInfos.push(...moreInfosResult);
@@ -155,9 +155,11 @@ export class DegovProposalStatusTask {
     }
 
     const tweet = [
-      `${this.bestStatusEmoji(result)} The proposal ${result}`,
+      `${this.bestStatusEmoji(
+        statusResult
+      )} Proposal status update: ${changeCase.pascalCase(statusResult)}`,
       ...moreInfos,
-      `👉 Follow on DeGov ${promptInput.proposalLink}`,
+      `👉 See the latest: ${promptInput.proposalLink}`,
     ].join("\n");
 
     const tweetInput: SendTweetInput = {

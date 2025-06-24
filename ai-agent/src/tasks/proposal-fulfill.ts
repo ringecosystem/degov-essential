@@ -9,7 +9,7 @@ import {
   twitter_tweet,
 } from "../generated/prisma";
 import { DaoService } from "../services/dao";
-import { DegovMcpDao } from "../types";
+import { AnalysisResultSchema, DegovMcpDao } from "../types";
 import { TwitterService } from "../services/twitter";
 import { DegovIndexer } from "../internal/graphql";
 import { DegovTweetSyncTask } from "./tweet-sync";
@@ -17,7 +17,6 @@ import { DegovHelpers } from "../helpers";
 import { generateObject } from "ai";
 import { DegovPrompt } from "../internal/prompt";
 import { OpenrouterAgent } from "../internal/openrouter";
-import { z } from "zod";
 import { GovernorContract } from "../internal/governor";
 import { setTimeout } from "timers/promises";
 
@@ -96,7 +95,9 @@ export class DegovProposalFulfillTask {
         messages.push(
           `[${times_processed}] Error processing tweet ${
             unfulfilledTweet.id
-          }: ${err instanceof Error ? err.message : String(err)}`
+          }: ${err instanceof Error ? err.message : String(err)} ${
+            err instanceof Error ? err.stack : ""
+          }`
         );
         if (unfulfilledTweet.message) {
           messages.push(unfulfilledTweet.message);
@@ -104,7 +105,7 @@ export class DegovProposalFulfillTask {
         const message = messages.join("========");
 
         fastify.log.error(
-          `${message} ${err instanceof Error ? err.stack : ""}`
+          `[task-fulfill] ${message} ${err instanceof Error ? err.stack : ""}`
         );
         await this.degovService.updateProcessError(fastify, {
           id: unfulfilledTweet.id,
@@ -132,14 +133,37 @@ export class DegovProposalFulfillTask {
       );
     }
 
-    let tweetPoll = await this.twitterService.queryPoll(fastify, {
-      tweetId: tweet.id,
+    const tweetId = tweet.id;
+    const degovTweet = await this.degovService.getDegovTweetById(fastify, {
+      id: tweetId,
     });
+    if (!degovTweet) {
+      throw new Error(
+        `[task-fulfill] Degov tweet not found for tweet ID ${tweetId}, cannot fulfill tweet poll.`
+      );
+    }
+
+    let tweetPoll = await this.twitterService.queryPoll(fastify, {
+      tweetId,
+    });
+    if (!tweetPoll) {
+      await this.degovTweetSyncTask.syncTweet(fastify, {
+        tweet: degovTweet,
+        dao,
+        force: true,
+      });
+
+      tweetPoll = await this.twitterService.queryPoll(fastify, {
+        tweetId: tweet.id,
+      });
+    }
+
     if (!tweetPoll) {
       throw new Error(
         `[task-fulfill] No poll found for tweet ${tweet.id}, cannot fulfill tweet poll.`
       );
     }
+
     if (!tweetPoll.end_datetime) {
       throw new Error(
         `[task-fulfill] Poll end time not found for tweet ${tweet.id}, cannot fulfill tweet poll.`
@@ -157,28 +181,6 @@ export class DegovProposalFulfillTask {
         } has not ended yet. End time: ${pollEndTime.toISOString()}, Current time: ${now.toISOString()}`
       );
       return;
-    }
-    const tweetId = tweetPoll.tweet_id;
-    const degovTweet = await this.degovService.getDegovTweetById(fastify, {
-      id: tweetId,
-    });
-    if (!degovTweet) {
-      throw new Error(
-        `[task-fulfill] Degov tweet not found for tweet ID ${tweetId}, cannot fulfill tweet poll.`
-      );
-    }
-    await this.degovTweetSyncTask.syncTweet(fastify, {
-      tweet: degovTweet,
-      dao,
-      force: true,
-    });
-    tweetPoll = await this.twitterService.queryPoll(fastify, {
-      tweetId: tweet.id,
-    });
-    if (!tweetPoll) {
-      throw new Error(
-        `[task-fulfill] No poll found for tweet ${tweet.id} after sync, cannot fulfill tweet poll.`
-      );
     }
     // tweetPoll.twitter_poll_option
     const pollOptions: twitter_poll_option[] = [];
@@ -262,7 +264,7 @@ export class DegovProposalFulfillTask {
               tweet.proposal_id
             } (${i + 1}/3)`
           );
-          await setTimeout(1000); // Wait 1 second before retrying
+          await setTimeout(1000 * 3); // Wait 1 second before retrying
           continue; // Retry up to 2 more times
         } else {
           throw new Error(
@@ -273,23 +275,12 @@ export class DegovProposalFulfillTask {
     }
     const aiResp = _aiResp!;
 
-    const bestReaoning = [
-      aiResp.object.reasoningLite,
-      `<p><a href="${dao.links.website}/agent-decision/${
-        tweet.proposal_id
-      }" id="agent-decision-${tweet.proposal_id.substring(
-        0,
-        9
-      )}">Decision Details</a></p>`,
-      `<p class="degov-ai-agent-powered">Powered by <a href="https://degov.ai">DeGov AI Agent</a></p>`,
-    ].join("<br/>");
-
     await this.governorContract.castVoteWithReason({
       chainId: daoConfig.chain.id,
       contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
       proposalId: BigInt(tweet.proposal_id),
       support: DegovHelpers.voteSupportNumber(aiResp.object.finalResult),
-      reason: bestReaoning,
+      reason: aiResp.object.reasoningLite,
     });
     const fulfilledExplain = {
       input: {
@@ -316,27 +307,3 @@ export class DegovProposalFulfillTask {
     return replies.filter((reply) => reply.from_agent === 0);
   }
 }
-
-const AnalysisResultSchema = z.object({
-  finalResult: z.enum(["For", "Against", "Abstain"]),
-  confidence: z.number().min(0).max(10),
-  reasoning: z.string().describe("Detailed reasoning for the vote decision"),
-  reasoningLite: z.string().describe("Concise reasoning for the vote decision"),
-  votingBreakdown: z.object({
-    twitterPoll: z.object({
-      for: z.number(),
-      against: z.number(),
-      abstain: z.number(),
-    }),
-    twitterComments: z.object({
-      positive: z.number(),
-      negative: z.number(),
-      neutral: z.number(),
-    }),
-    onChainVotes: z.object({
-      for: z.number(),
-      against: z.number(),
-      abstain: z.number(),
-    }),
-  }),
-});

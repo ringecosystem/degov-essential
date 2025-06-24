@@ -24,6 +24,7 @@ export interface DIProposal {
   voteStart: string;
   voteEnd: string;
   description: string;
+  transactionHash: string;
 }
 
 export interface DIVoteCast {

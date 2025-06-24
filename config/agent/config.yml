@@ -6,7 +6,6 @@ daos:
     xprofile: official
     carry:
       - '#DeGov'
-      - '@DeGovRoasted'
     links:
       website: https://demo.degov.ai
       config: https://demo.degov.ai/degov.yml
