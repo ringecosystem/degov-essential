@@ -154,9 +154,9 @@ export class DegovProposalStatusTask {
     }
 
     const tweet = [
-      `${this.bestStatusEmoji(result)} The proposal ${result}`,
+      `${this.bestStatusEmoji(result)} Proposal status update: ${result}`,
       ...moreInfos,
-      `👉 Follow on DeGov ${promptInput.proposalLink}`,
+      `👉 See the latest: ${promptInput.proposalLink}`,
     ].join("\n");
 
     const tweetInput: SendTweetInput = {
