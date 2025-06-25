@@ -105,13 +105,13 @@ Generate a tweet use above data
         "prompts/tweet-fulfill-contract.system.md"
       ),
       prompt: `
-**Tweet Poll:**
+**X Poll:**
 ${JSON.stringify(options.pollOptions)}
 
-**Tweet replies:**
+**X Comments:**
 ${JSON.stringify(options.tweetReplies)}
 
-**On-Chain Vote Casts:**
+**On-Chain Voting:**
 ${JSON.stringify(options.voteCasts)}
 
 Please analyze these data comprehensively and give final governance decision recommendations.
@@ -131,6 +131,7 @@ Please analyze these data comprehensively and give final governance decision rec
       prompt: `
 ${options.description}
 
+----
 Generate a comprehensive summary of the proposal based on the description provided.
       `,
     };
