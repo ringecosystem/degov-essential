@@ -5,7 +5,9 @@ daos:
     # xprofile: roasted
     xprofile: official
     carry:
-      - '#DeGov'
+      - '#Governance'
+      - '#DeFAI'
+      - '#DAO'
     links:
       website: https://demo.degov.ai
       config: https://demo.degov.ai/degov.yml
