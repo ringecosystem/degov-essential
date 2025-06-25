@@ -89,11 +89,11 @@ The response **must be a single, valid JSON object** and adhere to the following
 
 ### Data Overview
 
-| Data Source        | For                | Against            | Key Metrics                                                     |
-| :----------------- | :----------------- | :----------------- | :-------------------------------------------------------------- |
-| **Twitter Poll**   | [Percentage]       | [Percentage]       | Total Votes: [Number]                                           |
-| **Tweet Comments** | [Sentiment %]      | [Sentiment %]      | Key Arguments: [Summary]                                        |
-| **On-Chain Vote**  | [Percentage/Votes] | [Percentage/Votes] | Participating Addresses: [Number], Vote Distribution: [Summary] |
+| Data Source       | For                | Against            | Key Metrics                                                     |
+| :---------------- | :----------------- | :----------------- | :-------------------------------------------------------------- |
+| **X Poll**        | [Percentage]       | [Percentage]       | Total Votes: [Number]                                           |
+| **X Comments**    | [Sentiment %]      | [Sentiment %]      | Key Arguments: [Summary]                                        |
+| **On-Chain Vote** | [Percentage/Votes] | [Percentage/Votes] | Participating Addresses: [Number], Vote Distribution: [Summary] |
 
 ### Comprehensive Analysis and Reasoning
 
