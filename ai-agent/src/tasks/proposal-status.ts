@@ -63,6 +63,7 @@ export class DegovProposalStatusTask {
         status: [
           ProposalState.Pending,
           ProposalState.Active,
+          ProposalState.Succeeded,
           ProposalState.Queued,
         ],
         fulfilleds: [0, 1],
