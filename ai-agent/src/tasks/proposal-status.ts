@@ -63,6 +63,7 @@ export class DegovProposalStatusTask {
         status: [
           ProposalState.Pending,
           ProposalState.Active,
+          ProposalState.Succeeded,
           ProposalState.Queued,
         ],
         fulfilleds: [0, 1],
@@ -173,6 +174,7 @@ export class DegovProposalStatusTask {
       },
     };
 
+    fastify.log.debug(tweetInput);
     const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
     fastify.log.info(
       `[task-status] Posted proposal status tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal URL: ${promptInput.proposalLink}`
