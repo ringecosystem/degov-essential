@@ -204,9 +204,7 @@ export class DegovProposalStatusTask {
         transactionHash = pqueued?.transactionHash;
         if (pqueued) {
           const etaSeconds = +pqueued.etaSeconds;
-          const etaDate = new Date(
-            Date.now() + etaSeconds * 1000
-          ).toISOString();
+          const etaDate = new Date(Date.now() + etaSeconds).toISOString();
           results.push(`📅 ETA: ${etaDate}`);
         }
         break;
