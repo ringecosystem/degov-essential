@@ -1,6 +1,6 @@
 {
   "name": "degov-mcp",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Degov mcp server",
   "scripts": {
     "dev": "ts-node --files src/index.ts",
