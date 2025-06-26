@@ -12,7 +12,7 @@ daos:
       config: https://demo.degov.ai/degov.yml
       indexer: https://degov-indexer.vercel.app/graphql
 
-  - name: Ring DAO
+  - name: RingDAO
     code: ring-dao
     xprofile: official
     carry:
@@ -24,7 +24,7 @@ daos:
       config: https://gov.ringdao.com/degov.yml
       indexer: https://gov.ringdao.com/indexer/graphql
 
-  - name: Kton DAO
+  - name: KtonDAO
     code: kton-dao
     xprofile: official
     carry:
