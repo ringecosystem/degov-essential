@@ -52,10 +52,7 @@ export class DegovRouter {
         const { chain, id } = request.params;
         const format = request.query.format ?? "html";
         const fulfilled = request.query.fulfilled;
-        if (id.length < 9) {
-          return Resp.err("Invalid proposal ID");
-        }
-        const tweets = await this.degovService.listByChainWithSmartProposalId(
+        const tweet = await this.degovService.findChainWithSmartProposalId(
           fastify,
           {
             chainId: chain,
@@ -63,41 +60,40 @@ export class DegovRouter {
             fulfilled,
           }
         );
-        const parsedTweets = [];
-
-        for (const tweet of tweets) {
-          const dao = await this.daoService.dao(fastify, {
-            daocode: tweet.daocode,
-          });
-          if (!dao) {
-            continue;
-          }
-          const twu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
-          const renderTweet = {
-            ...tweet,
-            fulfilled_explain: JSON.parse(tweet.fulfilled_explain || "{}"),
-            dao,
-            twitter_user: twu,
-          };
-          parsedTweets.push(renderTweet);
+        if (!tweet) {
+          return Resp.err(`tweet not found for chain ${chain} and id ${id}`);
         }
+
+        const dao = await this.daoService.dao(fastify, {
+          daocode: tweet.daocode,
+        });
+        if (!dao) {
+          return Resp.err(`dao not found for daocode ${tweet.daocode}`);
+        }
+
+        const twu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
+        const renderTweet = {
+          ...tweet,
+          fulfilled_explain: JSON.parse(tweet.fulfilled_explain || "{}"),
+          dao,
+          twitter_user: twu,
+        };
+
         if (format === "html") {
           return reply.view("view/proposal-voted.handlebars", {
-            tweets: parsedTweets,
+            tweet: renderTweet,
           });
         }
-        const outputTweets = parsedTweets.map((tweet) => {
-          return {
-            ...tweet,
-            fulfilled_explain: {
-              input: {
-                pollOptions: tweet.fulfilled_explain?.input?.pollOptions,
-              },
-              output: tweet.fulfilled_explain?.output,
+        const outputTweet = {
+          ...renderTweet,
+          fulfilled_explain: {
+            input: {
+              pollOptions: renderTweet.fulfilled_explain?.input?.pollOptions,
             },
-          };
-        });
-        return Resp.ok(outputTweets);
+            output: renderTweet.fulfilled_explain?.output,
+          },
+        };
+        return Resp.ok(outputTweet);
       }
     );
   }

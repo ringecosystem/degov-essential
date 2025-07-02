@@ -54,22 +54,19 @@ export class DegovService {
     });
   }
 
-  async listByChainWithSmartProposalId(
+  async findChainWithSmartProposalId(
     fastify: FastifyInstance,
     options: { chainId: number; proposalId: string; fulfilled?: number }
-  ): Promise<degov_tweet[]> {
+  ): Promise<degov_tweet | undefined> {
     const prisma = fastify.prisma;
-    const results = await prisma.degov_tweet.findMany({
+    const result = await prisma.degov_tweet.findFirst({
       where: {
         chain_id: options.chainId,
-        proposal_id: {
-          startsWith: options.proposalId,
-        },
+        proposal_id: options.proposalId,
         fulfilled: options.fulfilled,
       },
-      orderBy: [{ ctime: "desc" }],
     });
-    return results;
+    return result ?? undefined;
   }
 
   async listPollTweetsByStatus(
