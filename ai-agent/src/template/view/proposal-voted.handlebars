@@ -6,18 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- base Meta -->
-  <title>{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - {{/with}}{{/if}}DeGov Agent voting comment details</title>
+  <title>{{#if tweet}}{{dao.name}} - {{/if}}DeGov Agent voting comment details</title>
   <meta name="description"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} governance proposal analysis powered by DeGov AI. View voting results, sentiment analysis, and AI-driven decisions for proposal {{proposal_id}}.{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+    content="{{#if tweet}}{{dao.name}} governance proposal analysis powered by DeGov AI. View voting results, sentiment analysis, and AI-driven decisions for proposal {{proposal_id}}.{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:title"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - {{/with}}{{/if}}DeGov Agent voting comment details">
+    content="{{#if tweet}}{{dao.name}} - {{/if}}DeGov Agent voting comment details">
   <meta property="og:description"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}AI-powered governance analysis for {{dao.name}}. Final decision: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} with {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}high{{/if}} confidence. View detailed voting breakdown and reasoning.{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
-  {{#if tweets}}
-  {{#with (lookup tweets 0)}}
+    content="{{#if tweet}}AI-powered governance analysis for {{dao.name}}. Final decision: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} with {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}high{{/if}} confidence. View detailed voting breakdown and reasoning.{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+  {{#if tweet}}
   {{#if dao.config.logo}}
   {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
   <meta property="og:image" content="{{dao.config.logo}}">
@@ -27,7 +26,6 @@
   {{else}}
   <meta property="og:image" content="https://degov.ai/assets/degov-social-preview.png">
   {{/if}}
-  {{/with}}
   {{else}}
   <meta property="og:image" content="https://degov.ai/assets/degov-social-preview.png">
   {{/if}}
@@ -38,11 +36,11 @@
   <meta name="twitter:site" content="@DeGovAI">
   <meta name="twitter:creator" content="@DeGovAI">
   <meta name="twitter:title"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - {{/with}}{{/if}}DeGov Agent voting comment details">
+    content="{{#if tweet}}{{dao.name}} - {{/if}}DeGov Agent voting comment details">
   <meta name="twitter:description"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}🤖 AI Analysis: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{dao.name}}{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
-  {{#if tweets}}
-  {{#with (lookup tweets 0)}}
+    content="{{#if tweet}}🤖 AI Analysis: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{dao.name}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+  {{#if tweet}}
+  {{#if tweet}}
   {{#if dao.config.logo}}
   {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
   <meta name="twitter:image" content="{{dao.config.logo}}">
@@ -52,7 +50,6 @@
   {{else}}
   <meta name="twitter:image" content="https://degov.ai/images/og.png">
   {{/if}}
-  {{/with}}
   {{else}}
   <meta name="twitter:image" content="https://degov.ai/images/og.png">
   {{/if}}
@@ -61,28 +58,26 @@
   <meta name="robots" content="index, follow">
   <meta name="author" content="DeGov AI">
   <meta name="keywords"
-    content="{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}}, {{/with}}{{/if}}governance, AI, blockchain, voting, DAO, decision making, DeGov, autonomous agents">
+    content="{{#if tweet}}{{dao.name}}, {{/if}}governance, AI, blockchain, voting, DAO, decision making, DeGov, autonomous agents">
 
   <!-- Schema.org structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "{{#if tweets}}{{#with (lookup tweets 0)}}{{dao.name}} - DeGov AI Analysis{{/with}}{{else}}DeGov Vote Results{{/if}}",
-    "description": "{{#if tweets}}{{#with (lookup tweets 0)}}AI-powered governance analysis for {{dao.name}} proposal {{proposal_id}}{{/with}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}",
+    "name": "{{#if tweet}}{{dao.name}} - DeGov AI Analysis{{else}}DeGov Vote Results{{/if}}",
+    "description": "{{#if tweet}}AI-powered governance analysis for {{dao.name}} proposal {{proposal_id}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}",
     "author": {
       "@type": "Organization",
       "name": "DeGov AI",
       "url": "https://degov.ai"
     },
-    {{#if tweets}}
-    {{#with (lookup tweets 0)}}
+    {{#if tweet}}
     "about": {
       "@type": "Thing",
       "name": "{{dao.name}} Governance Proposal",
       "description": "Blockchain governance proposal analysis with AI-driven decision making"
     },
-    {{/with}}
     {{/if}}
     "provider": {
       "@type": "Organization",
@@ -970,8 +965,7 @@
 </head>
 
 <body>
-  {{#if tweets}}
-  {{#each tweets}}
+  {{#if tweet}}
   <div class="container">
     <div class="header">
       <div class="header-content">
@@ -1198,7 +1192,6 @@
       </div>
     </div>
   </div>
-  {{/each}}
   {{else}}
   <div class="no-data">
     <svg viewBox="0 0 24 24" fill="currentColor">
