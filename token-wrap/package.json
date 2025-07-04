@@ -26,6 +26,7 @@
     "blo": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.23.0",
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.507.0",
