@@ -11,6 +11,7 @@ export function useTokenWrap() {
   const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string | undefined>();
+  const [txStatus, setTxStatus] = useState<'idle' | 'pending' | 'confirming' | 'success' | 'error'>('idle');
   const [tokenConfig, setTokenConfig] = useState<{
     sourceToken: any;
     wrapToken: any;
@@ -55,9 +56,73 @@ export function useTokenWrap() {
     }
   });
 
-  const { isLoading: isConfirming } = useWaitForTransactionReceipt({
-    hash: txHash as `0x${string}`
+  const { 
+    isLoading: isConfirming, 
+    isSuccess: isTransactionSuccess,
+    isError: isTransactionError,
+    error: transactionError 
+  } = useWaitForTransactionReceipt({
+    hash: txHash as `0x${string}`,
+    query: {
+      enabled: !!txHash,
+      retry: (failureCount, error) => {
+        // 如果是找不到交易收据的错误，继续重试
+        if (error?.message?.includes('could not be found')) {
+          return failureCount < 10; // 最多重试10次
+        }
+        return failureCount < 3; // 其他错误重试3次
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // 指数退避，最大10秒
+    }
   });
+
+  // Update transaction status based on receipt
+  useEffect(() => {
+    if (!txHash) {
+      setTxStatus('idle');
+    } else if (isConfirming) {
+      setTxStatus('confirming');
+    } else if (isTransactionSuccess) {
+      setTxStatus('success');
+      // Auto refresh balances after successful transaction
+      refetchFromTokenBalance();
+      refetchToTokenBalance();
+      refetchFromTokenAllowance();
+      
+      toast.success('Transaction confirmed successfully!', {
+        onClose: () => {
+          // Reset transaction state after toast is closed
+          setTxHash(undefined);
+          setTxStatus('idle');
+        }
+      });
+    } else if (isTransactionError) {
+      setTxStatus('error');
+      
+      // 根据错误类型提供更友好的错误信息
+      let errorMessage = 'Transaction failed';
+      if (transactionError?.message?.includes('could not be found')) {
+        errorMessage = 'Transaction is taking longer than expected. Please check your wallet or block explorer.';
+      } else if (transactionError?.message?.includes('User rejected')) {
+        errorMessage = 'Transaction was rejected by user';
+      } else if (transactionError?.message?.includes('insufficient funds')) {
+        errorMessage = 'Insufficient funds for transaction';
+      } else if (transactionError?.message?.includes('gas')) {
+        errorMessage = 'Transaction failed due to gas issues';
+      } else if (transactionError?.message) {
+        errorMessage = `Transaction failed: ${transactionError.message}`;
+      }
+      
+      toast.error(errorMessage, {
+        duration: 8000, // 错误消息显示更长时间
+        onClose: () => {
+          // 错误时也重置状态
+          setTxHash(undefined);
+          setTxStatus('idle');
+        }
+      });
+    }
+  }, [txHash, isConfirming, isTransactionSuccess, isTransactionError, transactionError, refetchFromTokenBalance, refetchToTokenBalance, refetchFromTokenAllowance]);
 
   // Approve FROM_TOKEN for wrapping
   const approveFromToken = useCallback(
@@ -69,7 +134,10 @@ export function useTokenWrap() {
 
       try {
         setIsLoading(true);
+        setTxStatus('pending');
         const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
+
+        toast.info('Please confirm the approval transaction in your wallet...');
 
         const hash = await writeContractAsync({
           address: tokenConfig.sourceToken.address,
@@ -79,23 +147,20 @@ export function useTokenWrap() {
         });
 
         setTxHash(hash);
-        toast.success('Approval transaction submitted');
-
-        // Refetch allowance after approval
-        setTimeout(() => {
-          refetchFromTokenAllowance();
-        }, 2000);
+        setTxStatus('confirming');
+        toast.success('Approval transaction submitted! Waiting for confirmation...');
 
         return hash;
       } catch (error) {
         console.error('Approve error:', error);
-        toast.error(`Failed to approve ${tokenConfig?.sourceToken.symbol}`);
+        setTxStatus('error');
+        toast.error(`Failed to approve ${tokenConfig?.sourceToken.symbol}: ${error.message || 'Unknown error'}`);
         throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [address, tokenConfig, writeContractAsync, refetchFromTokenAllowance]
+    [address, tokenConfig, writeContractAsync]
   );
 
   // Check if approval is needed before wrapping
@@ -132,7 +197,10 @@ export function useTokenWrap() {
 
       try {
         setIsLoading(true);
+        setTxStatus('pending');
         const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
+
+        toast.info('Please confirm the wrap transaction in your wallet...');
 
         const hash = await writeContractAsync({
           address: tokenConfig.wrapContractAddress,
@@ -142,19 +210,14 @@ export function useTokenWrap() {
         });
 
         setTxHash(hash);
-        toast.success('Wrap transaction submitted');
-
-        // Refetch balances after transaction
-        setTimeout(() => {
-          refetchFromTokenBalance();
-          refetchToTokenBalance();
-          refetchFromTokenAllowance();
-        }, 2000);
+        setTxStatus('confirming');
+        toast.success('Wrap transaction submitted! Waiting for confirmation...');
 
         return hash;
       } catch (error) {
         console.error('Wrap error:', error);
-        toast.error(`Failed to wrap ${tokenConfig?.sourceToken.symbol}`);
+        setTxStatus('error');
+        toast.error(`Failed to wrap ${tokenConfig?.sourceToken.symbol}: ${error.message || 'Unknown error'}`);
         throw error;
       } finally {
         setIsLoading(false);
@@ -164,10 +227,7 @@ export function useTokenWrap() {
       address,
       tokenConfig,
       needsApproval,
-      writeContractAsync,
-      refetchFromTokenBalance,
-      refetchToTokenBalance,
-      refetchFromTokenAllowance
+      writeContractAsync
     ]
   );
 
@@ -181,7 +241,10 @@ export function useTokenWrap() {
 
       try {
         setIsLoading(true);
+        setTxStatus('pending');
         const amountBigInt = parseUnits(amount, tokenConfig.wrapToken.decimals);
+
+        toast.info('Please confirm the unwrap transaction in your wallet...');
 
         const hash = await writeContractAsync({
           address: tokenConfig.wrapContractAddress,
@@ -191,24 +254,20 @@ export function useTokenWrap() {
         });
 
         setTxHash(hash);
-        toast.success('Unwrap transaction submitted');
-
-        // Refetch balances after transaction
-        setTimeout(() => {
-          refetchFromTokenBalance();
-          refetchToTokenBalance();
-        }, 2000);
+        setTxStatus('confirming');
+        toast.success('Unwrap transaction submitted! Waiting for confirmation...');
 
         return hash;
       } catch (error) {
         console.error('Unwrap error:', error);
-        toast.error(`Failed to unwrap ${tokenConfig?.wrapToken.symbol}`);
+        setTxStatus('error');
+        toast.error(`Failed to unwrap ${tokenConfig?.wrapToken.symbol}: ${error.message || 'Unknown error'}`);
         throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [address, tokenConfig, writeContractAsync, refetchFromTokenBalance, refetchToTokenBalance]
+    [address, tokenConfig, writeContractAsync]
   );
   return {
     // Balances
@@ -238,6 +297,8 @@ export function useTokenWrap() {
     // States
     isLoading: isLoading || isConfirming,
     txHash,
+    txStatus,
+    isConfirming,
 
     // Refetch functions
     refetchBalances: () => {

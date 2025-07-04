@@ -3,10 +3,10 @@
 import Image from 'next/image';
 import { useState, useCallback, useMemo } from 'react';
 import { useAccount, useChainId } from 'wagmi';
-import { useAppConfig } from '@/hooks/useAppConfig';
 
 import { ConnectButton } from '@/components/connect-button';
 import { Button } from '@/components/ui/button';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useTokenWrap } from '@/hooks/useTokenWrap';
 
 type SwapMode = 'wrap' | 'unwrap';
@@ -28,6 +28,8 @@ export function TokenSwap() {
     unwrapToken,
     needsApproval,
     isLoading,
+    txStatus,
+    isConfirming,
     refetchBalances
   } = useTokenWrap();
 
@@ -197,6 +199,17 @@ export function TokenSwap() {
           </div>
         </div>
 
+        {/* Transaction Status */}
+        {isConfirming && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg bg-blue-500/10 p-3 text-blue-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">Transaction confirming...</span>
+              <span className="text-xs opacity-75">This may take a few minutes depending on network congestion</span>
+            </div>
+          </div>
+        )}
+
         {/* Error Messages */}
         {isWrongNetwork && (
           <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-red-500">
@@ -218,7 +231,19 @@ export function TokenSwap() {
             disabled={!isAmountValid || isLoading}
             className="w-full rounded-full"
           >
-            {isLoading ? 'Approving...' : `Approve ${fromToken?.symbol || 'Token'}`}
+            {isLoading && txStatus === 'pending' ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Confirming in wallet...
+              </div>
+            ) : isConfirming ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Approving...
+              </div>
+            ) : (
+              `Approve ${fromToken?.symbol || 'Token'}`
+            )}
           </Button>
         ) : (
           <Button
@@ -226,11 +251,19 @@ export function TokenSwap() {
             disabled={!isAmountValid || isLoading}
             className="w-full rounded-full"
           >
-            {isLoading
-              ? `${mode === 'wrap' ? 'Wrapping' : 'Unwrapping'}...`
-              : mode === 'wrap'
-                ? 'Wrap'
-                : 'Unwrap'}
+            {isLoading && txStatus === 'pending' ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Confirming in wallet...
+              </div>
+            ) : isConfirming ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                {mode === 'wrap' ? 'Wrapping...' : 'Unwrapping...'}
+              </div>
+            ) : (
+              mode === 'wrap' ? 'Wrap' : 'Unwrap'
+            )}
           </Button>
         )}
 
