@@ -7,7 +7,7 @@ import { mainnet } from 'wagmi/chains';
 
 import { ConnectButton } from '@/components/connect-button';
 import { Button } from '@/components/ui/button';
-import { TOKEN_INFO, TokenStandard } from '@/config/tokens';
+import { TOKEN_INFO } from '@/config/tokens';
 import { useTokenWrap } from '@/hooks/useTokenWrap';
 
 type SwapMode = 'wrap' | 'unwrap';
@@ -21,11 +21,10 @@ export function TokenSwap() {
   const {
     fromTokenBalance,
     toTokenBalance,
-    fromTokenAllowance,
-    fromTokenStandard,
     approveFromToken,
     wrapToken,
     unwrapToken,
+    needsApproval,
     isLoading,
     refetchBalances
   } = useTokenWrap();
@@ -36,12 +35,10 @@ export function TokenSwap() {
   const toToken = mode === 'wrap' ? TOKEN_INFO.TO_TOKEN : TOKEN_INFO.FROM_TOKEN;
   const fromBalance = mode === 'wrap' ? fromTokenBalance : toTokenBalance;
 
-  const needsApproval = useMemo(() => {
+  const needsApprovalCheck = useMemo(() => {
     if (mode !== 'wrap' || !amount) return false;
-    // ERC721 tokens don't need approval for amounts, only for specific token IDs
-    if (fromTokenStandard === TokenStandard.ERC721) return false;
-    return parseFloat(fromTokenAllowance) < parseFloat(amount);
-  }, [mode, amount, fromTokenAllowance, fromTokenStandard]);
+    return needsApproval(amount);
+  }, [mode, amount, needsApproval]);
 
   const isAmountValid = useMemo(() => {
     if (!amount) return false;
@@ -89,6 +86,7 @@ export function TokenSwap() {
   }, [amount, isAmountValid, mode, wrapToken, unwrapToken, refetchBalances]);
 
   const formatBalance = (balance: string) => {
+    if (!balance || balance === '0') return '0';
     const num = parseFloat(balance);
     if (num === 0) return '0';
     if (num < 0.0001) return '< 0.0001';
@@ -158,7 +156,7 @@ export function TokenSwap() {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder={fromTokenStandard === TokenStandard.ERC721 ? "Token ID" : "0.0"}
+              placeholder="0.0"
               className="placeholder:text-muted-foreground w-full bg-transparent text-3xl font-bold outline-none"
               disabled={isLoading}
             />
@@ -207,7 +205,7 @@ export function TokenSwap() {
           <Button disabled className="w-full rounded-full">
             Switch to Ethereum
           </Button>
-        ) : needsApproval ? (
+        ) : needsApprovalCheck ? (
           <Button
             onClick={handleApprove}
             disabled={!isAmountValid || isLoading}
