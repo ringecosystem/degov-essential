@@ -8,16 +8,12 @@ import { TOKEN_ADDRESSES, TOKEN_INFO } from '@/config/tokens';
 
 export function useTokenWrap() {
   const { address, chainId } = useAccount();
-  console.log('chainId', chainId);
   const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string | undefined>();
 
   // Read FROM_TOKEN balance
-  const {
-    data: fromTokenBalance,
-    refetch: refetchFromTokenBalance
-  } = useReadContract({
+  const { data: fromTokenBalance, refetch: refetchFromTokenBalance } = useReadContract({
     address: TOKEN_ADDRESSES.FROM_TOKEN,
     abi: erc20Abi,
     functionName: 'balanceOf',
@@ -100,8 +96,11 @@ export function useTokenWrap() {
       }
 
       const amountBigInt = parseUnits(amount, TOKEN_INFO.FROM_TOKEN.decimals);
-      const allowanceBigInt = parseUnits(fromTokenAllowance.toString(), TOKEN_INFO.FROM_TOKEN.decimals);
-      
+      const allowanceBigInt = parseUnits(
+        fromTokenAllowance.toString(),
+        TOKEN_INFO.FROM_TOKEN.decimals
+      );
+
       return allowanceBigInt < amountBigInt;
     },
     [fromTokenAllowance]
@@ -200,6 +199,7 @@ export function useTokenWrap() {
     },
     [address, writeContractAsync, refetchFromTokenBalance, refetchToTokenBalance]
   );
+  console.log('fromTokenBalance', fromTokenBalance, TOKEN_INFO.FROM_TOKEN.decimals);
 
   return {
     // Balances
@@ -212,7 +212,6 @@ export function useTokenWrap() {
     fromTokenAllowance: fromTokenAllowance
       ? formatUnits(fromTokenAllowance, TOKEN_INFO.FROM_TOKEN.decimals)
       : '0',
-
 
     // Actions
     approveFromToken,

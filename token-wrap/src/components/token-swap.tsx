@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useState, useCallback, useMemo } from 'react';
 import { useAccount, useChainId } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
 
 import { ConnectButton } from '@/components/connect-button';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ type SwapMode = 'wrap' | 'unwrap';
 
 export function TokenSwap() {
   const { isConnected } = useAccount();
-  const chainId = useChainId();
   const [mode, setMode] = useState<SwapMode>('wrap');
   const [amount, setAmount] = useState('');
 
@@ -28,8 +26,6 @@ export function TokenSwap() {
     isLoading,
     refetchBalances
   } = useTokenWrap();
-
-  const isWrongNetwork = chainId !== mainnet.id;
 
   const fromToken = mode === 'wrap' ? TOKEN_INFO.FROM_TOKEN : TOKEN_INFO.TO_TOKEN;
   const toToken = mode === 'wrap' ? TOKEN_INFO.TO_TOKEN : TOKEN_INFO.FROM_TOKEN;
@@ -99,7 +95,12 @@ export function TokenSwap() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-center gap-3">
           <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
-            <Image src={TOKEN_INFO.FROM_TOKEN.icon} alt={TOKEN_INFO.FROM_TOKEN.symbol} width={24} height={24} />
+            <Image
+              src={TOKEN_INFO.FROM_TOKEN.icon}
+              alt={TOKEN_INFO.FROM_TOKEN.symbol}
+              width={24}
+              height={24}
+            />
           </div>
           <h1 className="text-2xl font-bold">{TOKEN_INFO.FROM_TOKEN.symbol} Token Wrap</h1>
         </div>
@@ -191,20 +192,10 @@ export function TokenSwap() {
         </div>
 
         {/* Error Messages */}
-        {isWrongNetwork && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-red-500">
-            <Image src="/alert.svg" alt="alert" width={16} height={16} />
-            <span className="text-sm">Wrong network, wrap operation only supports Ethereum</span>
-          </div>
-        )}
 
         {/* Action Button */}
         {!isConnected ? (
           <ConnectButton />
-        ) : isWrongNetwork ? (
-          <Button disabled className="w-full rounded-full">
-            Switch to Ethereum
-          </Button>
         ) : needsApprovalCheck ? (
           <Button
             onClick={handleApprove}
