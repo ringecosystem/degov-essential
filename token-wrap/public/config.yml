@@ -1,0 +1,16 @@
+app:
+  name: 'RING Token Wrap'
+  logo: '/logo.svg'
+  description: 'Wrap RING tokens to xRING and unwrap xRING back to RING tokens'
+  chainId: 46
+  sourceToken:
+    symbol: 'TK'
+    decimals: 18
+    address: '0x48C817eebE1fD79F946bd6b976EF579540517121'
+    icon: '/example/token.svg'
+  wrapToken:
+    symbol: 'GTK'
+    decimals: 18
+    address: '0x0ef0827A9d5D329DFbaA14c7d5Aae364453A4D32'
+    icon: '/example/token.svg'
+  wrapContractAddress: '0x0ef0827A9d5D329DFbaA14c7d5Aae364453A4D32'

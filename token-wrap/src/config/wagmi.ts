@@ -9,9 +9,12 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 import { QueryClient } from '@tanstack/react-query';
 import { cookieStorage, createStorage } from 'wagmi';
-import { mainnet, darwinia } from 'wagmi/chains';
+import { mainnet } from 'wagmi/chains';
+import type { Chain } from 'viem';
 
 import { APP_NAME } from './base';
+import { getChainById } from '@/utils/app-config';
+import type { AppConfig } from '@/types/config';
 
 const { wallets } = getDefaultWallets();
 
@@ -24,7 +27,35 @@ export const queryClient = new QueryClient({
   }
 });
 
-export const config = getDefaultConfig({
+// Create dynamic wagmi config based on app configuration
+export function createDynamicConfig(appConfig: AppConfig) {
+  const appChain = getChainById(appConfig.chainId);
+  
+  // Always include mainnet as fallback, plus the app-specific chain if different
+  const chains: readonly [Chain, ...Chain[]] = appChain && appChain.id !== mainnet.id
+    ? [mainnet, appChain] as const
+    : [mainnet] as const;
+
+  return getDefaultConfig({
+    appName: appConfig.name || APP_NAME,
+    projectId: process.env.NEXT_PUBLIC_PROJECT_ID ?? '',
+    wallets: [
+      ...wallets,
+      {
+        groupName: 'More',
+        wallets: [talismanWallet, subWallet, okxWallet, imTokenWallet, trustWallet, safeWallet]
+      }
+    ],
+    chains,
+    ssr: true,
+    storage: createStorage({
+      storage: cookieStorage
+    })
+  });
+}
+
+// Fallback config for development/SSR
+export const defaultConfig = getDefaultConfig({
   appName: APP_NAME,
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID ?? '',
   wallets: [
@@ -34,12 +65,9 @@ export const config = getDefaultConfig({
       wallets: [talismanWallet, subWallet, okxWallet, imTokenWallet, trustWallet, safeWallet]
     }
   ],
-  chains: [mainnet, darwinia],
+  chains: [mainnet],
   ssr: true,
   storage: createStorage({
     storage: cookieStorage
   })
 });
-
-export const defaultChain = darwinia;
-export const defaultChainId = darwinia.id;

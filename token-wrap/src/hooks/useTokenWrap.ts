@@ -1,47 +1,57 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { parseUnits, formatUnits, erc20Abi } from 'viem';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 
 import { abi as wrapAbi } from '@/config/abi/wrap';
-import { TOKEN_ADDRESSES, TOKEN_INFO } from '@/config/tokens';
+import { getTokenConfig } from '@/utils/app-config';
 
 export function useTokenWrap() {
-  const { address, chainId } = useAccount();
+  const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string | undefined>();
+  const [tokenConfig, setTokenConfig] = useState<{
+    sourceToken: any;
+    wrapToken: any;
+    wrapContractAddress: `0x${string}`;
+  } | null>(null);
+
+  // Load token configuration
+  useEffect(() => {
+    getTokenConfig().then(setTokenConfig).catch(console.error);
+  }, []);
 
   // Read FROM_TOKEN balance
   const { data: fromTokenBalance, refetch: refetchFromTokenBalance } = useReadContract({
-    address: TOKEN_ADDRESSES.FROM_TOKEN,
+    address: tokenConfig?.sourceToken.address,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address
+      enabled: !!address && !!tokenConfig
     }
   });
 
   // Read TO_TOKEN balance
   const { data: toTokenBalance, refetch: refetchToTokenBalance } = useReadContract({
-    address: TOKEN_ADDRESSES.TO_TOKEN,
+    address: tokenConfig?.wrapToken.address,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address
+      enabled: !!address && !!tokenConfig
     }
   });
 
   // Read FROM_TOKEN allowance for TO_TOKEN contract
   const { data: fromTokenAllowance, refetch: refetchFromTokenAllowance } = useReadContract({
-    address: TOKEN_ADDRESSES.FROM_TOKEN,
+    address: tokenConfig?.sourceToken.address,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: address ? [address, TOKEN_ADDRESSES.TO_TOKEN] : undefined,
+    args: address ? [address, tokenConfig?.wrapContractAddress] : undefined,
     query: {
-      enabled: !!address
+      enabled: !!address && !!tokenConfig
     }
   });
 
@@ -52,20 +62,20 @@ export function useTokenWrap() {
   // Approve FROM_TOKEN for wrapping
   const approveFromToken = useCallback(
     async (amount: string) => {
-      if (!address) {
+      if (!address || !tokenConfig) {
         toast.error('Please connect your wallet');
         return;
       }
 
       try {
         setIsLoading(true);
-        const amountBigInt = parseUnits(amount, TOKEN_INFO.FROM_TOKEN.decimals);
+        const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
 
         const hash = await writeContractAsync({
-          address: TOKEN_ADDRESSES.FROM_TOKEN,
+          address: tokenConfig.sourceToken.address,
           abi: erc20Abi,
           functionName: 'approve',
-          args: [TOKEN_ADDRESSES.TO_TOKEN, amountBigInt]
+          args: [tokenConfig.wrapContractAddress, amountBigInt]
         });
 
         setTxHash(hash);
@@ -79,53 +89,53 @@ export function useTokenWrap() {
         return hash;
       } catch (error) {
         console.error('Approve error:', error);
-        toast.error(`Failed to approve ${TOKEN_INFO.FROM_TOKEN.symbol}`);
+        toast.error(`Failed to approve ${tokenConfig?.sourceToken.symbol}`);
         throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [address, writeContractAsync, refetchFromTokenAllowance]
+    [address, tokenConfig, writeContractAsync, refetchFromTokenAllowance]
   );
 
   // Check if approval is needed before wrapping
   const needsApproval = useCallback(
     (amount: string): boolean => {
-      if (!fromTokenAllowance) {
+      if (!fromTokenAllowance || !tokenConfig) {
         return true;
       }
 
-      const amountBigInt = parseUnits(amount, TOKEN_INFO.FROM_TOKEN.decimals);
+      const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
       const allowanceBigInt = parseUnits(
         fromTokenAllowance.toString(),
-        TOKEN_INFO.FROM_TOKEN.decimals
+        tokenConfig.sourceToken.decimals
       );
 
       return allowanceBigInt < amountBigInt;
     },
-    [fromTokenAllowance]
+    [fromTokenAllowance, tokenConfig]
   );
 
   // Wrap FROM_TOKEN to TO_TOKEN
   const wrapToken = useCallback(
     async (amount: string) => {
-      if (!address) {
+      if (!address || !tokenConfig) {
         toast.error('Please connect your wallet');
         return;
       }
 
       // Check if approval is needed first
       if (needsApproval(amount)) {
-        toast.error(`Please approve ${TOKEN_INFO.FROM_TOKEN.symbol} first`);
+        toast.error(`Please approve ${tokenConfig.sourceToken.symbol} first`);
         return;
       }
 
       try {
         setIsLoading(true);
-        const amountBigInt = parseUnits(amount, TOKEN_INFO.FROM_TOKEN.decimals);
+        const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
 
         const hash = await writeContractAsync({
-          address: TOKEN_ADDRESSES.TO_TOKEN,
+          address: tokenConfig.wrapContractAddress,
           abi: wrapAbi,
           functionName: 'depositFor',
           args: [address, amountBigInt]
@@ -144,7 +154,7 @@ export function useTokenWrap() {
         return hash;
       } catch (error) {
         console.error('Wrap error:', error);
-        toast.error(`Failed to wrap ${TOKEN_INFO.FROM_TOKEN.symbol}`);
+        toast.error(`Failed to wrap ${tokenConfig?.sourceToken.symbol}`);
         throw error;
       } finally {
         setIsLoading(false);
@@ -152,6 +162,7 @@ export function useTokenWrap() {
     },
     [
       address,
+      tokenConfig,
       needsApproval,
       writeContractAsync,
       refetchFromTokenBalance,
@@ -163,17 +174,17 @@ export function useTokenWrap() {
   // Unwrap TO_TOKEN to FROM_TOKEN
   const unwrapToken = useCallback(
     async (amount: string) => {
-      if (!address) {
+      if (!address || !tokenConfig) {
         toast.error('Please connect your wallet');
         return;
       }
 
       try {
         setIsLoading(true);
-        const amountBigInt = parseUnits(amount, TOKEN_INFO.TO_TOKEN.decimals);
+        const amountBigInt = parseUnits(amount, tokenConfig.wrapToken.decimals);
 
         const hash = await writeContractAsync({
-          address: TOKEN_ADDRESSES.TO_TOKEN,
+          address: tokenConfig.wrapContractAddress,
           abi: wrapAbi,
           functionName: 'withdrawTo',
           args: [address, amountBigInt]
@@ -191,31 +202,36 @@ export function useTokenWrap() {
         return hash;
       } catch (error) {
         console.error('Unwrap error:', error);
-        toast.error(`Failed to unwrap ${TOKEN_INFO.TO_TOKEN.symbol}`);
+        toast.error(`Failed to unwrap ${tokenConfig?.wrapToken.symbol}`);
         throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [address, writeContractAsync, refetchFromTokenBalance, refetchToTokenBalance]
+    [address, tokenConfig, writeContractAsync, refetchFromTokenBalance, refetchToTokenBalance]
   );
-  console.log('fromTokenBalance', fromTokenBalance, TOKEN_INFO.FROM_TOKEN.decimals);
-
   return {
     // Balances
-    fromTokenBalance: fromTokenBalance
-      ? formatUnits(fromTokenBalance, TOKEN_INFO.FROM_TOKEN.decimals)
-      : '0',
-    toTokenBalance: toTokenBalance
-      ? formatUnits(toTokenBalance, TOKEN_INFO.TO_TOKEN.decimals)
-      : '0',
-    fromTokenAllowance: fromTokenAllowance
-      ? formatUnits(fromTokenAllowance, TOKEN_INFO.FROM_TOKEN.decimals)
-      : '0',
+    fromTokenBalance:
+      fromTokenBalance && tokenConfig
+        ? formatUnits(fromTokenBalance, tokenConfig.sourceToken.decimals)
+        : '0',
+    toTokenBalance:
+      toTokenBalance && tokenConfig
+        ? formatUnits(toTokenBalance, tokenConfig.wrapToken.decimals)
+        : '0',
+    fromTokenAllowance:
+      fromTokenAllowance && tokenConfig
+        ? formatUnits(fromTokenAllowance, tokenConfig.sourceToken.decimals)
+        : '0',
+
+    // Token info
+    sourceToken: tokenConfig?.sourceToken || null,
+    wrapToken: tokenConfig?.wrapToken || null,
 
     // Actions
     approveFromToken,
-    wrapToken,
+    wrap: wrapToken,
     unwrapToken,
     needsApproval,
 

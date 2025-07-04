@@ -3,33 +3,39 @@
 import Image from 'next/image';
 import { useState, useCallback, useMemo } from 'react';
 import { useAccount, useChainId } from 'wagmi';
+import { useAppConfig } from '@/hooks/useAppConfig';
 
 import { ConnectButton } from '@/components/connect-button';
 import { Button } from '@/components/ui/button';
-import { TOKEN_INFO } from '@/config/tokens';
 import { useTokenWrap } from '@/hooks/useTokenWrap';
 
 type SwapMode = 'wrap' | 'unwrap';
 
 export function TokenSwap() {
   const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const { config: appConfig } = useAppConfig();
   const [mode, setMode] = useState<SwapMode>('wrap');
   const [amount, setAmount] = useState('');
 
   const {
     fromTokenBalance,
     toTokenBalance,
-    approveFromToken,
+    sourceToken,
     wrapToken,
+    approveFromToken,
+    wrap,
     unwrapToken,
     needsApproval,
     isLoading,
     refetchBalances
   } = useTokenWrap();
 
-  const fromToken = mode === 'wrap' ? TOKEN_INFO.FROM_TOKEN : TOKEN_INFO.TO_TOKEN;
-  const toToken = mode === 'wrap' ? TOKEN_INFO.TO_TOKEN : TOKEN_INFO.FROM_TOKEN;
+  const fromToken = mode === 'wrap' ? sourceToken : wrapToken;
+  const toToken = mode === 'wrap' ? wrapToken : sourceToken;
   const fromBalance = mode === 'wrap' ? fromTokenBalance : toTokenBalance;
+
+  const isWrongNetwork = chainId !== appConfig?.app.chainId;
 
   const needsApprovalCheck = useMemo(() => {
     if (mode !== 'wrap' || !amount) return false;
@@ -70,7 +76,7 @@ export function TokenSwap() {
 
     try {
       if (mode === 'wrap') {
-        await wrapToken(amount);
+        await wrap(amount);
       } else {
         await unwrapToken(amount);
       }
@@ -79,7 +85,7 @@ export function TokenSwap() {
     } catch (error) {
       console.error('Swap failed:', error);
     }
-  }, [amount, isAmountValid, mode, wrapToken, unwrapToken, refetchBalances]);
+  }, [amount, isAmountValid, mode, wrap, unwrapToken, refetchBalances]);
 
   const formatBalance = (balance: string) => {
     if (!balance || balance === '0') return '0';
@@ -96,13 +102,13 @@ export function TokenSwap() {
         <div className="mb-6 flex items-center justify-center gap-3">
           <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
             <Image
-              src={TOKEN_INFO.FROM_TOKEN.icon}
-              alt={TOKEN_INFO.FROM_TOKEN.symbol}
+              src={sourceToken?.icon || '/example/token.svg'}
+              alt={sourceToken?.symbol || 'Token'}
               width={24}
               height={24}
             />
           </div>
-          <h1 className="text-2xl font-bold">{TOKEN_INFO.FROM_TOKEN.symbol} Token Wrap</h1>
+          <h1 className="text-2xl font-bold">{sourceToken?.symbol || 'Token'} Wrap</h1>
         </div>
 
         {/* Token Swap Interface */}
@@ -114,8 +120,8 @@ export function TokenSwap() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Image src={fromToken.icon} alt={fromToken.symbol} width={32} height={32} />
-                <span className="text-lg font-semibold">{fromToken.symbol}</span>
+                <Image src={fromToken?.icon || '/example/token.svg'} alt={fromToken?.symbol || 'Token'} width={32} height={32} />
+                <span className="text-lg font-semibold">{fromToken?.symbol || 'Token'}</span>
               </div>
             </div>
           </div>
@@ -138,8 +144,8 @@ export function TokenSwap() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Image src={toToken.icon} alt={toToken.symbol} width={32} height={32} />
-                <span className="text-lg font-semibold">{toToken.symbol}</span>
+                <Image src={toToken?.icon || '/example/token.svg'} alt={toToken?.symbol || 'Token'} width={32} height={32} />
+                <span className="text-lg font-semibold">{toToken?.symbol || 'Token'}</span>
               </div>
             </div>
           </div>
@@ -192,17 +198,27 @@ export function TokenSwap() {
         </div>
 
         {/* Error Messages */}
+        {isWrongNetwork && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-red-500">
+            <Image src="/alert.svg" alt="alert" width={16} height={16} />
+            <span className="text-sm">Wrong network, please switch to the supported network</span>
+          </div>
+        )}
 
         {/* Action Button */}
         {!isConnected ? (
           <ConnectButton />
+        ) : isWrongNetwork ? (
+          <Button disabled className="w-full rounded-full">
+            Switch Network
+          </Button>
         ) : needsApprovalCheck ? (
           <Button
             onClick={handleApprove}
             disabled={!isAmountValid || isLoading}
             className="w-full rounded-full"
           >
-            {isLoading ? 'Approving...' : `Approve ${fromToken.symbol}`}
+            {isLoading ? 'Approving...' : `Approve ${fromToken?.symbol || 'Token'}`}
           </Button>
         ) : (
           <Button
@@ -221,7 +237,7 @@ export function TokenSwap() {
         {/* Additional Info */}
         {amount && isAmountValid && (
           <div className="text-muted-foreground mt-4 text-center text-sm">
-            1 {fromToken.symbol} = 1 {toToken.symbol}
+            1 {fromToken?.symbol || 'Token'} = 1 {toToken?.symbol || 'Token'}
           </div>
         )}
       </div>
