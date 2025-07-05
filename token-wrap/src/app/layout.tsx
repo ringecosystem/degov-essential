@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, Inter } from 'next/font/google';
 import './globals.css';
 import { ToastContainer } from 'react-toastify';
 
@@ -13,7 +13,7 @@ import { NextThemeProvider } from '@/provider/theme';
 
 import type { Metadata } from 'next';
 
-const geistSans = Geist({
+const inter = Inter({
   variable: '--font-geist-sans',
   subsets: ['latin']
 });
@@ -35,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
         <NextThemeProvider>
           <QueryProvider>
             <TooltipProvider>

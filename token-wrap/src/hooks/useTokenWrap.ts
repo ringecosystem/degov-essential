@@ -11,7 +11,9 @@ export function useTokenWrap() {
   const { writeContractAsync } = useWriteContract();
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState<string | undefined>();
-  const [txStatus, setTxStatus] = useState<'idle' | 'pending' | 'confirming' | 'success' | 'error'>('idle');
+  const [txStatus, setTxStatus] = useState<'idle' | 'pending' | 'confirming' | 'success' | 'error'>(
+    'idle'
+  );
   const [isRefreshingBalances, setIsRefreshingBalances] = useState(false);
   const [tokenConfig, setTokenConfig] = useState<{
     sourceToken: any;
@@ -21,7 +23,12 @@ export function useTokenWrap() {
 
   // Load token configuration
   useEffect(() => {
-    getTokenConfig().then(setTokenConfig).catch(console.error);
+    getTokenConfig()
+      .then((config) => {
+        setTokenConfig(config);
+        console.log('🪙 Token Config loaded:', config);
+      })
+      .catch(console.error);
   }, []);
 
   // Read FROM_TOKEN balance
@@ -51,29 +58,31 @@ export function useTokenWrap() {
     address: tokenConfig?.sourceToken.address,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: address ? [address, tokenConfig?.wrapContractAddress] : undefined,
+    args:
+      address && tokenConfig?.wrapContractAddress
+        ? [address, tokenConfig.wrapContractAddress]
+        : undefined,
     query: {
       enabled: !!address && !!tokenConfig
     }
   });
 
-  const { 
-    isLoading: isConfirming, 
+  const {
+    isLoading: isConfirming,
     isSuccess: isTransactionSuccess,
     isError: isTransactionError,
-    error: transactionError 
+    error: transactionError
   } = useWaitForTransactionReceipt({
     hash: txHash as `0x${string}`,
     query: {
       enabled: !!txHash,
       retry: (failureCount, error) => {
-        // 如果是找不到交易收据的错误，继续重试
         if (error?.message?.includes('could not be found')) {
-          return failureCount < 10; // 最多重试10次
+          return failureCount < 10;
         }
-        return failureCount < 3; // 其他错误重试3次
+        return failureCount < 3;
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // 指数退避，最大10秒
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000)
     }
   });
 
@@ -85,29 +94,28 @@ export function useTokenWrap() {
       setTxStatus('confirming');
     } else if (isTransactionSuccess) {
       setTxStatus('success');
-      
-      // 立即刷新数据，让用户第一时间看到更新
+
       refetchFromTokenBalance();
       refetchToTokenBalance();
       refetchFromTokenAllowance();
-      
+
       toast.success('Transaction confirmed successfully!', {
         autoClose: 3000,
         onClose: () => {
-          // 只在关闭时重置状态
           setTxHash(undefined);
           setTxStatus('idle');
         }
       });
     } else if (isTransactionError) {
       setTxStatus('error');
-      
-      // 根据错误类型提供更友好的错误信息
+
       let errorMessage = 'Transaction failed';
-      const shortMessage = (transactionError as any)?.shortMessage || (transactionError as any)?.message;
-      
+      const shortMessage =
+        (transactionError as any)?.shortMessage || (transactionError as any)?.message;
+
       if (shortMessage?.includes('could not be found')) {
-        errorMessage = 'Transaction is taking longer than expected. Please check your wallet or block explorer.';
+        errorMessage =
+          'Transaction is taking longer than expected. Please check your wallet or block explorer.';
       } else if (shortMessage?.includes('User rejected')) {
         errorMessage = 'Transaction was rejected by user';
       } else if (shortMessage?.includes('insufficient funds')) {
@@ -117,17 +125,25 @@ export function useTokenWrap() {
       } else if (shortMessage) {
         errorMessage = shortMessage;
       }
-      
+
       toast.error(errorMessage, {
-        autoClose: 5000, // 错误消息显示5秒
+        autoClose: 5000,
         onClose: () => {
-          // 错误时也重置状态
           setTxHash(undefined);
           setTxStatus('idle');
         }
       });
     }
-  }, [txHash, isConfirming, isTransactionSuccess, isTransactionError, transactionError, refetchFromTokenBalance, refetchToTokenBalance, refetchFromTokenAllowance]);
+  }, [
+    txHash,
+    isConfirming,
+    isTransactionSuccess,
+    isTransactionError,
+    transactionError,
+    refetchFromTokenBalance,
+    refetchToTokenBalance,
+    refetchFromTokenAllowance
+  ]);
 
   // Approve FROM_TOKEN for wrapping
   const approveFromToken = useCallback(
@@ -156,9 +172,12 @@ export function useTokenWrap() {
       } catch (error) {
         console.error('Approve error:', error);
         setTxStatus('error');
-        toast.error(`Failed to approve ${tokenConfig?.sourceToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`, {
-          autoClose: 4000
-        });
+        toast.error(
+          `Failed to approve ${tokenConfig?.sourceToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`,
+          {
+            autoClose: 4000
+          }
+        );
         throw error;
       } finally {
         setIsLoading(false);
@@ -218,20 +237,18 @@ export function useTokenWrap() {
       } catch (error) {
         console.error('Wrap error:', error);
         setTxStatus('error');
-        toast.error(`Failed to wrap ${tokenConfig?.sourceToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`, {
-          autoClose: 4000
-        });
+        toast.error(
+          `Failed to wrap ${tokenConfig?.sourceToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`,
+          {
+            autoClose: 4000
+          }
+        );
         throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [
-      address,
-      tokenConfig,
-      needsApproval,
-      writeContractAsync
-    ]
+    [address, tokenConfig, needsApproval, writeContractAsync]
   );
 
   // Unwrap TO_TOKEN to FROM_TOKEN
@@ -261,9 +278,12 @@ export function useTokenWrap() {
       } catch (error) {
         console.error('Unwrap error:', error);
         setTxStatus('error');
-        toast.error(`Failed to unwrap ${tokenConfig?.wrapToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`, {
-          autoClose: 4000
-        });
+        toast.error(
+          `Failed to unwrap ${tokenConfig?.wrapToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`,
+          {
+            autoClose: 4000
+          }
+        );
         throw error;
       } finally {
         setIsLoading(false);
@@ -312,7 +332,7 @@ export function useTokenWrap() {
           refetchFromTokenAllowance()
         ]);
       } finally {
-        setTimeout(() => setIsRefreshingBalances(false), 500); // 显示至少500ms的loading状态
+        setTimeout(() => setIsRefreshingBalances(false), 500);
       }
     },
     isRefreshingBalances

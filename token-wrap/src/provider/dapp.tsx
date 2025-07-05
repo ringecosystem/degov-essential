@@ -1,24 +1,16 @@
 'use client';
 
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import * as React from 'react';
-import { WagmiProvider, deserialize, serialize } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
 import { getChainById } from '@/utils/app-config';
 
-import { createDynamicConfig, defaultConfig, queryClient } from '@/config/wagmi';
+import { createDynamicConfig, defaultConfig } from '@/config/wagmi';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useRainbowKitTheme } from '@/hooks/useRainbowKitTheme';
 import '@rainbow-me/rainbowkit/styles.css';
 
 import type { Chain } from '@rainbow-me/rainbowkit';
-
-const persister = createSyncStoragePersister({
-  serialize,
-  storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  deserialize,
-});
 
 export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
   const { config: appConfig, isLoading, error } = useAppConfig();
@@ -26,7 +18,7 @@ export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
 
   const currentChain: Chain | null = React.useMemo(() => {
     if (!appConfig) return null;
-    
+
     const viemChain = getChainById(appConfig.app.chainId);
     if (!viemChain) return null;
 
@@ -36,7 +28,7 @@ export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
       nativeCurrency: viemChain.nativeCurrency,
       rpcUrls: viemChain.rpcUrls,
       blockExplorers: viemChain.blockExplorers,
-      contracts: viemChain.contracts,
+      contracts: viemChain.contracts
     };
   }, [appConfig]);
 
@@ -46,11 +38,11 @@ export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
   }, [appConfig]);
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || !currentChain) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
           <p>Loading app configuration...</p>
         </div>
       </div>
@@ -60,10 +52,10 @@ export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
   // Show error state
   if (error || !appConfig) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center text-red-600">
           <p>Failed to load app configuration</p>
-          <p className="text-sm mt-2">{error?.message}</p>
+          <p className="mt-2 text-sm">{error?.message}</p>
         </div>
       </div>
     );
@@ -71,19 +63,14 @@ export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
 
   return (
     <WagmiProvider config={wagmiConfig}>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{ persister }}
+      <RainbowKitProvider
+        theme={rainbowKitTheme}
+        locale="en-US"
+        appInfo={{ appName: appConfig.app.name }}
+        initialChain={currentChain}
       >
-        <RainbowKitProvider
-          theme={rainbowKitTheme}
-          locale="en-US"
-          appInfo={{ appName: appConfig.app.name }}
-          initialChain={currentChain}
-        >
-          {children}
-        </RainbowKitProvider>
-      </PersistQueryClientProvider>
+        {children}
+      </RainbowKitProvider>
     </WagmiProvider>
   );
 }

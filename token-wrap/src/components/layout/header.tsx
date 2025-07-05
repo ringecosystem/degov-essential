@@ -5,8 +5,6 @@ import Link from 'next/link';
 
 import { ConnectButton } from '@/components/connect-button';
 
-// import { ThemeButton } from '../theme-button';
-
 export function Header() {
   return (
     <header className="border-border border-b py-[10px] md:py-[20px]">
@@ -29,7 +27,6 @@ export function Header() {
         </Link>
         <div className="flex items-center gap-[5px] md:gap-[10px]">
           <ConnectButton />
-          {/* <ThemeButton /> */}
         </div>
       </div>
     </header>

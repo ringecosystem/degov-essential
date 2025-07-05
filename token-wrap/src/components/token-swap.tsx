@@ -11,6 +11,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useTokenWrap } from '@/hooks/useTokenWrap';
 import { getChainById } from '@/utils/app-config';
 import { Loader2Icon } from 'lucide-react';
+import { SafeImage } from './safe-image';
 
 type SwapMode = 'wrap' | 'unwrap';
 
@@ -158,15 +159,15 @@ export function TokenSwap() {
 
   return (
     <motion.div
-      className="mx-auto max-w-md"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      className="mx-auto w-[440px]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       <motion.div className="flex flex-col gap-[20px]">
         {/* Header */}
         <div className="flex items-center justify-center gap-[20px]">
-          <Image src={sourceToken?.icon} alt={sourceToken?.symbol} width={60} height={60} />
+          <SafeImage src={sourceToken?.icon} alt={sourceToken?.symbol} width={60} height={60} />
           <h1 className="text-[36px] font-semibold">{sourceToken?.symbol || ''} Wrap</h1>
         </div>
 
@@ -177,7 +178,7 @@ export function TokenSwap() {
             <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
               <span className="text-muted-foreground text-[14px] font-normal">You pay</span>
               <div className="flex items-center gap-[10px]">
-                <Image src={fromToken?.icon} alt={fromToken?.symbol} width={30} height={30} />
+                <SafeImage src={fromToken?.icon} alt={fromToken?.symbol} width={30} height={30} />
                 <span className="text-[16px] font-semibold">{fromToken?.symbol || ''}</span>
               </div>
             </div>
@@ -186,17 +187,16 @@ export function TokenSwap() {
             <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
               <span className="text-muted-foreground text-[14px] font-normal">You receive</span>
               <div className="flex items-center gap-[10px]">
-                <Image src={toToken?.icon} alt={toToken?.symbol} width={30} height={30} />
+                <SafeImage src={toToken?.icon} alt={toToken?.symbol} width={30} height={30} />
                 <span className="text-[16px] font-semibold">{toToken?.symbol || ''}</span>
               </div>
             </div>
 
-            {/* 水平垂直居中的icon */}
             <div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:opacity-80"
               onClick={toggleMode}
             >
-              <Image src="/switch.svg" alt="swap" width={30} height={30} />
+              <SafeImage src="/switch.svg" alt="swap" width={30} height={30} />
             </div>
           </div>
 
@@ -257,7 +257,7 @@ export function TokenSwap() {
                 transition={{ duration: 0.3 }}
                 className="flex items-center gap-[5px]"
               >
-                <Image src="/alert.svg" alt="alert" width={20} height={20} />
+                <SafeImage src="/alert.svg" alt="alert" width={20} height={20} />
                 <span className="text-[12px] font-normal text-[#FF3546]">
                   Wrong network, {mode} operation only supports {supportedNetworkName}
                 </span>
@@ -272,7 +272,7 @@ export function TokenSwap() {
                 transition={{ duration: 0.3 }}
                 className="flex items-center gap-[5px]"
               >
-                <Image src="/alert.svg" alt="alert" width={20} height={20} />
+                <SafeImage src="/alert.svg" alt="alert" width={20} height={20} />
                 <span className="text-[12px] font-normal text-[#FF3546]">Insufficient balance</span>
               </motion.div>
             )}
