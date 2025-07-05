@@ -1,36 +1,50 @@
 import { load } from 'js-yaml';
 import * as allChains from 'viem/chains';
-import type { Chain } from 'viem';
+
 import type { Config } from '@/types/config';
+
+import type { Chain } from 'viem';
 
 let cachedConfig: Config | null = null;
 let cachedChain: Chain | null = null;
+let configPromise: Promise<Config> | null = null;
 
 export async function loadAppConfig(): Promise<Config> {
   if (cachedConfig) {
     return cachedConfig;
   }
 
-  try {
-    const response = await fetch('/config.yml');
-    if (!response.ok) {
-      throw new Error(`Failed to fetch config: ${response.statusText}`);
-    }
-    
-    const yamlText = await response.text();
-    const config = load(yamlText) as Config;
-    
-    // Validate required fields
-    if (!config.app || !config.app.sourceToken || !config.app.wrapToken) {
-      throw new Error('Invalid configuration: missing required fields');
-    }
-    
-    cachedConfig = config;
-    return config;
-  } catch (error) {
-    console.error('Failed to load config:', error);
-    throw error;
+  // Prevent race conditions by caching the promise
+  if (configPromise) {
+    return configPromise;
   }
+
+  configPromise = (async () => {
+    try {
+      const response = await fetch('/config.yml');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch config: ${response.statusText}`);
+      }
+      
+      const yamlText = await response.text();
+      const config = load(yamlText) as Config;
+      
+      // Validate required fields
+      if (!config.app || !config.app.sourceToken || !config.app.wrapToken) {
+        throw new Error('Invalid configuration: missing required fields');
+      }
+      
+      cachedConfig = config;
+      return config;
+    } catch (error) {
+      console.error('Failed to load config:', error);
+      // Reset promise on error so it can be retried
+      configPromise = null;
+      throw error;
+    }
+  })();
+
+  return configPromise;
 }
 
 export function getChainById(chainId: number): Chain | null {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { parseUnits, formatUnits, erc20Abi } from 'viem';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -14,12 +14,17 @@ export function useTokenWrap() {
   const [txStatus, setTxStatus] = useState<'idle' | 'pending' | 'confirming' | 'success' | 'error'>(
     'idle'
   );
+  const [loadingState, setLoadingState] = useState<{
+    type: 'idle' | 'approving' | 'wrapping' | 'unwrapping' | 'refreshing';
+    message?: string;
+  }>({ type: 'idle' });
   const [isRefreshingBalances, setIsRefreshingBalances] = useState(false);
   const [tokenConfig, setTokenConfig] = useState<{
     sourceToken: any;
     wrapToken: any;
     wrapContractAddress: `0x${string}`;
   } | null>(null);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load token configuration
   useEffect(() => {
@@ -90,10 +95,12 @@ export function useTokenWrap() {
   useEffect(() => {
     if (!txHash) {
       setTxStatus('idle');
+      setLoadingState({ type: 'idle' });
     } else if (isConfirming) {
       setTxStatus('confirming');
     } else if (isTransactionSuccess) {
       setTxStatus('success');
+      setLoadingState({ type: 'idle' });
 
       refetchFromTokenBalance();
       refetchToTokenBalance();
@@ -108,6 +115,7 @@ export function useTokenWrap() {
       });
     } else if (isTransactionError) {
       setTxStatus('error');
+      setLoadingState({ type: 'idle' });
 
       let errorMessage = 'Transaction failed';
       const shortMessage =
@@ -156,6 +164,7 @@ export function useTokenWrap() {
       try {
         setIsLoading(true);
         setTxStatus('pending');
+        setLoadingState({ type: 'approving', message: `Approving ${tokenConfig.sourceToken.symbol}...` });
         const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
 
         const hash = await writeContractAsync({
@@ -172,6 +181,7 @@ export function useTokenWrap() {
       } catch (error) {
         console.error('Approve error:', error);
         setTxStatus('error');
+        setLoadingState({ type: 'idle' });
         toast.error(
           `Failed to approve ${tokenConfig?.sourceToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`,
           {
@@ -193,13 +203,14 @@ export function useTokenWrap() {
         return true;
       }
 
-      const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
-      const allowanceBigInt = parseUnits(
-        fromTokenAllowance.toString(),
-        tokenConfig.sourceToken.decimals
-      );
-
-      return allowanceBigInt < amountBigInt;
+      try {
+        const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
+        // Direct comparison using BigInt - fromTokenAllowance is already in raw units
+        return fromTokenAllowance < amountBigInt;
+      } catch (error) {
+        console.error('Error parsing amount for approval check:', error);
+        return true; // Safe default - require approval if parsing fails
+      }
     },
     [fromTokenAllowance, tokenConfig]
   );
@@ -221,6 +232,7 @@ export function useTokenWrap() {
       try {
         setIsLoading(true);
         setTxStatus('pending');
+        setLoadingState({ type: 'wrapping', message: `Wrapping ${tokenConfig.sourceToken.symbol}...` });
         const amountBigInt = parseUnits(amount, tokenConfig.sourceToken.decimals);
 
         const hash = await writeContractAsync({
@@ -237,6 +249,7 @@ export function useTokenWrap() {
       } catch (error) {
         console.error('Wrap error:', error);
         setTxStatus('error');
+        setLoadingState({ type: 'idle' });
         toast.error(
           `Failed to wrap ${tokenConfig?.sourceToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`,
           {
@@ -262,6 +275,7 @@ export function useTokenWrap() {
       try {
         setIsLoading(true);
         setTxStatus('pending');
+        setLoadingState({ type: 'unwrapping', message: `Unwrapping ${tokenConfig.wrapToken.symbol}...` });
         const amountBigInt = parseUnits(amount, tokenConfig.wrapToken.decimals);
 
         const hash = await writeContractAsync({
@@ -278,6 +292,7 @@ export function useTokenWrap() {
       } catch (error) {
         console.error('Unwrap error:', error);
         setTxStatus('error');
+        setLoadingState({ type: 'idle' });
         toast.error(
           `Failed to unwrap ${tokenConfig?.wrapToken.symbol}: ${(error as any)?.shortMessage || (error as any)?.message || 'Unknown error'}`,
           {
@@ -291,6 +306,16 @@ export function useTokenWrap() {
     },
     [address, tokenConfig, writeContractAsync]
   );
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   return {
     // Balances
     fromTokenBalance:
@@ -325,6 +350,7 @@ export function useTokenWrap() {
     // Refetch functions
     refetchBalances: async () => {
       setIsRefreshingBalances(true);
+      setLoadingState({ type: 'refreshing', message: 'Refreshing balances...' });
       try {
         await Promise.all([
           refetchFromTokenBalance(),
@@ -332,9 +358,20 @@ export function useTokenWrap() {
           refetchFromTokenAllowance()
         ]);
       } finally {
-        setTimeout(() => setIsRefreshingBalances(false), 500);
+        // Clear any existing timeout
+        if (refreshTimeoutRef.current) {
+          clearTimeout(refreshTimeoutRef.current);
+        }
+        
+        // Set new timeout
+        refreshTimeoutRef.current = setTimeout(() => {
+          setIsRefreshingBalances(false);
+          setLoadingState({ type: 'idle' });
+          refreshTimeoutRef.current = null;
+        }, 500);
       }
     },
-    isRefreshingBalances
+    isRefreshingBalances,
+    loadingState
   };
 }

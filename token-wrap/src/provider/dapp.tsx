@@ -3,14 +3,15 @@
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import * as React from 'react';
 import { WagmiProvider } from 'wagmi';
-import { getChainById } from '@/utils/app-config';
 
 import { createDynamicConfig, defaultConfig } from '@/config/wagmi';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useRainbowKitTheme } from '@/hooks/useRainbowKitTheme';
-import '@rainbow-me/rainbowkit/styles.css';
+import { getChainById } from '@/utils/app-config';
 
 import type { Chain } from '@rainbow-me/rainbowkit';
+
+import '@rainbow-me/rainbowkit/styles.css';
 
 export function DAppProvider({ children }: React.PropsWithChildren<unknown>) {
   const { config: appConfig, isLoading, error } = useAppConfig();

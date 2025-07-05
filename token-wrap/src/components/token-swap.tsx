@@ -1,16 +1,17 @@
 'use client';
 
-import Image from 'next/image';
-import { useState, useCallback, useMemo } from 'react';
-import { useAccount, useChainId } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2Icon } from 'lucide-react';
+import Image from 'next/image';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useAccount, useChainId } from 'wagmi';
 
 import { ConnectButton } from '@/components/connect-button';
 import { Button } from '@/components/ui/button';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useTokenWrap } from '@/hooks/useTokenWrap';
 import { getChainById } from '@/utils/app-config';
-import { Loader2Icon } from 'lucide-react';
+
 import { SafeImage } from './safe-image';
 
 type SwapMode = 'wrap' | 'unwrap';
@@ -61,6 +62,8 @@ export function TokenSwap() {
   const { config: appConfig } = useAppConfig();
   const [mode, setMode] = useState<SwapMode>('wrap');
   const [amount, setAmount] = useState('');
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
 
   const {
     fromTokenBalance,
@@ -83,6 +86,22 @@ export function TokenSwap() {
   const fromBalance = mode === 'wrap' ? fromTokenBalance : toTokenBalance;
 
   const isWrongNetwork = chainId !== appConfig?.app.chainId;
+
+  // Network connectivity monitoring
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    setIsOffline(!navigator.onLine);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const supportedNetworkName = useMemo(() => {
     if (appConfig?.app.chainId) {
@@ -111,13 +130,61 @@ export function TokenSwap() {
     return amountNum > 0 && amountNum > balanceNum;
   }, [amount, fromBalance]);
 
+  // Input validation function
+  const validateInput = useCallback((value: string): string | null => {
+    if (!value) return null;
+    
+    // Check for valid number format
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return 'Please enter a valid number';
+    }
+    
+    // Check for negative numbers
+    if (parseFloat(value) < 0) {
+      return 'Amount cannot be negative';
+    }
+    
+    // Check for too many decimal places
+    const decimals = value.split('.')[1];
+    if (decimals && decimals.length > 18) {
+      return 'Too many decimal places (max 18)';
+    }
+    
+    // Check for scientific notation
+    if (value.toLowerCase().includes('e')) {
+      return 'Scientific notation is not allowed';
+    }
+    
+    return null;
+  }, []);
+
+  const handleAmountChange = useCallback((value: string) => {
+    // Allow empty input
+    if (value === '') {
+      setAmount('');
+      setInputError(null);
+      return;
+    }
+    
+    // Validate input
+    const error = validateInput(value);
+    setInputError(error);
+    
+    // Only set amount if valid
+    if (!error) {
+      setAmount(value);
+    }
+  }, [validateInput]);
+
   const toggleMode = useCallback(() => {
     setMode((prev) => (prev === 'wrap' ? 'unwrap' : 'wrap'));
     setAmount('');
+    setInputError(null);
   }, []);
 
   const handleMaxClick = useCallback(() => {
     setAmount(fromBalance);
+    setInputError(null);
   }, [fromBalance]);
 
   const handleRefreshBalance = useCallback(async () => {
@@ -206,9 +273,9 @@ export function TokenSwap() {
 
             {/* Amount Input */}
             <input
-              type="number"
+              type="text"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0.00"
               className="placeholder:text-muted-foreground w-full bg-transparent text-[26px] font-semibold outline-none"
               disabled={isLoading}
@@ -249,6 +316,34 @@ export function TokenSwap() {
 
           {/* Error Messages */}
           <AnimatePresence mode="wait">
+            {inputError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-[5px]"
+              >
+                <SafeImage src="/alert.svg" alt="alert" width={20} height={20} />
+                <span className="text-[12px] font-normal text-[#FF3546]">{inputError}</span>
+              </motion.div>
+            )}
+
+            {isOffline && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-[5px]"
+              >
+                <SafeImage src="/alert.svg" alt="alert" width={20} height={20} />
+                <span className="text-[12px] font-normal text-[#FF3546]">
+                  No internet connection. Please check your network.
+                </span>
+              </motion.div>
+            )}
+
             {isWrongNetwork && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -281,14 +376,17 @@ export function TokenSwap() {
           {/* Action Button */}
           {!isConnected ? (
             <ConnectButton />
-          ) : isWrongNetwork || hasInsufficientBalance ? (
+          ) : isOffline || isWrongNetwork || hasInsufficientBalance || inputError ? (
             <motion.div
               initial={{ opacity: 0.8 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
             >
               <Button disabled className="w-full rounded-full">
-                {isWrongNetwork ? 'Switch Network' : 'Insufficient Balance'}
+                {isOffline ? 'No Internet Connection' :
+                 isWrongNetwork ? 'Switch Network' : 
+                 hasInsufficientBalance ? 'Insufficient Balance' : 
+                 'Invalid Input'}
               </Button>
             </motion.div>
           ) : needsApprovalCheck ? (

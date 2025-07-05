@@ -10,11 +10,13 @@ import {
 import { QueryClient } from '@tanstack/react-query';
 import { cookieStorage, createStorage } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
-import type { Chain } from 'viem';
+
+import type { AppConfig } from '@/types/config';
+import { getChainById } from '@/utils/app-config';
 
 import { APP_NAME } from './base';
-import { getChainById } from '@/utils/app-config';
-import type { AppConfig } from '@/types/config';
+
+import type { Chain } from 'viem';
 
 const { wallets } = getDefaultWallets();
 

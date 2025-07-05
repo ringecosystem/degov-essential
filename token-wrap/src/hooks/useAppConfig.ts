@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { loadAppConfig } from '@/utils/app-config';
+
 import type { Config } from '@/types/config';
+import { loadAppConfig } from '@/utils/app-config';
 
 export function useAppConfig() {
   const [config, setConfig] = useState<Config | null>(null);
