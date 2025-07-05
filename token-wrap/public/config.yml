@@ -1,5 +1,5 @@
 app:
-  name: 'RING Token Wrap'
+  name: 'TK Token Wrap'
   logo: '/logo.svg'
   description: 'Wrap RING tokens to xRING and unwrap xRING back to RING tokens'
   chainId: 46

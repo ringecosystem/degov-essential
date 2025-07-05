@@ -10,8 +10,49 @@ import { Button } from '@/components/ui/button';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useTokenWrap } from '@/hooks/useTokenWrap';
 import { getChainById } from '@/utils/app-config';
+import { Loader2Icon } from 'lucide-react';
 
 type SwapMode = 'wrap' | 'unwrap';
+
+interface ActionButtonProps {
+  onClick: () => void;
+  disabled: boolean;
+  isLoading: boolean;
+  txStatus: string;
+  isConfirming: boolean;
+  buttonText: string;
+  confirmingText: string;
+}
+
+function ActionButton({
+  onClick,
+  disabled,
+  isLoading,
+  txStatus,
+  isConfirming,
+  buttonText,
+  confirmingText
+}: ActionButtonProps) {
+  return (
+    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+      <Button onClick={onClick} disabled={disabled} className="w-full rounded-full">
+        {isLoading && txStatus === 'pending' ? (
+          <div className="flex items-center gap-2">
+            <Loader2Icon className="size-[14px] animate-spin" />
+            Confirming in wallet...
+          </div>
+        ) : isConfirming ? (
+          <div className="flex items-center gap-2">
+            <Loader2Icon className="size-[14px] animate-spin" />
+            {confirmingText}
+          </div>
+        ) : (
+          buttonText
+        )}
+      </Button>
+    </motion.div>
+  );
+}
 
 export function TokenSwap() {
   const { isConnected } = useAccount();
@@ -40,18 +81,8 @@ export function TokenSwap() {
   const toToken = mode === 'wrap' ? wrapToken : sourceToken;
   const fromBalance = mode === 'wrap' ? fromTokenBalance : toTokenBalance;
 
-  // 调试信息
-  console.log('Token Swap Debug:', {
-    mode,
-    fromTokenBalance,
-    toTokenBalance,
-    fromBalance,
-    sourceToken: sourceToken?.symbol,
-    wrapToken: wrapToken?.symbol
-  });
-
   const isWrongNetwork = chainId !== appConfig?.app.chainId;
-  
+
   const supportedNetworkName = useMemo(() => {
     if (appConfig?.app.chainId) {
       const chain = getChainById(appConfig.app.chainId);
@@ -126,252 +157,162 @@ export function TokenSwap() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="mx-auto max-w-md"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div 
-        className="bg-card rounded-2xl border p-6 shadow-lg"
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-      >
+      <motion.div className="flex flex-col gap-[20px]">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-center gap-3">
-          <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
-            <Image
-              src={sourceToken?.icon || '/example/token.svg'}
-              alt={sourceToken?.symbol || 'Token'}
-              width={24}
-              height={24}
-            />
-          </div>
-          <h1 className="text-2xl font-bold">{sourceToken?.symbol || 'Token'} Wrap</h1>
+        <div className="flex items-center justify-center gap-[20px]">
+          <Image src={sourceToken?.icon} alt={sourceToken?.symbol} width={60} height={60} />
+          <h1 className="text-[36px] font-semibold">{sourceToken?.symbol || ''} Wrap</h1>
         </div>
 
-        {/* Token Swap Interface */}
-        <div className="mb-4 space-y-2">
-          {/* You pay */}
-          <div className="bg-muted/50 rounded-xl p-4">
-            <div className="mb-2">
-              <span className="text-muted-foreground text-sm">You pay</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Image src={fromToken?.icon || '/example/token.svg'} alt={fromToken?.symbol || 'Token'} width={32} height={32} />
-                <span className="text-lg font-semibold">{fromToken?.symbol || 'Token'}</span>
+        <div className="bg-card flex flex-col gap-[20px] rounded-[14px] p-[20px]">
+          {/* Token Swap Interface */}
+          <div className="relative flex flex-col gap-[2px]">
+            {/* You pay */}
+            <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
+              <span className="text-muted-foreground text-[14px] font-normal">You pay</span>
+              <div className="flex items-center gap-[10px]">
+                <Image src={fromToken?.icon} alt={fromToken?.symbol} width={30} height={30} />
+                <span className="text-[16px] font-semibold">{fromToken?.symbol || ''}</span>
               </div>
             </div>
-          </div>
 
-          {/* Swap Arrow */}
-          <div className="flex justify-center py-2">
-            <motion.button
+            {/* You receive */}
+            <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
+              <span className="text-muted-foreground text-[14px] font-normal">You receive</span>
+              <div className="flex items-center gap-[10px]">
+                <Image src={toToken?.icon} alt={toToken?.symbol} width={30} height={30} />
+                <span className="text-[16px] font-semibold">{toToken?.symbol || ''}</span>
+              </div>
+            </div>
+
+            {/* 水平垂直居中的icon */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:opacity-80"
               onClick={toggleMode}
-              className="bg-background hover:bg-muted border-background flex h-10 w-10 items-center justify-center rounded-full border-4 transition-colors"
-              disabled={isLoading}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{ rotate: mode === 'wrap' ? 0 : 180 }}
-              transition={{ duration: 0.3 }}
             >
-              <Image src="/arrow-down.svg" alt="swap" width={16} height={16} />
-            </motion.button>
-          </div>
-
-          {/* You receive */}
-          <div className="bg-muted/50 rounded-xl p-4">
-            <div className="mb-2">
-              <span className="text-muted-foreground text-sm">You receive</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Image src={toToken?.icon || '/example/token.svg'} alt={toToken?.symbol || 'Token'} width={32} height={32} />
-                <span className="text-lg font-semibold">{toToken?.symbol || 'Token'}</span>
-              </div>
+              <Image src="/switch.svg" alt="swap" width={30} height={30} />
             </div>
           </div>
-        </div>
 
-        {/* Amount Input Area */}
-        <div className="bg-muted/50 mb-6 rounded-xl p-4">
-          <div className="mb-2">
-            <span className="text-muted-foreground text-sm">Amount</span>
-          </div>
+          {/* Amount Input Area */}
+          <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
+            <span className="text-muted-foreground text-[14px] font-normal">Amount</span>
 
-          {/* Amount Input */}
-          <div className="mb-3">
+            {/* Amount Input */}
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.0"
-              className="placeholder:text-muted-foreground w-full bg-transparent text-3xl font-bold outline-none"
+              placeholder="0.00"
+              className="placeholder:text-muted-foreground w-full bg-transparent text-[26px] font-semibold outline-none"
               disabled={isLoading}
             />
-          </div>
 
-          {/* Balance Display with Actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">
-                Balance: {formatBalance(fromBalance)}
-              </span>
-              <button
-                onClick={handleRefreshBalance}
-                className="text-muted-foreground hover:text-foreground flex h-6 w-6 items-center justify-center rounded-full transition-colors disabled:opacity-50"
-                disabled={isLoading || isRefreshingBalances}
-                title="Refresh balance"
-              >
-                {isRefreshingBalances ? (
-                  <div className="animate-spin rounded-full h-3 w-3 border border-current border-t-transparent"></div>
-                ) : (
-                  <Image src="/arrow-full.svg" alt="refresh" width={12} height={12} />
+            {/* Balance Display with Actions */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[5px]">
+                <span className="text-muted-foreground text-[14px] font-normal">
+                  Balance: {formatBalance(fromBalance)}
+                </span>
+                <button
+                  onClick={handleRefreshBalance}
+                  className="bg-card flex size-[20px] cursor-pointer items-center justify-center rounded-full transition-colors hover:opacity-80 disabled:opacity-50"
+                  disabled={isLoading || isRefreshingBalances}
+                  title="Refresh balance"
+                >
+                  <Image
+                    src="/reload.svg"
+                    alt="refresh"
+                    width={14}
+                    height={14}
+                    className={isRefreshingBalances ? 'animate-spin' : ''}
+                  />
+                </button>
+                {fromBalance !== '0' && (
+                  <button
+                    onClick={handleMaxClick}
+                    className="bg-card h-[20px] cursor-pointer rounded-[100px] px-[5px] py-[0px] text-[12px] font-semibold text-[rgba(255,255,255,0.5)] transition-colors hover:opacity-80 disabled:opacity-50"
+                    disabled={isLoading}
+                  >
+                    Max
+                  </button>
                 )}
-              </button>
-            </div>
-
-            {fromBalance !== '0' && (
-              <button
-                onClick={handleMaxClick}
-                className="bg-muted hover:bg-muted/80 rounded-full px-3 py-1 text-xs font-medium transition-colors disabled:opacity-50"
-                disabled={isLoading}
-              >
-                Max
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Transaction Status */}
-        <AnimatePresence mode="wait">
-          {isConfirming && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mb-4 flex items-center gap-2 rounded-lg bg-blue-500/10 p-3 text-blue-600"
-            >
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">Transaction confirming...</span>
-                <span className="text-xs opacity-75">This may take a few minutes depending on network congestion</span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
 
-        {/* Error Messages */}
-        <AnimatePresence mode="wait">
-          {isWrongNetwork && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="mb-4 flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-red-500"
+          {/* Error Messages */}
+          <AnimatePresence mode="wait">
+            {isWrongNetwork && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-[5px]"
+              >
+                <Image src="/alert.svg" alt="alert" width={20} height={20} />
+                <span className="text-[12px] font-normal text-[#FF3546]">
+                  Wrong network, {mode} operation only supports {supportedNetworkName}
+                </span>
+              </motion.div>
+            )}
+
+            {hasInsufficientBalance && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-[5px]"
+              >
+                <Image src="/alert.svg" alt="alert" width={20} height={20} />
+                <span className="text-[12px] font-normal text-[#FF3546]">Insufficient balance</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Action Button */}
+          {!isConnected ? (
+            <ConnectButton />
+          ) : isWrongNetwork || hasInsufficientBalance ? (
+            <motion.div
+              initial={{ opacity: 0.8 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
             >
-              <Image src="/alert.svg" alt="alert" width={16} height={16} />
-              <span className="text-sm">Wrong network, {mode} operation only supports {supportedNetworkName}</span>
+              <Button disabled className="w-full rounded-full">
+                {isWrongNetwork ? 'Switch Network' : 'Insufficient Balance'}
+              </Button>
             </motion.div>
-          )}
-
-          {hasInsufficientBalance && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="mb-4 flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-red-500"
-            >
-              <Image src="/alert.svg" alt="alert" width={16} height={16} />
-              <span className="text-sm">Insufficient balance</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Action Button */}
-        {!isConnected ? (
-          <ConnectButton />
-        ) : isWrongNetwork || hasInsufficientBalance ? (
-          <motion.div
-            initial={{ opacity: 0.8 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Button disabled className="w-full rounded-full">
-              {isWrongNetwork ? 'Switch Network' : 'Insufficient Balance'}
-            </Button>
-          </motion.div>
-        ) : needsApprovalCheck ? (
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button
+          ) : needsApprovalCheck ? (
+            <ActionButton
               onClick={handleApprove}
               disabled={!isAmountValid || isLoading}
-              className="w-full rounded-full"
-            >
-            {isLoading && txStatus === 'pending' ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                Confirming in wallet...
-              </div>
-            ) : isConfirming ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                Approving...
-              </div>
-            ) : (
-              `Approve ${fromToken?.symbol || 'Token'}`
-            )}
-            </Button>
-          </motion.div>
-        ) : (
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button
+              isLoading={isLoading}
+              txStatus={txStatus}
+              isConfirming={isConfirming}
+              buttonText={`Approve ${fromToken?.symbol || 'Token'}`}
+              confirmingText="Approving..."
+            />
+          ) : (
+            <ActionButton
               onClick={handleSwap}
               disabled={!isAmountValid || isLoading}
-              className="w-full rounded-full"
-            >
-            {isLoading && txStatus === 'pending' ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                Confirming in wallet...
-              </div>
-            ) : isConfirming ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                {mode === 'wrap' ? 'Wrapping...' : 'Unwrapping...'}
-              </div>
-            ) : (
-              mode === 'wrap' ? 'Wrap' : 'Unwrap'
-            )}
-            </Button>
-          </motion.div>
-        )}
-
-        {/* Additional Info */}
-        <AnimatePresence>
-          {amount && isAmountValid && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3 }}
-              className="text-muted-foreground mt-4 text-center text-sm"
-            >
-              1 {fromToken?.symbol || 'Token'} = 1 {toToken?.symbol || 'Token'}
-            </motion.div>
+              isLoading={isLoading}
+              txStatus={txStatus}
+              isConfirming={isConfirming}
+              buttonText={mode === 'wrap' ? 'Wrap' : 'Unwrap'}
+              confirmingText={mode === 'wrap' ? 'Wrapping...' : 'Unwrapping...'}
+            />
           )}
-        </AnimatePresence>
+        </div>
       </motion.div>
     </motion.div>
   );
