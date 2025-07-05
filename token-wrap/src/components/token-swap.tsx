@@ -91,12 +91,12 @@ export function TokenSwap() {
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
-    
+
     setIsOffline(!navigator.onLine);
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -133,48 +133,51 @@ export function TokenSwap() {
   // Input validation function
   const validateInput = useCallback((value: string): string | null => {
     if (!value) return null;
-    
+
     // Check for valid number format
     if (!/^\d*\.?\d*$/.test(value)) {
       return 'Please enter a valid number';
     }
-    
+
     // Check for negative numbers
     if (parseFloat(value) < 0) {
       return 'Amount cannot be negative';
     }
-    
+
     // Check for too many decimal places
     const decimals = value.split('.')[1];
     if (decimals && decimals.length > 18) {
       return 'Too many decimal places (max 18)';
     }
-    
+
     // Check for scientific notation
     if (value.toLowerCase().includes('e')) {
       return 'Scientific notation is not allowed';
     }
-    
+
     return null;
   }, []);
 
-  const handleAmountChange = useCallback((value: string) => {
-    // Allow empty input
-    if (value === '') {
-      setAmount('');
-      setInputError(null);
-      return;
-    }
-    
-    // Validate input
-    const error = validateInput(value);
-    setInputError(error);
-    
-    // Only set amount if valid
-    if (!error) {
-      setAmount(value);
-    }
-  }, [validateInput]);
+  const handleAmountChange = useCallback(
+    (value: string) => {
+      // Allow empty input
+      if (value === '') {
+        setAmount('');
+        setInputError(null);
+        return;
+      }
+
+      // Validate input
+      const error = validateInput(value);
+      setInputError(error);
+
+      // Only set amount if valid
+      if (!error) {
+        setAmount(value);
+      }
+    },
+    [validateInput]
+  );
 
   const toggleMode = useCallback(() => {
     setMode((prev) => (prev === 'wrap' ? 'unwrap' : 'wrap'));
@@ -226,13 +229,12 @@ export function TokenSwap() {
 
   return (
     <motion.div
-      className="mx-auto w-[440px]"
+      className="container mx-auto flex justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div className="flex flex-col gap-[20px]">
-        {/* Header */}
+      <motion.div className="flex w-full flex-col gap-[20px] md:w-[440px]">
         <div className="flex items-center justify-center gap-[20px]">
           <SafeImage src={sourceToken?.icon} alt={sourceToken?.symbol} width={60} height={60} />
           <h1 className="text-[36px] font-semibold">{sourceToken?.symbol || ''} Wrap</h1>
@@ -383,10 +385,13 @@ export function TokenSwap() {
               transition={{ duration: 0.2 }}
             >
               <Button disabled className="w-full rounded-full">
-                {isOffline ? 'No Internet Connection' :
-                 isWrongNetwork ? 'Switch Network' : 
-                 hasInsufficientBalance ? 'Insufficient Balance' : 
-                 'Invalid Input'}
+                {isOffline
+                  ? 'No Internet Connection'
+                  : isWrongNetwork
+                    ? 'Switch Network'
+                    : hasInsufficientBalance
+                      ? 'Insufficient Balance'
+                      : 'Invalid Input'}
               </Button>
             </motion.div>
           ) : needsApprovalCheck ? (
