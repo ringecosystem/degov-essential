@@ -346,7 +346,7 @@ export function TokenSwap() {
               </motion.div>
             )}
 
-            {isWrongNetwork && (
+            {isConnected && isWrongNetwork && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -378,7 +378,7 @@ export function TokenSwap() {
           {/* Action Button */}
           {!isConnected ? (
             <ConnectButton />
-          ) : isOffline || isWrongNetwork || hasInsufficientBalance || inputError ? (
+          ) : isOffline || (isConnected && isWrongNetwork) || hasInsufficientBalance || inputError ? (
             <motion.div
               initial={{ opacity: 0.8 }}
               animate={{ opacity: 1 }}

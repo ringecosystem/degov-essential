@@ -5,11 +5,16 @@ export interface TokenConfig {
   icon: string;
 }
 
+export interface WalletConfig {
+  walletConnectProjectId: string;
+}
+
 export interface AppConfig {
   name: string;
   logo: string;
   description?: string;
   chainId: number;
+  wallet?: WalletConfig;
   sourceToken: TokenConfig;
   wrapToken: TokenConfig;
   wrapContractAddress: `0x${string}`;

@@ -38,9 +38,14 @@ export function createDynamicConfig(appConfig: AppConfig) {
     ? [mainnet, appChain] as const
     : [mainnet] as const;
 
+  // Return null if no projectId is configured
+  if (!appConfig.wallet?.walletConnectProjectId) {
+    return null;
+  }
+
   return getDefaultConfig({
     appName: appConfig.name || APP_NAME,
-    projectId: process.env.NEXT_PUBLIC_PROJECT_ID ?? '',
+    projectId: appConfig.wallet.walletConnectProjectId,
     wallets: [
       ...wallets,
       {
@@ -56,20 +61,4 @@ export function createDynamicConfig(appConfig: AppConfig) {
   });
 }
 
-// Fallback config for development/SSR
-export const defaultConfig = getDefaultConfig({
-  appName: APP_NAME,
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID ?? '',
-  wallets: [
-    ...wallets,
-    {
-      groupName: 'More',
-      wallets: [talismanWallet, subWallet, okxWallet, imTokenWallet, trustWallet, safeWallet]
-    }
-  ],
-  chains: [mainnet],
-  ssr: true,
-  storage: createStorage({
-    storage: cookieStorage
-  })
-});
+// Note: No default config - we only create config when projectId is available

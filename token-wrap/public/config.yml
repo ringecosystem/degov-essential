@@ -3,6 +3,8 @@ app:
   logo: '/logo.svg'
   description: 'Wrap RING tokens to xRING and unwrap xRING back to RING tokens'
   chainId: 46
+  wallet:
+    walletConnectProjectId: '2719448e2ce94fdd269a3c8587123bcc'
   sourceToken:
     symbol: 'TK'
     decimals: 18
