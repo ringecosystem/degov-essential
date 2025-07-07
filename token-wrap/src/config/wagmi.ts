@@ -30,8 +30,18 @@ export const queryClient = new QueryClient({
 });
 
 // Create dynamic wagmi config based on app configuration
-export function createDynamicConfig(appConfig: AppConfig) {
-  const appChain = getChainById(appConfig.chainId);
+export async function createDynamicConfig(appConfig: AppConfig) {
+  let appChain = getChainById(appConfig.chainId);
+  
+  // If chain not found in viem, get it from app config
+  if (!appChain) {
+    try {
+      appChain = await import('@/utils/app-config').then(module => module.getAppChain());
+    } catch (error) {
+      console.error('Failed to get app chain:', error);
+      return null;
+    }
+  }
   
   // Always include mainnet as fallback, plus the app-specific chain if different
   const chains: readonly [Chain, ...Chain[]] = appChain && appChain.id !== mainnet.id

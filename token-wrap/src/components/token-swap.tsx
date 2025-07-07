@@ -236,8 +236,8 @@ export function TokenSwap() {
     >
       <motion.div className="flex w-full flex-col gap-[20px] md:w-[440px]">
         <div className="flex items-center justify-center gap-[20px]">
-          <SafeImage src={sourceToken?.icon} alt={sourceToken?.symbol} width={60} height={60} />
-          <h1 className="text-[36px] font-semibold">{sourceToken?.symbol || ''} Wrap</h1>
+          <SafeImage src={appConfig?.app.logo} alt={appConfig?.app.name} width={60} height={60} />
+          <h1 className="text-[36px] font-semibold">{appConfig?.app.name || ''}</h1>
         </div>
 
         <div className="bg-card flex flex-col gap-[20px] rounded-[14px] p-[20px]">
@@ -265,7 +265,7 @@ export function TokenSwap() {
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:opacity-80"
               onClick={toggleMode}
             >
-              <SafeImage src="/switch.svg" alt="swap" width={30} height={30} />
+              <SafeImage src="/switch.svg" alt="swap" width={25} height={25} />
             </div>
           </div>
 
@@ -361,7 +361,7 @@ export function TokenSwap() {
               </motion.div>
             )}
 
-            {hasInsufficientBalance && (
+            {isConnected && hasInsufficientBalance && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -378,7 +378,10 @@ export function TokenSwap() {
           {/* Action Button */}
           {!isConnected ? (
             <ConnectButton />
-          ) : isOffline || (isConnected && isWrongNetwork) || hasInsufficientBalance || inputError ? (
+          ) : isOffline ||
+            (isConnected && isWrongNetwork) ||
+            hasInsufficientBalance ||
+            inputError ? (
             <motion.div
               initial={{ opacity: 0.8 }}
               animate={{ opacity: 1 }}

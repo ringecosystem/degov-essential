@@ -4,6 +4,7 @@ import { parseUnits, formatUnits, erc20Abi } from 'viem';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 
 import { abi as wrapAbi } from '@/config/abi/wrap';
+import type { TokenConfig } from '@/types/config';
 import { getTokenConfig } from '@/utils/app-config';
 
 export function useTokenWrap() {
@@ -20,8 +21,8 @@ export function useTokenWrap() {
   }>({ type: 'idle' });
   const [isRefreshingBalances, setIsRefreshingBalances] = useState(false);
   const [tokenConfig, setTokenConfig] = useState<{
-    sourceToken: any;
-    wrapToken: any;
+    sourceToken: TokenConfig;
+    wrapToken: TokenConfig;
     wrapContractAddress: `0x${string}`;
   } | null>(null);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
