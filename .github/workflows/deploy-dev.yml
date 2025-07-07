@@ -1,0 +1,46 @@
+name: Deploy develop
+
+on:
+  pull_request:
+
+jobs:
+  deploy-static:
+    name: Deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - path: token-wrap
+            dist_path: token-wrap/out
+            project: degov-token-wrap
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.package.path }}
+        run: pnpm install
+
+      - name: Build
+        working-directory: ${{ matrix.package.path }}
+        run: pnpm build
+
+      - uses: darwinia-network/devops/actions/smart-vercel@main
+        name: Deploy to Vercel
+        with:
+          vercel_token: ${{ secrets.VERCEL_TOKEN }}
+          vercel_group: itering
+          preview_output: true
+          project_name: ${{ matrix.package.project }}
+          dist_path: ${{ matrix.package.dist_path }}
+          script_run: false
+          enable_cache: true
+          enable_notify_comment: true
+          enable_notify_slack: false
+          slack_channel: public-degov
+          slack_webhook: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
+
+
