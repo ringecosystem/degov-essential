@@ -161,6 +161,7 @@ async function transformDeGovConfig(degovConfig: DeGovConfig): Promise<AppConfig
     description: targetApp.description,
     chainId: degovConfig.chain.id,
     wallet: degovConfig.wallet,
+    walletConnectProjectId: targetApp.params.walletConnectProjectId,
     sourceToken,
     wrapToken,
     wrapContractAddress: wrapToken.address // Assuming wrap contract is the wrap token address
