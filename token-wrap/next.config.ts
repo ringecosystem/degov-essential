@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: 'export',
   /* config options here */
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
