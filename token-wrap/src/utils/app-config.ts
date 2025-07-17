@@ -18,7 +18,10 @@ function getConfigUrlFromParams(): string | null {
 }
 
 // Fetch token metadata from contract
-async function fetchTokenMetadata(address: `0x${string}`, chain: Chain): Promise<{ symbol: string; decimals: number }> {
+async function fetchTokenMetadata(
+  address: `0x${string}`,
+  chain: Chain
+): Promise<{ symbol: string; decimals: number }> {
   const client = createPublicClient({
     chain,
     transport: http(chain.rpcUrls.default.http[0])
@@ -58,32 +61,38 @@ async function fetchTokenMetadata(address: `0x${string}`, chain: Chain): Promise
 
 // Create a custom chain from ChainConfig
 function createChainFromConfig(chainConfig: ChainConfig): Chain {
-  return {
-    id: chainConfig.id,
-    name: chainConfig.name,
+  const chain: Chain = {
+    id: chainConfig?.id,
+    name: chainConfig?.name,
     nativeCurrency: {
-      name: chainConfig.nativeToken.symbol,
-      symbol: chainConfig.nativeToken.symbol,
-      decimals: chainConfig.nativeToken.decimals
+      name: chainConfig?.nativeToken.symbol,
+      symbol: chainConfig?.nativeToken.symbol,
+      decimals: chainConfig?.nativeToken.decimals
     },
     rpcUrls: {
       default: {
-        http: chainConfig.rpcs
+        http: chainConfig?.rpcs
       }
     },
     blockExplorers: {
       default: {
         name: 'Explorer',
-        url: chainConfig.explorers[0]
-      }
-    },
-    contracts: {
-      multicall3: {
-        address: chainConfig.contracts.multicall3.address,
-        blockCreated: chainConfig.contracts.multicall3.blockCreated
+        url: chainConfig?.explorers[0]
       }
     }
   };
+
+  // Add multicall3 contract if it exists
+  if (chainConfig?.contracts?.multicall3) {
+    chain.contracts = {
+      multicall3: {
+        address: chainConfig?.contracts?.multicall3?.address,
+        blockCreated: chainConfig?.contracts?.multicall3?.blockCreated
+      }
+    };
+  }
+
+  return chain;
 }
 
 // Transform DeGov config to app config
@@ -95,9 +104,9 @@ async function transformDeGovConfig(degovConfig: DeGovConfig): Promise<AppConfig
 
   // Get current origin for validation
   const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-  
+
   // Find an app that matches current origin
-  const targetApp = degovConfig.apps.find(app => {
+  const targetApp = degovConfig.apps.find((app) => {
     try {
       const appUrl = new URL(app.link);
       return appUrl.origin === currentOrigin;
@@ -109,16 +118,18 @@ async function transformDeGovConfig(degovConfig: DeGovConfig): Promise<AppConfig
   // If no app matches current origin, throw error
   if (!targetApp) {
     const availableOrigins = degovConfig.apps
-      .map(app => {
+      .map((app) => {
         try {
           return new URL(app.link).origin;
         } catch {
           return 'invalid-url';
         }
       })
-      .filter(origin => origin !== 'invalid-url');
-    
-    throw new Error(`No app found for current origin "${currentOrigin}". Available origins: ${availableOrigins.join(', ')}`);
+      .filter((origin) => origin !== 'invalid-url');
+
+    throw new Error(
+      `No app found for current origin "${currentOrigin}". Available origins: ${availableOrigins.join(', ')}`
+    );
   }
 
   // Create chain from config
@@ -170,10 +181,10 @@ export async function loadAppConfig(): Promise<Config> {
     try {
       // Get config URL from URL parameter or use default
       const configUrl = getConfigUrlFromParams();
-      
+
       let response: Response;
       let yamlText: string;
-      
+
       if (configUrl) {
         // Fetch from external URL
         response = await fetch(configUrl);
@@ -181,19 +192,24 @@ export async function loadAppConfig(): Promise<Config> {
           throw new Error(`Failed to fetch config from ${configUrl}: ${response.statusText}`);
         }
         yamlText = await response.text();
-        
+
         // Parse as DeGov config format
         const degovConfig = load(yamlText) as DeGovConfig;
-        
+
         // Validate required fields
-        if (!degovConfig.wallet || !degovConfig.chain || !degovConfig.apps || degovConfig.apps.length === 0) {
+        if (
+          !degovConfig.wallet ||
+          !degovConfig.chain ||
+          !degovConfig.apps ||
+          degovConfig.apps.length === 0
+        ) {
           throw new Error('Invalid DeGov configuration: missing required fields');
         }
-        
+
         // Transform to app config
         const appConfig = await transformDeGovConfig(degovConfig);
         const config: Config = { app: appConfig };
-        
+
         cachedConfig = config;
         return config;
       } else {
@@ -202,19 +218,21 @@ export async function loadAppConfig(): Promise<Config> {
         if (!response.ok) {
           // If local config doesn't exist, provide a helpful error
           if (response.status === 404) {
-            throw new Error('No configuration found. Please provide a config URL parameter or ensure config.yml exists in the public folder.');
+            throw new Error(
+              'No configuration found. Please provide a config URL parameter or ensure config.yml exists in the public folder.'
+            );
           }
           throw new Error(`Failed to fetch config: ${response.statusText}`);
         }
-        
+
         yamlText = await response.text();
         const config = load(yamlText) as Config;
-        
+
         // Validate required fields
         if (!config.app || !config.app.sourceToken || !config.app.wrapToken) {
           throw new Error('Invalid configuration: missing required fields');
         }
-        
+
         cachedConfig = config;
         return config;
       }
@@ -241,21 +259,21 @@ export function getChainById(chainId: number): Chain | null {
       return chain;
     }
   }
-  
+
   // If not found in viem chains, check if we have a cached config with custom chain
   if (cachedConfig && cachedConfig.app.chainId === chainId) {
     // We need to reconstruct the chain from our cached config
     // This should only happen after config is loaded
     return null; // Will be handled by getAppChain()
   }
-  
+
   return null;
 }
 
 export async function getAppChain(): Promise<Chain> {
   const config = await loadAppConfig();
   let chain = getChainById(config.app.chainId);
-  
+
   if (!chain) {
     // If not found in viem chains and we have a config URL, the chain might be custom
     const configUrl = getConfigUrlFromParams();
@@ -270,11 +288,11 @@ export async function getAppChain(): Promise<Chain> {
       }
     }
   }
-  
+
   if (!chain) {
     throw new Error(`Unsupported chain ID: ${config.app.chainId}`);
   }
-  
+
   return chain;
 }
 
