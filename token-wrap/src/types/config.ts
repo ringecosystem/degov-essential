@@ -13,8 +13,8 @@ export interface ChainConfig {
   name: string;
   rpcs: string[];
   explorers: string[];
-  contracts: {
-    multicall3: {
+  contracts?: {
+    multicall3?: {
       address: `0x${string}`;
       blockCreated: number;
     };
