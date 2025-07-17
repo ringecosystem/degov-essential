@@ -32,30 +32,27 @@ export const queryClient = new QueryClient({
 // Create dynamic wagmi config based on app configuration
 export async function createDynamicConfig(appConfig: AppConfig) {
   let appChain = getChainById(appConfig.chainId);
-  
+
   // If chain not found in viem, get it from app config
   if (!appChain) {
     try {
-      appChain = await import('@/utils/app-config').then(module => module.getAppChain());
+      appChain = await import('@/utils/app-config').then((module) => module.getAppChain());
     } catch (error) {
       console.error('Failed to get app chain:', error);
       return null;
     }
   }
-  
-  // Always include mainnet as fallback, plus the app-specific chain if different
-  const chains: readonly [Chain, ...Chain[]] = appChain && appChain.id !== mainnet.id
-    ? [mainnet, appChain] as const
-    : [mainnet] as const;
 
-  // Return null if no projectId is configured
-  if (!appConfig.wallet?.walletConnectProjectId) {
-    return null;
-  }
+  // Always include mainnet as fallback, plus the app-specific chain if different
+  const chains: readonly [Chain, ...Chain[]] =
+    appChain && appChain.id !== mainnet.id ? ([mainnet, appChain] as const) : ([mainnet] as const);
+
+  const walletConnectProjectId =
+    appConfig?.wallet?.walletConnectProjectId || '628f270c9ba9495345d498e4335a7ad5';
 
   return getDefaultConfig({
     appName: appConfig.name || APP_NAME,
-    projectId: appConfig.wallet.walletConnectProjectId,
+    projectId: walletConnectProjectId,
     wallets: [
       ...wallets,
       {
