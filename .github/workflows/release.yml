@@ -28,7 +28,7 @@ jobs:
           registry: ${{ env.DOCKER_REGISTRY }}
 
       - uses: benjlevesque/short-sha@v3.0
-      - uses: olegtarasov/get-tag@v2
+      - uses: olegtarasov/get-tag@v2.1.4
 
       - name: Publish docker image hash
         uses: docker/build-push-action@v6
