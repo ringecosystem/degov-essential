@@ -42,6 +42,7 @@ export interface AppItem {
   params: {
     sourceToken: AppTokenParams;
     wrapToken: AppTokenParams;
+    walletConnectProjectId?: string;
   };
 }
 
@@ -73,6 +74,7 @@ export interface AppConfig {
   description?: string;
   chainId: number;
   wallet?: WalletConfig;
+  walletConnectProjectId?: string;
   sourceToken: TokenConfig;
   wrapToken: TokenConfig;
   wrapContractAddress: `0x${string}`;

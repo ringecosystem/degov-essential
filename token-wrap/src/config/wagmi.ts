@@ -48,7 +48,7 @@ export async function createDynamicConfig(appConfig: AppConfig) {
     appChain && appChain.id !== mainnet.id ? ([mainnet, appChain] as const) : ([mainnet] as const);
 
   const walletConnectProjectId =
-    appConfig?.wallet?.walletConnectProjectId || '628f270c9ba9495345d498e4335a7ad5';
+    appConfig?.walletConnectProjectId || '628f270c9ba9495345d498e4335a7ad5';
 
   return getDefaultConfig({
     appName: appConfig.name || APP_NAME,
