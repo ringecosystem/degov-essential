@@ -48,18 +48,6 @@ daos:
       config: https://guild-gov.ringdao.com/degov.yml
       indexer: https://guild-gov.ringdao.com/indexer/graphql
 
-  - name: Uniswap DAO
-    code: uniswap-dao
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    links:
-      website: https://uniswap.degov.ai
-      config: https://uniswap.degov.ai/degov.yml
-      indexer: https://uniswap.degov.ai/indexer/graphql
-
   - name: ENS DAO
     code: ens-dao
     xprofile: official
@@ -71,5 +59,17 @@ daos:
       website: https://ens.degov.ai
       config: https://ens.degov.ai/degov.yml
       indexer: https://ens.degov.ai/indexer/graphql
+
+  - name: Aquari DAO
+    code: aquari-dao
+    xprofile: official
+    carry:
+      - "#Governance"
+      - "#DeFAI"
+      - "#DAO"
+    links:
+      website: https://aquari.degov.ai
+      config: https://aquari.degov.ai/degov.yml
+      indexer: https://aquari.degov.ai/indexer/graphql
 
 
