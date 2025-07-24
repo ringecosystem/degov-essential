@@ -1,75 +1,79 @@
 daos:
-  - name: DeGov Development Test DAO
-    code: degov-test-dao
+  - code: degov-test-dao
+    # name: DeGov Development Test DAO
     # xprofile: roasted
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    links:
-      website: https://demo.degov.ai
-      config: https://demo.degov.ai/degov.yml
-      indexer: https://degov-indexer.vercel.app/graphql
+    extend: https://demo.degov.ai/degov.yml
+    # links:
+    #   website: https://demo.degov.ai
+    #   config: https://demo.degov.ai/degov.yml
+    #   indexer: https://degov-indexer.vercel.app/graphql
 
-  - name: RingDAO
-    code: ring-dao
+  - code: ring-dao
+    # name: RingDAO
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    links:
-      website: https://gov.ringdao.com
-      config: https://gov.ringdao.com/degov.yml
-      indexer: https://gov.ringdao.com/indexer/graphql
+    extend: https://gov.ringdao.com/degov.yml
+    # links:
+    #   website: https://gov.ringdao.com
+    #   config: https://gov.ringdao.com/degov.yml
+    #   indexer: https://gov.ringdao.com/indexer/graphql
 
-  - name: KtonDAO
-    code: kton-dao
+  - code: kton-dao
+    # name: KtonDAO
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    links:
-      website: https://gov.ktondao.xyz
-      config: https://gov.ktondao.xyz/degov.yml
-      indexer: https://gov.ktondao.xyz/indexer/graphql
+    extend: https://gov.ktondao.xyz/degov.yml
+    # links:
+    #   website: https://gov.ktondao.xyz
+    #   config: https://gov.ktondao.xyz/degov.yml
+    #   indexer: https://gov.ktondao.xyz/indexer/graphql
 
-  - name: RingDAO Community Guild
-    code: ringdao-guild
+  - code: ringdao-guild
+    # name: RingDAO Community Guild
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    links:
-      website: https://guild-gov.ringdao.com
-      config: https://guild-gov.ringdao.com/degov.yml
-      indexer: https://guild-gov.ringdao.com/indexer/graphql
+    extend: https://guild-gov.ringdao.com/degov.yml
+    # links:
+    #   website: https://guild-gov.ringdao.com
+    #   config: https://guild-gov.ringdao.com/degov.yml
+    #   indexer: https://guild-gov.ringdao.com/indexer/graphql
 
-  - name: ENS DAO
-    code: ens-dao
+  - code: ens-dao
+    # name: ENS DAO
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    links:
-      website: https://ens.degov.ai
-      config: https://ens.degov.ai/degov.yml
-      indexer: https://ens.degov.ai/indexer/graphql
+    extend: https://ens.degov.ai/degov.yml
+    # links:
+    #   website: https://ens.degov.ai
+    #   config: https://ens.degov.ai/degov.yml
+    #   indexer: https://ens.degov.ai/indexer/graphql
 
-  - name: Aquari DAO
-    code: aquari-dao
+  - code: aquari-dao
+    # name: Aquari DAO
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    links:
-      website: https://aquari.degov.ai
-      config: https://aquari.degov.ai/degov.yml
-      indexer: https://aquari.degov.ai/indexer/graphql
-
-
+    extend: https://aquari.degov.ai/degov.yml
+    # links:
+    #   website: https://aquari.degov.ai
+    #   config: https://aquari.degov.ai/degov.yml
+    #   indexer: https://aquari.degov.ai/indexer/graphql
