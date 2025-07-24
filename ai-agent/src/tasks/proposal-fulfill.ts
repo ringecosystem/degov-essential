@@ -199,9 +199,10 @@ export class DegovProposalFulfillTask {
         `[task-fulfill] Full tweet not found for tweet ID ${tweet.id}, cannot fulfill tweet poll.`
       );
     }
+    const degovConfig = dao.config;
 
     const voteCasts = await this.degovIndexer.queryProposalVotes({
-      endpoint: dao.links.indexer,
+      endpoint: degovConfig.indexer.endpoint,
       proposalId: tweet.proposal_id,
       offset: 0,
       enableQueryFullData: true,

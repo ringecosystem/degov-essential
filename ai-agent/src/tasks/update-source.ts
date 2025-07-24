@@ -20,7 +20,7 @@ export class DegovUpdateSourceTask {
     const job = new SimpleIntervalJob(
       {
         minutes: 10,
-        runImmediately: false,
+        runImmediately: true,
       },
       task
     );

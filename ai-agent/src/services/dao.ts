@@ -1,37 +1,11 @@
 import { Service } from "typedi";
-import { DegovConfig, DegovMcpDao } from "../types";
+import { DegovMcpDao } from "../types";
 import { FastifyInstance } from "fastify";
-import yaml from "yaml";
 import { DegovAgentSource } from "../internal/agent-source";
 
 @Service()
 export class DaoService {
   constructor(private readonly degovAgentSource: DegovAgentSource) {}
-
-  private async fetchDegovConfig(
-    fastify: FastifyInstance,
-    configLink: string
-  ): Promise<DegovConfig | undefined> {
-    const cacheKey = `degov-config-${configLink}`;
-    const cachedConfig = await fastify.cache.get(cacheKey);
-    if (cachedConfig) {
-      return cachedConfig as DegovConfig;
-    }
-    try {
-      const response = await fastify.axios.get(configLink);
-      if (!response.data) {
-        return;
-      }
-      const output = yaml.parse(response.data) as DegovConfig;
-      await fastify.cache.set(cacheKey, output, 60 * 60); // Cache for 1 hour
-      return output;
-    } catch (error) {
-      fastify.log.error(
-        `Failed to fetch degov config from ${configLink}: ${error}`
-      );
-      return;
-    }
-  }
 
   async updateProgress(
     fastify: FastifyInstance,
@@ -77,17 +51,14 @@ export class DaoService {
     });
 
     for (const daoc of daos) {
-      const { name, code, xprofile, links, carry } = daoc;
-      const configLink = links.config;
-      const degovConfig = await this.fetchDegovConfig(fastify, configLink);
+      const { code, xprofile, carry } = daoc;
+      // const degovConfig = await this.fetchDegovConfig(fastify, configLink);
       const daoProgress = daoProgresses.find((item) => item.code === code);
       const dmd: DegovMcpDao = {
-        name,
         code,
         xprofile,
-        links,
         carry: carry ?? [],
-        config: degovConfig,
+        config: daoc.config,
         lastProcessedBlock: daoProgress?.last_block_number ?? -1,
       };
       result.push(dmd);

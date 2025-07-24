@@ -148,14 +148,15 @@ export class DegovProposalNewTask {
       if (!dao.xprofile) {
         continue;
       }
-      const chainId = dao.config?.chain?.id;
+      const degovConfig = dao.config;
+      const chainId = degovConfig.chain?.id;
       if (!chainId) {
         fastify.log.warn(
-          `[task-new] Chain ID not found for DAO ${dao.name}. Skipping proposal processing.`
+          `[task-new] Chain ID not found for DAO ${degovConfig.name}. Skipping proposal processing.`
         );
         continue;
       }
-      let daox = dao.config?.links?.twitter;
+      let daox = degovConfig.links?.twitter;
       if (daox) {
         daox = daox.substring(daox.lastIndexOf("/") + 1);
         daox = daox.substring(
@@ -164,12 +165,12 @@ export class DegovProposalNewTask {
         );
       }
       const proposals = await this.degovIndexer.queryNextProposals({
-        endpoint: dao.links.indexer,
+        endpoint: degovConfig.indexer.endpoint,
         lastBlockNumber: dao.lastProcessedBlock ?? 0,
       });
       if (!proposals || !proposals.length) {
         fastify.log.info(
-          `[task-new] No new proposals found for DAO ${dao.name} with code ${dao.code}.`
+          `[task-new] No new proposals found for DAO ${degovConfig.name} with code ${dao.code}.`
         );
         continue; // No new proposals found
       }
@@ -177,13 +178,13 @@ export class DegovProposalNewTask {
         const npe: NewProposalEvent = {
           xprofile: dao.xprofile,
           daocode: dao.code,
-          daoname: dao.name,
+          daoname: degovConfig.name,
           daox: daox,
           carry: dao.carry,
           proposal: {
             id: proposal.proposalId,
             chainId,
-            url: `${dao.links.website}/proposal/${proposal.proposalId}`,
+            url: `${degovConfig.links?.website}/proposal/${proposal.proposalId}`,
             voteStart: parseInt(proposal.voteStart),
             voteEnd: parseInt(proposal.voteEnd),
             description: proposal.description,
