@@ -113,6 +113,7 @@ export class DegovProposalVoteTask {
       );
       return;
     }
+    const degovConfig = dao.config;
     const currentVoteProgress = await this.degovService.currentVoteProgress(
       fastify,
       {
@@ -121,7 +122,7 @@ export class DegovProposalVoteTask {
     );
     const offset = currentVoteProgress?.offset ?? 0;
     const voteCasts = await this.degovIndexer.queryProposalVotes({
-      endpoint: dao.links.indexer,
+      endpoint: degovConfig.indexer.endpoint,
       proposalId: degovTweet.proposal_id,
       offset,
     });
@@ -131,8 +132,8 @@ export class DegovProposalVoteTask {
       try {
         const promptInput = {
           stu,
-          voterAddressLink: `${dao.links.website}/delegate/${vote.voter}`,
-          proposalLink: `${dao.links.website}/proposal/${
+          voterAddressLink: `${degovConfig.links?.website}/delegate/${vote.voter}`,
+          proposalLink: `${degovConfig.links?.website}/proposal/${
             degovTweet.proposal_id
           }#${DegovHelpers.shortHash(vote.voter)}`,
           transactionLink: DegovHelpers.explorerLink(
@@ -176,7 +177,7 @@ export class DegovProposalVoteTask {
         fastify.log.debug(tweetInput);
         const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
         fastify.log.info(
-          `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal ID: ${degovTweet.proposal_id}`
+          `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${degovConfig.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
         await setTimeout(1000);
         nextOffset += 1;

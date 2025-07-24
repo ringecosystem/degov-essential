@@ -14,7 +14,7 @@ export interface DegovConfigContractConfig {
   timeLock: string; // Address of the time lock contract
 }
 
-export interface DegovConfigTimeLockAsset {
+export interface DegovConfigTreasuryAsset {
   name: string; // Name of the asset
   contract: string; // Contract address of the asset
   standard: "ERC20" | "ERC721"; // Token standard
@@ -68,6 +68,6 @@ export interface DegovConfig {
   chain: DegovConfigChain;
   indexer: DegovConfigIndexerConfig; // Indexer configuration
   contracts: DegovConfigContractConfig; // Contracts configuration
-  timeLockAssets: DegovConfigTimeLockAsset[]; // List of time lock assets
+  treasuryAssets: DegovConfigTreasuryAsset[]; // List of treasury assets
   safes: DegovConfigSafeConfig[]; // List of safes
 }

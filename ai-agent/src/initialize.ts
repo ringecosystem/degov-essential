@@ -16,7 +16,7 @@ export class DegovMcpServerInitializer {
   async init(fastify: FastifyInstance) {
     await this.ensureEnv();
     await this.initTwitterApi(fastify);
-    await this.degovAgentSource.refresh(fastify);
+    // await this.degovAgentSource.refresh(fastify);
     this.registerViewEngine();
   }
 

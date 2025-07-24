@@ -36,22 +36,30 @@ export enum RuntimeProfile {
   Production = "production",
 }
 
-export interface DegovDaoConfig {
-  name: string;
+export interface RawDegovDaoConfig {
   code: string;
   xprofile: string;
-  links: DegovMcpDaoUrl;
   carry: string[];
+  extend: string; // URL to extend the configuration
 }
 
-export interface DegovMcpDaoUrl {
-  website: string;
-  config: string;
-  indexer: string;
+export interface DegovDaoConfig {
+  // name: string;
+  code: string;
+  xprofile: string;
+  // links: DegovMcpDaoUrl;
+  carry: string[];
+  config: DegovConfig;
 }
+
+// export interface DegovMcpDaoUrl {
+//   website: string;
+//   config: string;
+//   indexer: string;
+// }
 
 export interface DegovMcpDao extends DegovDaoConfig {
-  config?: DegovConfig;
+  // config?: DegovConfig;
   lastProcessedBlock?: number; // The last processed block by the indexer
 }
 
