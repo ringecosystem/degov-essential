@@ -13,11 +13,8 @@ export class ChainTool {
   private blockIntervalCache = new Map<string, number>();
 
   async pickRpc(options: { rpcs?: string[] }): Promise<string> {
-    if (!options || !options.rpcs) {
+    if (!options || !options.rpcs || options.rpcs.length === 0) {
       throw new Error("No RPC endpoints provided");
-    }
-    if (!options.rpcs || options.rpcs.length === 0) {
-      throw new Error("No RPC endpoints available");
     }
     return options.rpcs[0];
   }
