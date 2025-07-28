@@ -36,21 +36,11 @@ const ABI_FUNCTION_STATE = [
 
 const ABI_FUNCTION_CLOCK_MODE = [
   {
-    inputs: [
-      {
-        inputs: [],
-        name: "CLOCK_MODE",
-        outputs: [
-          {
-            internalType: "string",
-            name: "",
-            type: "string",
-          },
-        ],
-        stateMutability: "view",
-        type: "function",
-      },
-    ],
+    inputs: [],
+    name: "CLOCK_MODE",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
   },
 ];
 
