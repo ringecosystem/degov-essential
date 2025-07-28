@@ -72,4 +72,15 @@ daos:
       config: https://aquari.degov.ai/degov.yml
       indexer: https://aquari.degov.ai/indexer/graphql
 
+  - name: Virtuals DAO
+    code: virtuals-dao
+    xprofile: official
+    carry:
+      - "#Governance"
+      - "#DeFAI"
+      - "#DAO"
+    links:
+      website: https://virtuals.degov.ai
+      config: https://virtuals.degov.ai/degov.yml
+      indexer: https://virtuals.degov.ai/indexer/graphql
 
