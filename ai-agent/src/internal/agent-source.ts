@@ -25,6 +25,7 @@ export class DegovAgentSource {
         );
       }
 
+      const daos: DegovDaoConfig[] = [];
       for (const rawDao of parsedConfig.daos) {
         const degovConfig = await this.fetchDegovConfig(fastify, rawDao.extend);
         if (!degovConfig) {
@@ -39,12 +40,13 @@ export class DegovAgentSource {
           carry: rawDao.carry,
           config: degovConfig,
         };
-        this.daos.push(daoConfig);
+        daos.push(daoConfig);
       }
 
       fastify.log.info(
-        `Successfully refreshed ${this.daos.length} DAO configurations`
+        `Successfully refreshed ${daos.length} DAO configurations`
       );
+      this.daos = daos;
     } catch (error) {
       fastify.log.error(
         `Failed to refresh DAO configurations: ${
