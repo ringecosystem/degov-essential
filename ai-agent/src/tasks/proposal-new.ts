@@ -12,6 +12,8 @@ import { NewProposalEvent } from "../types";
 import { DegovIndexer } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
 import { generateText } from "ai";
+import { GovernorContract } from "../internal/governor";
+import { ChainTool } from "../internal/chaintool";
 
 @Service()
 export class DegovProposalNewTask {
@@ -19,7 +21,9 @@ export class DegovProposalNewTask {
     private readonly daoService: DaoService,
     private readonly twitterAgent: TwitterAgentW,
     private readonly openrouterAgent: OpenrouterAgent,
-    private readonly degovIndexer: DegovIndexer
+    private readonly degovIndexer: DegovIndexer,
+    private readonly governorContract: GovernorContract,
+    private readonly chainTool: ChainTool
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -61,12 +65,20 @@ export class DegovProposalNewTask {
     const events = await this.nextNewProposals(fastify);
     for (const event of events) {
       const proposal = event.proposal;
-      const voteEnd = new Date(+proposal.voteEnd * 1000);
-      const durationMinutes = DegovHelpers.calculatePollTweetDurationMinutes({
-        proposalVoteEnd: voteEnd,
-      });
+      // const voteEnd = new Date(+proposal.voteEnd * 1000);
+      const pollTweetDurationResult =
+        DegovHelpers.calculatePollTweetDurationMinutes({
+          proposalVoteStart: proposal.voteStart,
+          proposalVoteEnd: proposal.voteEnd,
+          proposalStartTimestamp: proposal.blockTimestamp,
+          clockMode: event.clockMode,
+          blockInterval: event.blockInterval,
+        });
 
-      if (durationMinutes && durationMinutes < 0) {
+      if (
+        pollTweetDurationResult.durationMinutes &&
+        pollTweetDurationResult.durationMinutes < 0
+      ) {
         await this.daoService.updateProgress(fastify, {
           code: event.daocode,
           lastBlockNumber: proposal.blockNumber,
@@ -79,14 +91,14 @@ export class DegovProposalNewTask {
 
       const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
       let tweetInput: SendTweetInput | undefined;
-      if (!durationMinutes) {
+      if (!pollTweetDurationResult.durationMinutes) {
         const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
           fastify,
           {
             stu,
             event,
-            voteEnd,
-            durationMinutes: durationMinutes,
+            voteEnd: pollTweetDurationResult.proposalEndTimestamp,
+            durationMinutes: pollTweetDurationResult.durationMinutes,
           }
         );
         const aiResp = await generateText({
@@ -120,7 +132,7 @@ export class DegovProposalNewTask {
           text: aiResp.text,
           poll: {
             options: ["For", "Against", "Abstain"],
-            duration_minutes: durationMinutes,
+            duration_minutes: pollTweetDurationResult.durationMinutes,
           },
         };
       }
@@ -174,6 +186,20 @@ export class DegovProposalNewTask {
         );
         continue; // No new proposals found
       }
+
+      const chainRpc = await this.chainTool.pickRpc({
+        rpcs: degovConfig.chain?.rpcs,
+      });
+      const clockMode = await this.governorContract.clockMode({
+        chainId,
+        endpoint: chainRpc,
+        contractAddress: degovConfig.contracts?.governor as `0x${string}`,
+      });
+      const blockInterval = await this.chainTool.blockInterval(fastify, {
+        chainId,
+        endpoint: chainRpc,
+      });
+
       for (const proposal of proposals) {
         const npe: NewProposalEvent = {
           xprofile: dao.xprofile,
@@ -181,6 +207,8 @@ export class DegovProposalNewTask {
           daoname: degovConfig.name,
           daox: daox,
           carry: dao.carry,
+          clockMode: clockMode,
+          blockInterval: blockInterval,
           proposal: {
             id: proposal.proposalId,
             chainId,

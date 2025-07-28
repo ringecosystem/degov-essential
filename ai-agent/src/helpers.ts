@@ -1,5 +1,5 @@
 import { InlineErrorV2 } from "twitter-api-v2";
-import { ProposalState, RuntimeProfile } from "./types";
+import { ClockMode, ProposalState, RuntimeProfile } from "./types";
 
 export class DegovHelpers {
   static runtimeProfile(): RuntimeProfile {
@@ -173,27 +173,55 @@ export class DegovHelpers {
   }
 
   static calculatePollTweetDurationMinutes(options: {
-    proposalVoteEnd: Date;
-  }): number | undefined {
+    clockMode: ClockMode;
+    proposalVoteStart: number;
+    proposalVoteEnd: number;
+    proposalStartTimestamp: number;
+    blockInterval: number;
+  }): PollTweetDurationResult {
     const now = new Date();
     const maxMinutes = 7 * 24 * 60; // 7 days in minutes
     const oneDayMinutes = 24 * 60; // 1 day in minutes
-    const { proposalVoteEnd } = options;
 
-    // expired proposal
-    if (proposalVoteEnd < now) {
-      const expiredMillSeconds = now.getTime() - proposalVoteEnd.getTime();
-      const expiredMinutes = Math.ceil(expiredMillSeconds / 60000);
-      return -expiredMinutes; // Return negative number to indicate expired time
+    const proposalStartTimestamp = new Date(
+      options.proposalStartTimestamp * 1000
+    );
+    let proposalEndTimestamp;
+    switch (options.clockMode) {
+      case ClockMode.BlockNumber:
+        const voteEndSeconds =
+          options.proposalStartTimestamp +
+          (options.proposalVoteEnd - options.proposalVoteStart) *
+            options.blockInterval;
+        proposalEndTimestamp = new Date(voteEndSeconds * 1000);
+        break;
+      case ClockMode.Timestamp:
+        proposalEndTimestamp = new Date(+options.proposalVoteEnd * 1000);
+        break;
     }
 
-    const remainMillSeconds = proposalVoteEnd.getTime() - now.getTime();
+    // expired proposal
+    if (proposalEndTimestamp < now) {
+      const expiredMillSeconds = now.getTime() - proposalEndTimestamp.getTime();
+      const expiredMinutes = Math.ceil(expiredMillSeconds / 60000);
+      return {
+        durationMinutes: -expiredMinutes, // Return negative number to indicate expired time
+        proposalStartTimestamp,
+        proposalEndTimestamp,
+      };
+    }
+
+    const remainMillSeconds = proposalEndTimestamp.getTime() - now.getTime();
     const remainingTimeMinutes = Math.ceil(remainMillSeconds / 60000); // Convert milliseconds to minutes
 
     // 1. if less then 10 minutes, return undefined
     //    This is to avoid creating a poll tweet for proposals that are about to expire.
     if (remainingTimeMinutes < 10) {
-      return undefined;
+      return {
+        durationMinutes: undefined,
+        proposalStartTimestamp,
+        proposalEndTimestamp,
+      };
     }
 
     // 2. if remaining time is between 10 and maxMinutes, use optimized strategy
@@ -210,7 +238,11 @@ export class DegovHelpers {
       ) {
         const pollDuration = remainingTimeMinutes - oneDayMinutes;
         // ensure the poll duration is at least 10 minutes
-        return Math.max(pollDuration, 10);
+        return {
+          durationMinutes: Math.max(pollDuration, 10),
+          proposalStartTimestamp,
+          proposalEndTimestamp,
+        };
       }
 
       // if remaining time is between 3 and 5 days, use 18 hours buffer
@@ -220,13 +252,21 @@ export class DegovHelpers {
       ) {
         const pollDuration = remainingTimeMinutes - eighteenHoursMinutes;
         // ensure the poll duration is at least 10 minutes
-        return Math.max(pollDuration, 10);
+        return {
+          durationMinutes: Math.max(pollDuration, 10),
+          proposalStartTimestamp,
+          proposalEndTimestamp,
+        };
       }
 
       // if remaining time is between 10 minutes and 3 days, use 6 hours buffer
       const pollDuration = remainingTimeMinutes - sixHoursMinutes;
       // ensure the poll duration is at least 10 minutes
-      return Math.max(pollDuration, 10);
+      return {
+        durationMinutes: Math.max(pollDuration, 10),
+        proposalStartTimestamp,
+        proposalEndTimestamp,
+      };
     }
 
     // 3. If remaining time is greater than maxMinutes but less than maxMinutes + 1 day,
@@ -236,16 +276,28 @@ export class DegovHelpers {
       remainingTimeMinutes < maxMinutes + oneDayMinutes
     ) {
       const pollDuration = remainingTimeMinutes - oneDayMinutes; // vote end time - 1 day
-      return Math.max(pollDuration, 10); // ensure at least 10 minutes
+      return {
+        durationMinutes: Math.max(pollDuration, 10), // ensure at least 10 minutes
+        proposalStartTimestamp,
+        proposalEndTimestamp,
+      };
     }
 
     // 4. If remaining time is greater than maxMinutes + 1 day,
     //   This is to ensure that the poll tweet is created with enough time for voting.
     if (remainingTimeMinutes >= maxMinutes + oneDayMinutes) {
-      return maxMinutes;
+      return {
+        durationMinutes: maxMinutes, // use maxMinutes as the duration
+        proposalStartTimestamp,
+        proposalEndTimestamp,
+      };
     }
 
-    return undefined;
+    return {
+      durationMinutes: undefined, // fallback case, should not happen
+      proposalStartTimestamp,
+      proposalEndTimestamp,
+    };
   }
 
   static shortHash(input: string): `0x${string}` {
@@ -268,4 +320,10 @@ export class ExplorerLink {
     }
     return `${this.baseLink}/tx/${txhash}`;
   }
+}
+
+export interface PollTweetDurationResult {
+  durationMinutes?: number;
+  proposalStartTimestamp: Date;
+  proposalEndTimestamp: Date;
 }

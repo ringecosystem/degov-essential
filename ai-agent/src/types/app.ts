@@ -69,6 +69,8 @@ export interface NewProposalEvent {
   daoname: string;
   carry: string[];
   daox?: string;
+  clockMode: ClockMode;
+  blockInterval: number;
   proposal: SimpleProposal;
 }
 
@@ -133,6 +135,11 @@ export enum ProposalState {
   Queued = "queued",
   Expired = "expired",
   Executed = "executed",
+}
+
+export enum ClockMode {
+  Timestamp = 'timestamp',
+  BlockNumber = 'blocknumber',
 }
 
 export const AnalysisResultSchema = z.object({
