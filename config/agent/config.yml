@@ -1,58 +1,66 @@
 daos:
 
-  - code: degov-test-dao
+  - code: degov-with-blocknumber
     xprofile: official
     carry:
       - "#Governance"
       - "#DeFAI"
       - "#DAO"
-    extend: https://demo.degov.ai/degov.yml
+    extend: http://degovtrial-webdemowithblocknumber-jpt8mz-911581-168-119-79-153.traefik.me/degov.yml
 
-  - code: ring-dao
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    extend: https://gov.ringdao.com/degov.yml
+  # - code: degov-test-dao
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://demo.degov.ai/degov.yml
 
-  - code: kton-dao
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    extend: https://gov.ktondao.xyz/degov.yml
+  # - code: ring-dao
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://gov.ringdao.com/degov.yml
 
-  - code: ringdao-guild
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    extend: https://guild-gov.ringdao.com/degov.yml
+  # - code: kton-dao
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://gov.ktondao.xyz/degov.yml
 
-  - code: ens-dao
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    extend: https://ens.degov.ai/degov.yml
+  # - code: ringdao-guild
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://guild-gov.ringdao.com/degov.yml
 
-  - code: aquari-dao
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    extend: https://aquari.degov.ai/degov.yml
+  # - code: ens-dao
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://ens.degov.ai/degov.yml
 
-  - code: virtuals-dao
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
-    extend: https://virtuals.degov.ai/degov.yml
+  # - code: aquari-dao
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://aquari.degov.ai/degov.yml
+
+  # - code: virtuals-dao
+  #   xprofile: official
+  #   carry:
+  #     - "#Governance"
+  #     - "#DeFAI"
+  #     - "#DAO"
+  #   extend: https://virtuals.degov.ai/degov.yml
 
