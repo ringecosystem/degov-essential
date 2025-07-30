@@ -66,14 +66,20 @@ export class DegovProposalNewTask {
     for (const event of events) {
       const proposal = event.proposal;
       // const voteEnd = new Date(+proposal.voteEnd * 1000);
+      const calcOptions = {
+        proposalVoteStart: proposal.voteStart,
+        proposalVoteEnd: proposal.voteEnd,
+        proposalStartTimestamp: proposal.blockTimestamp,
+        clockMode: event.clockMode,
+        blockInterval: event.blockInterval,
+      };
       const pollTweetDurationResult =
-        DegovHelpers.calculatePollTweetDurationMinutes({
-          proposalVoteStart: proposal.voteStart,
-          proposalVoteEnd: proposal.voteEnd,
-          proposalStartTimestamp: proposal.blockTimestamp,
-          clockMode: event.clockMode,
-          blockInterval: event.blockInterval,
-        });
+        DegovHelpers.calculatePollTweetDurationMinutes(calcOptions);
+      fastify.log.debug(
+        `[task-new] pollTweetDurationResult: ${JSON.stringify(
+          pollTweetDurationResult
+        )} by options: ${JSON.stringify(calcOptions)}`
+      );
 
       if (
         pollTweetDurationResult.durationMinutes &&
@@ -195,10 +201,16 @@ export class DegovProposalNewTask {
         endpoint: chainRpc,
         contractAddress: degovConfig.contracts?.governor as `0x${string}`,
       });
+      fastify.log.debug(
+        `[task-new] Picked clock mode for DAO ${dao.code}: ${clockMode}`
+      );
       const blockInterval = await this.chainTool.blockInterval(fastify, {
         chainId,
         endpoint: chainRpc,
       });
+      fastify.log.debug(
+        `[task-new] Block interval for DAO ${dao.code}: ${blockInterval}`
+      );
 
       for (const proposal of proposals) {
         const npe: NewProposalEvent = {
