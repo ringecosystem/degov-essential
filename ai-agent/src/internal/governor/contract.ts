@@ -176,7 +176,7 @@ export class GovernorContract {
       if (mode === "blocknumber") {
         return ClockMode.BlockNumber;
       }
-      throw new Error(`Unknown clock mode: ${mode}`);
+      throw new Error(`Unknown clock mode: ${mode} in result: ${result}`);
     } catch (error: any) {
       // If the function doesn't exist on the contract, return BlockNumber as default
       const message = error.message;
