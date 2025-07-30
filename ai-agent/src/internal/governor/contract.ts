@@ -142,39 +142,53 @@ export class GovernorContract {
 
   async clockMode(options: BaseContractOptions): Promise<ClockMode> {
     const client = this.client(options);
-    const result = await client.readContract({
-      address: options.contractAddress,
-      abi: ABI_FUNCTION_CLOCK_MODE,
-      functionName: "CLOCK_MODE",
-    });
-    if (!result || typeof result !== "string") {
-      return ClockMode.BlockNumber;
-    }
+    try {
+      const result = await client.readContract({
+        address: options.contractAddress,
+        abi: ABI_FUNCTION_CLOCK_MODE,
+        functionName: "CLOCK_MODE",
+      });
 
-    // result is mode=timestamp&some=value
-    // Parse the mode parameter safely
-    const params = result.split("&");
-    let mode: string | undefined;
-
-    for (const param of params) {
-      const [key, value] = param.split("=");
-      if (key === "mode" && value) {
-        mode = value.toLowerCase();
-        break;
+      if (!result || typeof result !== "string") {
+        return ClockMode.BlockNumber;
       }
-    }
 
-    if (!mode) {
-      return ClockMode.BlockNumber;
-    }
+      // result is mode=timestamp&some=value
+      // Parse the mode parameter safely
+      const params = result.split("&");
+      let mode: string | undefined;
 
-    if (mode === "timestamp") {
-      return ClockMode.Timestamp;
+      for (const param of params) {
+        const [key, value] = param.split("=");
+        if (key === "mode" && value) {
+          mode = value.toLowerCase();
+          break;
+        }
+      }
+
+      if (!mode) {
+        return ClockMode.BlockNumber;
+      }
+
+      if (mode === "timestamp") {
+        return ClockMode.Timestamp;
+      }
+      if (mode === "blocknumber") {
+        return ClockMode.BlockNumber;
+      }
+      throw new Error(`Unknown clock mode: ${mode}`);
+    } catch (error: any) {
+      // If the function doesn't exist on the contract, return BlockNumber as default
+      const message = error.message;
+      if (
+        message &&
+        (message.includes("not found on ABI") || message.includes("CLOCK_MODE"))
+      ) {
+        return ClockMode.BlockNumber;
+      }
+      // Re-throw other errors
+      throw error;
     }
-    if (mode === "blocknumber") {
-      return ClockMode.BlockNumber;
-    }
-    throw new Error(`Unknown clock mode: ${mode}`);
   }
 
   async castVoteWithReason(options: CastVoteOptions): Promise<string> {

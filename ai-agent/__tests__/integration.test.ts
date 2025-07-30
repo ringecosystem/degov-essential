@@ -6,7 +6,17 @@ import fs from "fs";
 import path from "path";
 const twttr = require("@ambassify/twitter-text");
 import { AnalysisResultSchema, ClockMode } from "../src/types";
-import {DegovHelpers} from "../src/helpers"
+import { DegovHelpers } from "../src/helpers";
+
+import {
+  Account,
+  createPublicClient,
+  createWalletClient,
+  http,
+  PrivateKeyAccount,
+} from "viem";
+
+import * as viemChain from "viem/chains";
 
 dotenv.config();
 
@@ -197,9 +207,7 @@ describe("AI Test", () => {
   //   1000 * 60
   // );
 
-
   /// =========================
-
 
   it("check calculatePollTweetDurationMinutes", () => {
     const options = {
@@ -213,4 +221,38 @@ describe("AI Test", () => {
     const result = DegovHelpers.calculatePollTweetDurationMinutes(options);
     console.log(result);
   });
+
+  /// =========================
+
+  // it(
+  //   "check contract",
+  //   async () => {
+  //     const client = createPublicClient({
+  //       chain: viemChain.darwinia,
+  //       transport: http("https://rpc.darwinia.network"),
+  //     });
+
+  //     const ABI_FUNCTION_CLOCK_MODE = [
+  //       {
+  //         inputs: [],
+  //         name: "CLOCK_MODE",
+  //         outputs: [{ internalType: "string", name: "", type: "string" }],
+  //         stateMutability: "view",
+  //         type: "function",
+  //       },
+  //     ];
+
+  //     try {
+  //       const result = await client.readContract({
+  //         address: "0x398d514611291aB0C1c7c8447589A15b4bD08E3D",
+  //         abi: ABI_FUNCTION_CLOCK_MODE,
+  //         functionName: "CLOCK_MODEX",
+  //       });
+  //       console.log(result);
+  //     } catch (error: any) {
+  //       console.log(error.message)
+  //     }
+  //   },
+  //   1000 * 60
+  // );
 });
