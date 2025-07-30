@@ -46,7 +46,7 @@ export class DegovAgentSource {
       fastify.log.info(
         `Successfully refreshed ${daos.length} DAO configurations`
       );
-      this.daos = daos;
+      this.daos.splice(0, this.daos.length, ...daos);
     } catch (error) {
       fastify.log.error(
         `Failed to refresh DAO configurations: ${
