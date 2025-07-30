@@ -184,16 +184,15 @@ export class DegovHelpers {
     const maxMinutes = 7 * 24 * 60; // 7 days in minutes
     const oneDayMinutes = 24 * 60; // 1 day in minutes
 
-    const proposalStartTimestamp = new Date(
-      options.proposalStartTimestamp
-    );
+    const proposalStartTimestamp = new Date(options.proposalStartTimestamp);
     let proposalEndTimestamp;
     switch (options.clockMode) {
       case ClockMode.BlockNumber:
+        const blocksSinceCreation =
+          options.proposalVoteEnd - options.proposalCreatedBlock;
+        const additionalSeconds = blocksSinceCreation * options.blockInterval;
         const voteEndSeconds =
-          (options.proposalStartTimestamp / 1000) +
-          (options.proposalVoteEnd - options.proposalCreatedBlock) *
-            options.blockInterval;
+          options.proposalStartTimestamp / 1000 + additionalSeconds;
         proposalEndTimestamp = new Date(Math.round(voteEndSeconds) * 1000);
         break;
       case ClockMode.Timestamp:
