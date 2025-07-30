@@ -208,6 +208,7 @@ export class DegovProposalNewTask {
       const blockInterval = await this.chainTool.blockInterval(fastify, {
         chainId,
         endpoint: chainRpc,
+        enableFloatValue: true,
       });
       fastify.log.debug(
         `[task-new] Block interval for DAO ${dao.code}: ${blockInterval}`

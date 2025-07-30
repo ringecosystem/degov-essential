@@ -6,6 +6,7 @@ import * as viemChain from "viem/chains";
 export interface BlockIntervalOptions {
   chainId: number;
   endpoint: string;
+  enableFloatValue?: boolean;
 }
 
 @Service()
@@ -24,6 +25,7 @@ export class ChainTool {
     options: BlockIntervalOptions
   ): Promise<number> {
     const cacheKey = `${options.chainId}`;
+    const enableFloatValue = options.enableFloatValue ?? false;
 
     if (this.blockIntervalCache.has(cacheKey)) {
       fastify.log.info(
@@ -80,7 +82,10 @@ export class ChainTool {
         throw new Error("No valid block intervals found");
       }
 
-      const averageInterval = Math.round(totalInterval / intervalCount);
+      let averageInterval = totalInterval / intervalCount;
+      if (!enableFloatValue) {
+        averageInterval = Math.round(averageInterval); // round to nearest integer if float values are not enabled
+      }
 
       this.blockIntervalCache.set(cacheKey, averageInterval);
 

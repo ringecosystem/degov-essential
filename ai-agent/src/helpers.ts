@@ -194,7 +194,7 @@ export class DegovHelpers {
           (options.proposalStartTimestamp / 1000) +
           (options.proposalVoteEnd - options.proposalCreatedBlock) *
             options.blockInterval;
-        proposalEndTimestamp = new Date(voteEndSeconds * 1000);
+        proposalEndTimestamp = new Date(Math.round(voteEndSeconds) * 1000);
         break;
       case ClockMode.Timestamp:
         proposalEndTimestamp = new Date(+options.proposalVoteEnd * 1000);
