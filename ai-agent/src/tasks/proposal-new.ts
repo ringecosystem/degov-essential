@@ -69,6 +69,7 @@ export class DegovProposalNewTask {
       const calcOptions = {
         proposalVoteStart: proposal.voteStart,
         proposalVoteEnd: proposal.voteEnd,
+        proposalCreatedBlock: proposal.blockNumber,
         proposalStartTimestamp: proposal.blockTimestamp,
         clockMode: event.clockMode,
         blockInterval: event.blockInterval,

@@ -174,9 +174,10 @@ export class DegovHelpers {
 
   static calculatePollTweetDurationMinutes(options: {
     clockMode: ClockMode;
-    proposalVoteStart: number;
-    proposalVoteEnd: number;
-    proposalStartTimestamp: number;
+    proposalVoteStart: number; // seconds (if clockMode is Timestamp)
+    proposalVoteEnd: number; // seconds (if clockMode is Timestamp)
+    proposalCreatedBlock: number; // block number
+    proposalStartTimestamp: number; // milliseconds
     blockInterval: number;
   }): PollTweetDurationResult {
     const now = new Date();
@@ -184,14 +185,14 @@ export class DegovHelpers {
     const oneDayMinutes = 24 * 60; // 1 day in minutes
 
     const proposalStartTimestamp = new Date(
-      options.proposalStartTimestamp * 1000
+      options.proposalStartTimestamp
     );
     let proposalEndTimestamp;
     switch (options.clockMode) {
       case ClockMode.BlockNumber:
         const voteEndSeconds =
-          options.proposalStartTimestamp +
-          (options.proposalVoteEnd - options.proposalVoteStart) *
+          (options.proposalStartTimestamp / 1000) +
+          (options.proposalVoteEnd - options.proposalCreatedBlock) *
             options.blockInterval;
         proposalEndTimestamp = new Date(voteEndSeconds * 1000);
         break;
