@@ -39,8 +39,8 @@ export class ChainTool {
 
       const latestBlockNumber = await client.getBlockNumber();
 
-      // calculate the range of blocks to fetch (last 10 blocks)
-      const fromBlock = latestBlockNumber - BigInt(9); // get 10 blocks
+      // calculate the range of blocks to fetch (last BLOCK_SAMPLE_SIZE blocks)
+      const fromBlock = latestBlockNumber - BigInt(BLOCK_SAMPLE_SIZE - 1); // get BLOCK_SAMPLE_SIZE blocks
       const blocks: Block[] = [];
 
       fastify.log.info(
