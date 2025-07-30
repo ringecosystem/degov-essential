@@ -9,6 +9,8 @@ export interface BlockIntervalOptions {
   enableFloatValue?: boolean;
 }
 
+const BLOCK_SAMPLE_SIZE = 10;
+
 @Service()
 export class ChainTool {
   private blockIntervalCache = new Map<string, number>();
