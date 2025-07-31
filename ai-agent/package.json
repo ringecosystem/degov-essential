@@ -1,7 +1,7 @@
 {
-  "name": "degov-mcp",
-  "version": "0.1.0",
-  "description": "Degov mcp server",
+  "name": "degov-ai-agent",
+  "version": "0.1.3",
+  "description": "Degov AI Agent",
   "scripts": {
     "dev": "ts-node --files src/index.ts",
     "build": "tsc -b && shx mkdir -p build/generated && shx cp -r src/generated/prisma build/generated && shx cp -r src/template build/",
