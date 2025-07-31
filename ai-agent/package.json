@@ -1,6 +1,6 @@
 {
   "name": "degov-ai-agent",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "Degov AI Agent",
   "scripts": {
     "dev": "ts-node --files src/index.ts",
