@@ -1,7 +1,5 @@
 import { Service } from "typedi";
 import Fastify, { FastifyInstance } from "fastify";
-// import { Sessions, streamableHttp, fastifyMCPSSE } from "fastify-mcp";
-// import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { DEFINED_LOGGER_RULE } from "./integration/logger";
 import { DegovHelpers } from "./helpers";
@@ -152,35 +150,4 @@ export class DegovMcpHttpServer {
     await this.degovUpdateSourceTask.start(fastify);
   }
 
-  // private async mcp(fastify: FastifyInstance) {
-  //   const sessions = new Sessions<StreamableHTTPServerTransport>();
-
-  //   sessions.on("connected", (sessionId) => {
-  //     fastify.log.info(`Session ${sessionId} connected`);
-  //   });
-
-  //   sessions.on("terminated", (sessionId) => {
-  //     fastify.log.info(`Session ${sessionId} terminated`);
-  //   });
-
-  //   const transportType = EnvReader.env("MCP_TRANSPORT_TYPE", {
-  //     defaultValue: "sse",
-  //   }).toLowerCase();
-
-  //   switch (transportType) {
-  //     case "sse":
-  //       fastify.register(fastifyMCPSSE, {
-  //         server: await this.mcpServer.create(fastify),
-  //       });
-  //       break;
-  //     case "streamable_http":
-  //       fastify.register(streamableHttp, {
-  //         stateful: true,
-  //         mcpEndpoint: "/mcp",
-  //         sessions,
-  //         createServer: async () => await this.mcpServer.create(fastify),
-  //       });
-  //       break;
-  //   }
-  // }
 }
