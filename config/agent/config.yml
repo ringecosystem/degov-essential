@@ -8,7 +8,7 @@ daos:
   #     - "#DAO"
   #   extend: http://degovtrial-webdemowithblocknumber-jpt8mz-911581-168-119-79-153.traefik.me/degov.yml
 
-  - code: degov-test-dao
+  - code: degov-demo-dao
     xprofile: official
     carry:
       - "#Governance"
