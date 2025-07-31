@@ -16,7 +16,12 @@ export class DegovMcpServerInitializer {
   async init(fastify: FastifyInstance) {
     await this.ensureEnv();
     await this.initTwitterApi(fastify);
-    await this.degovAgentSource.refresh(fastify);
+    const enableRereshDaos = EnvReader.envBool("FEATURE_ENABLE_DAO_REFRESH", {
+      defaultValue: "true",
+    });
+    if (enableRereshDaos) {
+      await this.degovAgentSource.refresh(fastify);
+    }
     this.registerViewEngine();
   }
 

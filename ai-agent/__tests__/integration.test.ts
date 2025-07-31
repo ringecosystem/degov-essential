@@ -5,7 +5,18 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 const twttr = require("@ambassify/twitter-text");
-import { AnalysisResultSchema } from "../src/types";
+import { AnalysisResultSchema, ClockMode } from "../src/types";
+import { DegovHelpers } from "../src/helpers";
+
+import {
+  Account,
+  createPublicClient,
+  createWalletClient,
+  http,
+  PrivateKeyAccount,
+} from "viem";
+
+import * as viemChain from "viem/chains";
 
 dotenv.config();
 
@@ -134,63 +145,114 @@ describe("AI Test", () => {
   //     1000 * 60
   //   );
 
-  it(
-    "check vote report",
-    async () => {
-      const agent = new OpenrouterAgent();
+  /// =========================
 
-      const systemPromptPath = path.join(
-        __dirname,
-        "../src/template/prompts/proposal-summary.system.md"
-      );
-      const systemPrompt = fs.readFileSync(systemPromptPath, "utf-8");
+  // it(
+  //   "check vote report",
+  //   async () => {
+  //     const agent = new OpenrouterAgent();
 
-      const userPrompt = `
-      Description
-      Proposal Summary
-      This proposal suggests a test of the deGov governance system by voting on whether to update the deGov token's information (e.g., tokenomics, project updates, news) across various social media platforms. This test aims to gauge community engagement and the efficiency of the governance process.
+  //     const systemPromptPath = path.join(
+  //       __dirname,
+  //       "../src/template/prompts/proposal-summary.system.md"
+  //     );
+  //     const systemPrompt = fs.readFileSync(systemPromptPath, "utf-8");
 
-      Background
-      Maintaining accurate and up-to-date information about the deGov token is crucial for attracting new users, retaining existing holders, and fostering transparency. Social media platforms serve as key channels for disseminating this information. This proposal seeks to utilize the deGov governance system to decide on a coordinated update of token information across these platforms.
+  //     const userPrompt = `
+  //     Description
+  //     Proposal Summary
+  //     This proposal suggests a test of the deGov governance system by voting on whether to update the deGov token's information (e.g., tokenomics, project updates, news) across various social media platforms. This test aims to gauge community engagement and the efficiency of the governance process.
 
-      Proposal Details
-      The proposal suggests the following steps:
+  //     Background
+  //     Maintaining accurate and up-to-date information about the deGov token is crucial for attracting new users, retaining existing holders, and fostering transparency. Social media platforms serve as key channels for disseminating this information. This proposal seeks to utilize the deGov governance system to decide on a coordinated update of token information across these platforms.
 
-      Identify Key Social Platforms: Determine the primary social media platforms where deGov token information is shared (e.g., Twitter, Telegram, Discord, Medium).
+  //     Proposal Details
+  //     The proposal suggests the following steps:
 
-      Prepare Updated Information: Compile a comprehensive document containing the latest deGov token information, including tokenomics, recent project updates, team updates and relevant news.
+  //     Identify Key Social Platforms: Determine the primary social media platforms where deGov token information is shared (e.g., Twitter, Telegram, Discord, Medium).
 
-      Governance Vote: Present the updated information and a plan for disseminating it across the identified social media platforms to the deGov governance system for a vote.
+  //     Prepare Updated Information: Compile a comprehensive document containing the latest deGov token information, including tokenomics, recent project updates, team updates and relevant news.
 
-      Implementation: If the proposal passes, a designated team or individual will be responsible for updating the deGov token information on the selected social media platforms within a specified timeframe.
+  //     Governance Vote: Present the updated information and a plan for disseminating it across the identified social media platforms to the deGov governance system for a vote.
 
-      Post-Update Monitoring: Monitor social media channels for engagement and feedback following the information update.
+  //     Implementation: If the proposal passes, a designated team or individual will be responsible for updating the deGov token information on the selected social media platforms within a specified timeframe.
 
-      Expected Impact
-      Increased Awareness: Updating token information can increase awareness of the deGov token and its ecosystem.
+  //     Post-Update Monitoring: Monitor social media channels for engagement and feedback following the information update.
 
-      Improved Transparency: Providing accurate and up-to-date information enhances transparency and builds trust within the community.
+  //     Expected Impact
+  //     Increased Awareness: Updating token information can increase awareness of the deGov token and its ecosystem.
 
-      Enhanced Community Engagement: A successful governance vote and subsequent information update can foster a sense of ownership and engagement among deGov token holders.
+  //     Improved Transparency: Providing accurate and up-to-date information enhances transparency and builds trust within the community.
 
-      Test of Governance System: This proposal serves as a practical test of the deGov governance system, providing valuable insights into its effectiveness and potential areas for improvement.
+  //     Enhanced Community Engagement: A successful governance vote and subsequent information update can foster a sense of ownership and engagement among deGov token holders.
 
-      Voting Options
-      Yes: Approve the proposal to update deGov token information on social media platforms.
+  //     Test of Governance System: This proposal serves as a practical test of the deGov governance system, providing valuable insights into its effectiveness and potential areas for improvement.
 
-      No: Reject the proposal to update deGov token information on social media platforms.
+  //     Voting Options
+  //     Yes: Approve the proposal to update deGov token information on social media platforms.
 
-      ---
-      Generate a comprehensive summary of the proposal based on the description provided.
-    `;
-      console.log(userPrompt);
-      const aiSummaryResp = await generateText({
-        model: agent.openrouter(EnvReader.aiModel()),
-        system: systemPrompt,
-        prompt: userPrompt,
-      });
-      console.log(aiSummaryResp.text);
-    },
-    1000 * 60
-  );
+  //     No: Reject the proposal to update deGov token information on social media platforms.
+
+  //     ---
+  //     Generate a comprehensive summary of the proposal based on the description provided.
+  //   `;
+  //     console.log(userPrompt);
+  //     const aiSummaryResp = await generateText({
+  //       model: agent.openrouter(EnvReader.aiModel()),
+  //       system: systemPrompt,
+  //       prompt: userPrompt,
+  //     });
+  //     console.log(aiSummaryResp.text);
+  //   },
+  //   1000 * 60
+  // );
+
+  /// =========================
+
+  it("check calculatePollTweetDurationMinutes", () => {
+    const options = {
+      clockMode: ClockMode.BlockNumber,
+      proposalVoteStart: 7783021,
+      proposalVoteEnd: 7783921,
+      proposalCreatedBlock: 7782961,
+      proposalStartTimestamp: 1753841844000,
+      blockInterval: 6,
+    };
+    const result = DegovHelpers.calculatePollTweetDurationMinutes(options);
+    console.log(result);
+  });
+
+  /// =========================
+
+  // it(
+  //   "check contract",
+  //   async () => {
+  //     const client = createPublicClient({
+  //       chain: viemChain.darwinia,
+  //       transport: http("https://rpc.darwinia.network"),
+  //     });
+
+  //     const ABI_FUNCTION_CLOCK_MODE = [
+  //       {
+  //         inputs: [],
+  //         name: "CLOCK_MODE",
+  //         outputs: [{ internalType: "string", name: "", type: "string" }],
+  //         stateMutability: "view",
+  //         type: "function",
+  //       },
+  //     ];
+
+  //     try {
+  //       const result = await client.readContract({
+  //         address: "0x398d514611291aB0C1c7c8447589A15b4bD08E3D",
+  //         abi: ABI_FUNCTION_CLOCK_MODE,
+  //         functionName: "CLOCK_MODEX",
+  //       });
+  //       console.log(result);
+  //     } catch (error: any) {
+  //       console.log(error.message)
+  //     }
+  //   },
+  //   1000 * 60
+  // );
 });

@@ -134,9 +134,10 @@ export class DegovProposalStatusTask {
       proposalId: degovTweet.proposal_id,
       status: statusResult,
     });
+    const degovConfig = dao.config;
 
     const promptInput = {
-      proposalLink: `${dao.links.website}/proposal/${degovTweet.proposal_id}`,
+      proposalLink: `${degovConfig.links?.website}/proposal/${degovTweet.proposal_id}`,
     };
 
     const moreInfos: string[] = [];
@@ -177,7 +178,7 @@ export class DegovProposalStatusTask {
     fastify.log.debug(tweetInput);
     const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
     fastify.log.info(
-      `[task-status] Posted proposal status tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${dao.name}, Proposal URL: ${promptInput.proposalLink}`
+      `[task-status] Posted proposal status tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${degovConfig.name}, Proposal URL: ${promptInput.proposalLink}`
     );
   }
 
@@ -188,17 +189,18 @@ export class DegovProposalStatusTask {
   }): Promise<string[]> {
     const results = [];
     let transactionHash: string | undefined;
+    const degovConfig = options.dao.config;
     switch (options.status) {
       case ProposalState.Canceled:
         const pcanceled = await this.degovIndexer.queryProposalCanceled({
-          endpoint: options.dao.links.indexer,
+          endpoint: degovConfig.indexer.endpoint,
           proposalId: options.degovTweet.proposal_id,
         });
         transactionHash = pcanceled?.transactionHash;
         break;
       case ProposalState.Queued:
         const pqueued = await this.degovIndexer.queryProposalQueued({
-          endpoint: options.dao.links.indexer,
+          endpoint: degovConfig.indexer.endpoint,
           proposalId: options.degovTweet.proposal_id,
         });
         transactionHash = pqueued?.transactionHash;
@@ -210,7 +212,7 @@ export class DegovProposalStatusTask {
         break;
       case ProposalState.Executed:
         const pexecuted = await this.degovIndexer.queryProposalExecuted({
-          endpoint: options.dao.links.indexer,
+          endpoint: degovConfig.indexer.endpoint,
           proposalId: options.degovTweet.proposal_id,
         });
         transactionHash = pexecuted?.transactionHash;
