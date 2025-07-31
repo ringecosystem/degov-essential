@@ -6,7 +6,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import { DEFINED_LOGGER_RULE } from "./integration/logger";
 import { DegovHelpers } from "./helpers";
 import { Resp, RuntimeProfile } from "./types";
-import { DegovMcpServerInitializer } from "./initialize";
+import { DegovAiAgentInitializer } from "./initialize";
 import { HelloRouter } from "./routes/hello";
 import { TwitterRouter } from "./routes/twitter";
 import fastifyCache, {
@@ -35,8 +35,7 @@ import handlebars from "handlebars";
 @Service()
 export class DegovMcpHttpServer {
   constructor(
-    private readonly initializer: DegovMcpServerInitializer,
-    // private readonly mcpServer: DegovMcpServer,
+    private readonly initializer: DegovAiAgentInitializer,
     private readonly helloRouter: HelloRouter,
     private readonly twitterRouter: TwitterRouter,
     private readonly degovRouter: DegovRouter,
