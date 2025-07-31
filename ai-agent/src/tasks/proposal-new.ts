@@ -95,7 +95,7 @@ export class DegovProposalNewTask {
         );
         continue;
       }
-      if (proposal.description.toLowerCase().indexOf("[no-agent]") != -1) {
+      if (proposal.description.toLowerCase().includes("[no-agent]")) {
         await this.daoService.updateProgress(fastify, {
           code: event.daocode,
           lastBlockNumber: proposal.blockNumber,
