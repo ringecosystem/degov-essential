@@ -95,6 +95,16 @@ export class DegovProposalNewTask {
         );
         continue;
       }
+      if (proposal.description.toLowerCase().indexOf("[no-agent]") != -1) {
+        await this.daoService.updateProgress(fastify, {
+          code: event.daocode,
+          lastBlockNumber: proposal.blockNumber,
+        });
+        fastify.log.info(
+          `[task-new] Skipping proposal tweet for DAO: ${event.daoname}, Proposal ID: ${proposal.id} - [no-agent] tag found in description.`
+        );
+        continue;
+      }
 
       const stu = this.twitterAgent.currentUser({ xprofile: event.xprofile });
       let tweetInput: SendTweetInput | undefined;
