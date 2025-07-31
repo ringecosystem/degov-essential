@@ -7,8 +7,7 @@
     "build": "tsc -b && shx mkdir -p build/generated && shx cp -r src/generated/prisma build/generated && shx cp -r src/template build/",
     "start": "node build/index.js",
     "lint": "eslint . --ext .ts --fix",
-    "package": "npm run build && ncc build build/index.js -o dist --source-map --minify",
-    "mcp:inspector": "npx @modelcontextprotocol/inspector"
+    "package": "npm run build && ncc build build/index.js -o dist --source-map --minify"
   },
   "dependencies": {
     "@akashrajpurohit/snowflake-id": "^2.0.0",
@@ -17,7 +16,6 @@
     "@fastify/schedule": "^6.0.0",
     "@fastify/view": "^11.1.0",
     "@joggr/fastify-prisma": "^6.0.0",
-    "@modelcontextprotocol/sdk": "^1.12.1",
     "@openrouter/ai-sdk-provider": "^0.7.1",
     "@prisma/client": "6.9.0",
     "@specter-labs/fastify-cache": "^1.0.3",
@@ -43,7 +41,6 @@
     "zod": "^3.25.50"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^0.13.0",
     "@types/config": "^3.3.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.29",

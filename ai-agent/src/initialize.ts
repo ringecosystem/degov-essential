@@ -7,7 +7,7 @@ import handlebars from "handlebars";
 import { marked } from "marked";
 
 @Service()
-export class DegovMcpServerInitializer {
+export class DegovAiAgentInitializer {
   constructor(
     private readonly twitterService: TwitterService,
     private readonly degovAgentSource: DegovAgentSource

@@ -86,7 +86,7 @@ export class ChainTool {
 
       let averageInterval = totalInterval / intervalCount;
       if (!enableFloatValue) {
-        averageInterval = Math.round(averageInterval); // round to nearest integer if float values are not enabled
+        averageInterval = Math.floor(averageInterval); // floor to nearest integer if float values are not enabled
       }
 
       this.blockIntervalCache.set(cacheKey, averageInterval);
