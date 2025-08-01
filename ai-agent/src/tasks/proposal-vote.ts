@@ -132,8 +132,8 @@ export class DegovProposalVoteTask {
       try {
         const promptInput = {
           stu,
-          voterAddressLink: `${degovConfig.links?.website}/delegate/${vote.voter}`,
-          proposalLink: `${degovConfig.links?.website}/proposal/${
+          voterAddressLink: `${degovConfig.siteUrl}/delegate/${vote.voter}`,
+          proposalLink: `${degovConfig.siteUrl}/proposal/${
             degovTweet.proposal_id
           }#${DegovHelpers.shortHash(vote.voter)}`,
           transactionLink: DegovHelpers.explorerLink(
