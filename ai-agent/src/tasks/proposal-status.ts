@@ -226,9 +226,8 @@ export class DegovProposalStatusTask {
       default:
         return [];
     }
-    const transactionLink = DegovHelpers.explorerLink(
-      options.dao.config?.chain?.explorers
-    ).transaction(transactionHash);
+    const transactionLink =
+      DegovHelpers.degovLink(degovConfig).transaction(transactionHash);
     results.push(
       ...(transactionLink ? [`🔗 Transaction: ${transactionLink}`] : [])
     );

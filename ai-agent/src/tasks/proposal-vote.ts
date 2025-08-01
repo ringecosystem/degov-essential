@@ -130,15 +130,16 @@ export class DegovProposalVoteTask {
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
     for (const vote of voteCasts) {
       try {
+        const degovLink = DegovHelpers.degovLink(degovConfig);
+        const voterAddressLink = degovLink.delegate(vote.voter);
+        const proposalLink = degovLink.proposal(degovTweet.proposal_id, {
+          delegate: vote.voter,
+        });
         const promptInput = {
           stu,
-          voterAddressLink: `${degovConfig.siteUrl}/delegate/${vote.voter}`,
-          proposalLink: `${degovConfig.siteUrl}/proposal/${
-            degovTweet.proposal_id
-          }#${DegovHelpers.shortHash(vote.voter)}`,
-          transactionLink: DegovHelpers.explorerLink(
-            dao.config?.chain?.explorers
-          ).transaction(vote.transactionHash),
+          voterAddressLink,
+          proposalLink,
+          transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
         };
@@ -180,13 +181,14 @@ export class DegovProposalVoteTask {
           `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${degovConfig.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
         await setTimeout(1000);
-        nextOffset += 1;
       } catch (error) {
         fastify.log.error(
           `[task-vote] Error processing vote cast for tweet ${
             degovTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(error)}`
         );
+      } finally {
+        nextOffset += 1;
       }
     }
 
