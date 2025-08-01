@@ -180,6 +180,7 @@ export class DegovProposalVoteTask {
         fastify.log.info(
           `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${degovConfig.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
+        nextOffset += 1;
         await setTimeout(1000);
       } catch (error) {
         fastify.log.error(
@@ -187,8 +188,6 @@ export class DegovProposalVoteTask {
             degovTweet.id
           }: ${DegovHelpers.helpfulErrorMessage(error)}`
         );
-      } finally {
-        nextOffset += 1;
       }
     }
 
