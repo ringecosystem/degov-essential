@@ -53,13 +53,6 @@ export class DegovHelpers {
     }
   }
 
-  // static explorerLink(input?: string[]): ExplorerLink {
-  //   if (!input || input.length === 0) {
-  //     return new ExplorerLink(undefined);
-  //   }
-  //   return new ExplorerLink(input?.[0]);
-  // }
-
   static degovLink(config: DegovConfig): DegovLink {
     if (!config) {
       return new DegovLink(undefined);
@@ -397,7 +390,7 @@ export class DegovLink {
     if (!this.config || !txhash) {
       return undefined;
     }
-    const explorerLink = this.config.chain.explorers?.[0];
+    const explorerLink = this.config.chain?.explorers?.[0];
     if (!explorerLink) {
       return undefined;
     }
