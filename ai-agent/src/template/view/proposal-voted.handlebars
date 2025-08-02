@@ -40,7 +40,6 @@
   <meta name="twitter:description"
     content="{{#if tweet}}🤖 AI Analysis: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{dao.name}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
   {{#if tweet}}
-  {{#if tweet}}
   {{#if dao.config.logo}}
   {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
   <meta name="twitter:image" content="{{dao.config.logo}}">
