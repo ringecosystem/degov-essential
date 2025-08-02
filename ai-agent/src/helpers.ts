@@ -390,7 +390,7 @@ export class DegovLink {
     if (!this.config || !txhash) {
       return undefined;
     }
-    const explorerLink = this.config.chain.explorers?.[0];
+    const explorerLink = this.config.chain?.explorers?.[0];
     if (!explorerLink) {
       return undefined;
     }
