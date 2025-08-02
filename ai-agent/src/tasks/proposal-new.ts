@@ -185,14 +185,7 @@ export class DegovProposalNewTask {
         );
         continue;
       }
-      let daox = degovConfig.links?.twitter;
-      if (daox) {
-        daox = daox.substring(daox.lastIndexOf("/") + 1);
-        daox = daox.substring(
-          0,
-          daox.indexOf("?") > -1 ? daox.indexOf("?") : daox.length
-        );
-      }
+      const daox = DegovHelpers.extractXName(degovConfig.links?.twitter);
       const proposals = await this.degovIndexer.queryNextProposals({
         endpoint: degovConfig.indexer.endpoint,
         lastBlockNumber: dao.lastProcessedBlock ?? 0,
@@ -224,7 +217,9 @@ export class DegovProposalNewTask {
         `[task-new] Block interval for DAO ${dao.code}: ${blockInterval}`
       );
 
+      const degovLink = DegovHelpers.degovLink(degovConfig);
       for (const proposal of proposals) {
+        const proposalLink = degovLink.proposal(proposal.proposalId);
         const npe: NewProposalEvent = {
           xprofile: dao.xprofile,
           daocode: dao.code,
@@ -236,16 +231,14 @@ export class DegovProposalNewTask {
           proposal: {
             id: proposal.proposalId,
             chainId,
-            url: `${degovConfig.links?.website}/proposal/${proposal.proposalId}`,
+            url: proposalLink,
             voteStart: parseInt(proposal.voteStart),
             voteEnd: parseInt(proposal.voteEnd),
             description: proposal.description,
             blockNumber: parseInt(proposal.blockNumber),
             blockTimestamp: parseInt(proposal.blockTimestamp),
             transactionHash: proposal.transactionHash,
-            transactionLink: DegovHelpers.explorerLink(
-              dao.config?.chain?.explorers
-            ).transaction(proposal.transactionHash),
+            transactionLink: degovLink.transaction(proposal.transactionHash),
           },
         };
         results.push(npe);
