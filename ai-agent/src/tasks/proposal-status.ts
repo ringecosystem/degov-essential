@@ -137,7 +137,9 @@ export class DegovProposalStatusTask {
     const degovConfig = dao.config;
 
     const promptInput = {
-      proposalLink: `${degovConfig.links?.website}/proposal/${degovTweet.proposal_id}`,
+      proposalLink: DegovHelpers.degovLink(degovConfig).proposal(
+        degovTweet.proposal_id
+      ),
     };
 
     const moreInfos: string[] = [];
