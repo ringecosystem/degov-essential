@@ -50,16 +50,21 @@ export interface DegovDaoConfig {
   // links: DegovMcpDaoUrl;
   carry: string[];
   config: DegovConfig;
+  extend: string;
 }
 
-// export interface DegovMcpDaoUrl {
-//   website: string;
-//   config: string;
-//   indexer: string;
-// }
+export interface DegovMcpDaoUrl {
+  website: string;
+  config: string;
+  indexer: string;
+}
 
 export interface DegovMcpDao extends DegovDaoConfig {
   // config?: DegovConfig;
+  // @deprecated Use `config` instead
+  name: string;
+  // @deprecated Use `config` instead
+  links: DegovMcpDaoUrl;
   lastProcessedBlock?: number; // The last processed block by the indexer
 }
 
@@ -138,8 +143,8 @@ export enum ProposalState {
 }
 
 export enum ClockMode {
-  Timestamp = 'timestamp',
-  BlockNumber = 'blocknumber',
+  Timestamp = "timestamp",
+  BlockNumber = "blocknumber",
 }
 
 export const AnalysisResultSchema = z.object({
