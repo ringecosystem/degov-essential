@@ -60,7 +60,6 @@ export interface DegovMcpDaoUrl {
 }
 
 export interface DegovMcpDao extends DegovDaoConfig {
-  // config?: DegovConfig;
   // @deprecated Use `config` instead
   name: string;
   // @deprecated Use `config` instead
