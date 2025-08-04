@@ -55,10 +55,17 @@ export class DaoService {
       // const degovConfig = await this.fetchDegovConfig(fastify, configLink);
       const daoProgress = daoProgresses.find((item) => item.code === code);
       const dmd: DegovMcpDao = {
+        name: daoc.config.name,
         code,
         xprofile,
+        links: {
+          website: daoc.config.siteUrl,
+          config: daoc.extend ?? "",
+          indexer: daoc.config.indexer?.endpoint ?? "",
+        },
         carry: carry ?? [],
         config: daoc.config,
+        extend: daoc.extend ?? "",
         lastProcessedBlock: daoProgress?.last_block_number ?? -1,
       };
       result.push(dmd);

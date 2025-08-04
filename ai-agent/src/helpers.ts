@@ -1,5 +1,5 @@
 import { InlineErrorV2 } from "twitter-api-v2";
-import { ClockMode, ProposalState, RuntimeProfile } from "./types";
+import { ClockMode, DegovConfig, ProposalState, RuntimeProfile } from "./types";
 
 export class DegovHelpers {
   static runtimeProfile(): RuntimeProfile {
@@ -53,11 +53,11 @@ export class DegovHelpers {
     }
   }
 
-  static explorerLink(input?: string[]): ExplorerLink {
-    if (!input || input.length === 0) {
-      return new ExplorerLink(undefined);
+  static degovLink(config: DegovConfig): DegovLink {
+    if (!config) {
+      return new DegovLink(undefined);
     }
-    return new ExplorerLink(input?.[0]);
+    return new DegovLink(config);
   }
 
   static pollOptionCode(options: {
@@ -309,16 +309,92 @@ export class DegovHelpers {
     }
     return `0x${input.substring(0, 7)}`;
   }
-}
 
-export class ExplorerLink {
-  constructor(private readonly baseLink?: string) {}
-
-  transaction(txhash?: string): string | undefined {
-    if (!this.baseLink || !txhash) {
+  static stdUrl(input: string | undefined): string | undefined {
+    if (!input) {
       return undefined;
     }
-    return `${this.baseLink}/tx/${txhash}`;
+
+    // Split URL into parts: protocol, host+path, query, fragment
+    const protocolMatch = input.match(/^(https?:\/\/)/);
+    let protocol = "";
+    let rest = input;
+
+    if (protocolMatch) {
+      protocol = protocolMatch[1];
+      rest = input.slice(protocol.length);
+    }
+
+    // Split rest into path, query, and fragment parts
+    const fragmentIndex = rest.indexOf("#");
+    let fragment = "";
+    let pathAndQuery = rest;
+
+    if (fragmentIndex !== -1) {
+      fragment = rest.slice(fragmentIndex);
+      pathAndQuery = rest.slice(0, fragmentIndex);
+    }
+
+    const queryIndex = pathAndQuery.indexOf("?");
+    let query = "";
+    let path = pathAndQuery;
+
+    if (queryIndex !== -1) {
+      query = pathAndQuery.slice(queryIndex);
+      path = pathAndQuery.slice(0, queryIndex);
+    }
+
+    // Normalize path: remove trailing slashes and collapse multiple slashes
+    path = path.replace(/\/+/g, "/").replace(/\/+$/, "");
+
+    // Reconstruct URL
+    let normalizedUrl = protocol + path + query + fragment;
+
+    return normalizedUrl;
+  }
+
+  static extractXName(daox?: string): string | undefined {
+    if (!daox) {
+      return undefined;
+    }
+
+    daox = daox.substring(daox.lastIndexOf("/") + 1);
+    daox = daox.substring(
+      0,
+      daox.indexOf("?") > -1 ? daox.indexOf("?") : daox.length
+    );
+    return daox;
+  }
+}
+
+export class DegovLink {
+  constructor(private readonly config?: DegovConfig) {}
+
+  proposal(proposalId: string, options?: { delegate?: string }): string {
+    const url = `${DegovHelpers.stdUrl(
+      this.config?.siteUrl
+    )}/proposal/${proposalId}`;
+    if (options?.delegate) {
+      return `${url}#${DegovHelpers.shortHash(options.delegate)}`;
+    }
+    return url;
+  }
+
+  delegate(voterAddress: string): string {
+    return `${DegovHelpers.stdUrl(
+      this.config?.siteUrl
+    )}/delegate/${voterAddress}`;
+  }
+
+  transaction(txhash?: string): string | undefined {
+    if (!this.config || !txhash) {
+      return undefined;
+    }
+    const explorerLink = this.config.chain?.explorers?.[0];
+    if (!explorerLink) {
+      return undefined;
+    }
+    return `${DegovHelpers.stdUrl(explorerLink)}/tx/${txhash}`;
   }
 }
 

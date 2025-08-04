@@ -39,6 +39,7 @@ export class DegovAgentSource {
           xprofile: rawDao.xprofile,
           carry: rawDao.carry,
           config: degovConfig,
+          extend: rawDao.extend,
         };
         daos.push(daoConfig);
       }

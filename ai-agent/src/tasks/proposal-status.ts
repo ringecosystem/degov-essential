@@ -137,7 +137,9 @@ export class DegovProposalStatusTask {
     const degovConfig = dao.config;
 
     const promptInput = {
-      proposalLink: `${degovConfig.links?.website}/proposal/${degovTweet.proposal_id}`,
+      proposalLink: DegovHelpers.degovLink(degovConfig).proposal(
+        degovTweet.proposal_id
+      ),
     };
 
     const moreInfos: string[] = [];
@@ -226,9 +228,8 @@ export class DegovProposalStatusTask {
       default:
         return [];
     }
-    const transactionLink = DegovHelpers.explorerLink(
-      options.dao.config?.chain?.explorers
-    ).transaction(transactionHash);
+    const transactionLink =
+      DegovHelpers.degovLink(degovConfig).transaction(transactionHash);
     results.push(
       ...(transactionLink ? [`🔗 Transaction: ${transactionLink}`] : [])
     );
