@@ -236,7 +236,13 @@ export function TokenSwap() {
     >
       <motion.div className="flex w-full flex-col gap-[20px] md:w-[440px]">
         <div className="flex items-center justify-center gap-[20px]">
-          <SafeImage src={appConfig?.app.logo} alt={appConfig?.app.name} width={60} height={60} />
+          <SafeImage
+            src={appConfig?.app.logo}
+            alt={appConfig?.app.name}
+            width={60}
+            height={60}
+            className="rounded-full"
+          />
           <h1 className="text-[36px] font-semibold">{appConfig?.app.name || ''}</h1>
         </div>
 
@@ -247,7 +253,13 @@ export function TokenSwap() {
             <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
               <span className="text-muted-foreground text-[14px] font-normal">You pay</span>
               <div className="flex items-center gap-[10px]">
-                <SafeImage src={fromToken?.icon} alt={fromToken?.symbol} width={30} height={30} />
+                <SafeImage
+                  src={fromToken?.icon}
+                  alt={fromToken?.symbol}
+                  width={30}
+                  height={30}
+                  className="rounded-full"
+                />
                 <span className="text-[16px] font-semibold">{fromToken?.symbol || ''}</span>
               </div>
             </div>
@@ -256,7 +268,13 @@ export function TokenSwap() {
             <div className="bg-background flex flex-col gap-[10px] rounded-[10px] p-[10px]">
               <span className="text-muted-foreground text-[14px] font-normal">You receive</span>
               <div className="flex items-center gap-[10px]">
-                <SafeImage src={toToken?.icon} alt={toToken?.symbol} width={30} height={30} />
+                <SafeImage
+                  src={toToken?.icon}
+                  alt={toToken?.symbol}
+                  width={30}
+                  height={30}
+                  className="rounded-full"
+                />
                 <span className="text-[16px] font-semibold">{toToken?.symbol || ''}</span>
               </div>
             </div>
