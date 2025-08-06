@@ -32,7 +32,7 @@ daos:
       - "#DAO"
     extend: https://gov.ktondao.xyz/degov.yml
 
-  - code: ringdao-guild
+  - code: ring-dao-guild
     xprofile: official
     carry:
       - "#Governance"
