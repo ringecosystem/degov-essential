@@ -1,0 +1,8 @@
+daos:
+  - code: degov-demo-dao
+    xprofile: official
+    carry:
+      - "#Governance"
+      - "#DeFAI"
+      - "#DAO"
+    extend: https://demo.degov.ai/degov.yml

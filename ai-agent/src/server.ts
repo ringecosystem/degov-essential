@@ -25,7 +25,6 @@ import {
   DegovProposalStatusTask,
   DegovTweetSyncTask,
   DegovProposalFulfillTask,
-  DegovUpdateSourceTask,
 } from "./tasks";
 import { fastifySchedule } from "@fastify/schedule";
 import handlebars from "handlebars";
@@ -41,8 +40,7 @@ export class DegovMcpHttpServer {
     private readonly degovProposalVoteTask: DegovProposalVoteTask,
     private readonly degovProposalFulfillTask: DegovProposalFulfillTask,
     private readonly degovTweetSyncTask: DegovTweetSyncTask,
-    private readonly degovProposalStatusTask: DegovProposalStatusTask,
-    private readonly degovUpdateSourceTask: DegovUpdateSourceTask
+    private readonly degovProposalStatusTask: DegovProposalStatusTask
   ) {}
 
   async listen(options: { host: string; port: number }) {
@@ -147,7 +145,5 @@ export class DegovMcpHttpServer {
     await this.degovProposalFulfillTask.start(fastify);
     await this.degovTweetSyncTask.start(fastify);
     await this.degovProposalStatusTask.start(fastify);
-    await this.degovUpdateSourceTask.start(fastify);
   }
-
 }

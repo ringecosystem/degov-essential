@@ -2,61 +2,48 @@ import { Service } from "typedi";
 import { DegovConfig, DegovDaoConfig, RawDegovDaoConfig } from "../types";
 import * as yaml from "yaml";
 import { FastifyInstance } from "fastify";
+import { EnvReader } from "../integration/env-reader";
+import * as fs from "fs/promises";
 
 @Service()
 export class DegovAgentSource {
   private daos: DegovDaoConfig[] = [];
 
-  async refresh(fastify: FastifyInstance): Promise<void> {
-    try {
-      const resp = await fastify.axios.get(
-        "https://raw.githubusercontent.com/ringecosystem/degov-essential/refs/heads/main/config/agent/config.yml"
-      );
-      const configRawYml = resp.data;
-      const parsedConfig: RawDegovAgentConfig = yaml.parse(configRawYml);
+  async init(fastify: FastifyInstance): Promise<void> {
+    const agentConfigPath = EnvReader.envRequired("DEGOV_AGENT_CONFIG_PATH");
 
-      if (!parsedConfig || !parsedConfig.daos) {
-        throw new Error("Invalid config format: missing 'daos' property");
-      }
+    const configRawYml = await fs.readFile(agentConfigPath, "utf8");
+    const parsedConfig: RawDegovAgentConfig = yaml.parse(configRawYml);
 
-      if (!Array.isArray(parsedConfig.daos)) {
-        throw new Error(
-          "Invalid config format: expected array of DAO configurations"
-        );
-      }
-
-      const daos: DegovDaoConfig[] = [];
-      for (const rawDao of parsedConfig.daos) {
-        const degovConfig = await this.fetchDegovConfig(fastify, rawDao.extend);
-        if (!degovConfig) {
-          fastify.log.warn(
-            `Failed to fetch degov config from ${rawDao.extend}`
-          );
-          continue;
-        }
-        const daoConfig: DegovDaoConfig = {
-          code: rawDao.code,
-          xprofile: rawDao.xprofile,
-          carry: rawDao.carry,
-          config: degovConfig,
-          extend: rawDao.extend,
-        };
-        daos.push(daoConfig);
-      }
-
-      fastify.log.info(
-        `Successfully refreshed ${daos.length} DAO configurations`
-      );
-      this.daos.splice(0, this.daos.length, ...daos);
-    } catch (error) {
-      fastify.log.error(
-        `Failed to refresh DAO configurations: ${
-          error instanceof Error ? error.message : error
-        }`
-      );
-
-      throw error;
+    if (!parsedConfig || !parsedConfig.daos) {
+      throw new Error("Invalid config format: missing 'daos' property");
     }
+
+    if (!Array.isArray(parsedConfig.daos)) {
+      throw new Error(
+        "Invalid config format: expected array of DAO configurations"
+      );
+    }
+
+    for (const rawDao of parsedConfig.daos) {
+      const degovConfig = await this.fetchDegovConfig(fastify, rawDao.extend);
+      if (!degovConfig) {
+        fastify.log.warn(`Failed to fetch degov config from ${rawDao.extend}`);
+        continue;
+      }
+      const daoConfig: DegovDaoConfig = {
+        code: rawDao.code,
+        xprofile: rawDao.xprofile,
+        carry: rawDao.carry,
+        config: degovConfig,
+        extend: rawDao.extend,
+      };
+      this.daos.push(daoConfig);
+    }
+
+    fastify.log.info(
+      `Successfully loaded ${this.daos.length} DAO configurations`
+    );
   }
 
   private async fetchDegovConfig(
