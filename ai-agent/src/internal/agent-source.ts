@@ -42,7 +42,7 @@ export class DegovAgentSource {
     }
 
     fastify.log.info(
-      `Successfully refreshed ${this.daos.length} DAO configurations`
+      `Successfully loaded ${this.daos.length} DAO configurations`
     );
   }
 
