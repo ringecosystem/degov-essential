@@ -16,12 +16,7 @@ export class DegovAiAgentInitializer {
   async init(fastify: FastifyInstance) {
     await this.ensureEnv();
     await this.initTwitterApi(fastify);
-    const enableRereshDaos = EnvReader.envBool("FEATURE_ENABLE_DAO_REFRESH", {
-      defaultValue: "true",
-    });
-    if (enableRereshDaos) {
-      await this.degovAgentSource.refresh(fastify);
-    }
+    await this.degovAgentSource.init(fastify);
     this.registerViewEngine();
   }
 
