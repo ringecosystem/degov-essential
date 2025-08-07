@@ -166,7 +166,7 @@ export class DegovTweetSyncTask {
     const result = await this.twitterAgent.searchTweets(fastify, {
       xprofile: dao.xprofile,
       query: `conversation_id:${tweet.id}`,
-      previous_token: tweet.reply_next_token ?? undefined,
+      next_token: tweet.reply_next_token ?? undefined,
     });
     const nextToken = result.meta.next_token;
     if (nextToken) {
