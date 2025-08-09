@@ -6,15 +6,67 @@ import type { Config, DeGovConfig, AppConfig, TokenConfig, ChainConfig } from '@
 
 import type { Chain } from 'viem';
 
-let cachedConfig: Config | null = null;
-let cachedChain: Chain | null = null;
-let configPromise: Promise<Config> | null = null;
-
-// Utility to get URL parameters in the browser
-function getConfigUrlFromParams(): string | null {
+function getQueryParam(name: string): string | null {
   if (typeof window === 'undefined') return null;
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('config');
+  const value = urlParams.get(name);
+  return value && value.trim().length > 0 ? value.trim() : null;
+}
+
+// Expose where config should be loaded from
+export function getConfigSourceFromParams(): {
+  key: 'dao' | 'config' | null;
+  value: string | null;
+} {
+  const dao = getQueryParam('dao');
+  if (dao) return { key: 'dao', value: dao };
+  const config = getQueryParam('config');
+  if (config) return { key: 'config', value: config };
+  return { key: null, value: null };
+}
+
+// Build remote API URL: if `dao` param exists, use https://api.degov.ai/dao/config/${dao}?format=yml
+export function buildRemoteApiUrl(): string | undefined {
+  const dao = getQueryParam('dao');
+  if (!dao) return undefined;
+  const base = 'https://api.degov.ai';
+  return `${base}/dao/config/${dao}?format=yml`;
+}
+
+// Fetch and validate DeGov config from query param or remote API
+async function fetchDeGovConfig(): Promise<DeGovConfig> {
+  const source = getConfigSourceFromParams();
+
+  let url: string | undefined | null = undefined;
+
+  if (source.key === 'dao') {
+    url = buildRemoteApiUrl();
+  } else if (source.key === 'config') {
+    url = source.value;
+  }
+
+  if (!url) {
+    throw new Error('No configuration source found. Provide ?dao=... or ?config=...');
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch config from ${url}: ${response.statusText}`);
+  }
+
+  const yamlText = await response.text();
+  const degovConfig = load(yamlText) as DeGovConfig;
+
+  if (
+    !degovConfig.wallet ||
+    !degovConfig.chain ||
+    !degovConfig.apps ||
+    degovConfig.apps.length === 0
+  ) {
+    throw new Error('Invalid DeGov configuration: missing required fields');
+  }
+
+  return degovConfig;
 }
 
 // Fetch token metadata from contract
@@ -168,126 +220,36 @@ async function transformDeGovConfig(degovConfig: DeGovConfig): Promise<AppConfig
   };
 }
 
-export async function loadAppConfig(): Promise<Config> {
-  if (cachedConfig) {
-    return cachedConfig;
-  }
-
-  // Prevent race conditions by caching the promise
-  if (configPromise) {
-    return configPromise;
-  }
-
-  configPromise = (async () => {
-    try {
-      // Get config URL from URL parameter or use default
-      const configUrl = getConfigUrlFromParams();
-
-      let response: Response;
-      let yamlText: string;
-
-      if (configUrl) {
-        // Fetch from external URL
-        response = await fetch(configUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch config from ${configUrl}: ${response.statusText}`);
-        }
-        yamlText = await response.text();
-
-        // Parse as DeGov config format
-        const degovConfig = load(yamlText) as DeGovConfig;
-
-        // Validate required fields
-        if (
-          !degovConfig.wallet ||
-          !degovConfig.chain ||
-          !degovConfig.apps ||
-          degovConfig.apps.length === 0
-        ) {
-          throw new Error('Invalid DeGov configuration: missing required fields');
-        }
-
-        // Transform to app config
-        const appConfig = await transformDeGovConfig(degovConfig);
-        const config: Config = { app: appConfig };
-
-        cachedConfig = config;
-        return config;
-      } else {
-        // Fall back to local config.yml
-        response = await fetch('/config.yml');
-        if (!response.ok) {
-          // If local config doesn't exist, provide a helpful error
-          if (response.status === 404) {
-            throw new Error(
-              'No configuration found. Please provide a config URL parameter or ensure config.yml exists in the public folder.'
-            );
-          }
-          throw new Error(`Failed to fetch config: ${response.statusText}`);
-        }
-
-        yamlText = await response.text();
-        const config = load(yamlText) as Config;
-
-        // Validate required fields
-        if (!config.app || !config.app.sourceToken || !config.app.wrapToken) {
-          throw new Error('Invalid configuration: missing required fields');
-        }
-
-        cachedConfig = config;
-        return config;
-      }
-    } catch (error) {
-      console.error('Failed to load config:', error);
-      // Reset promise on error so it can be retried
-      configPromise = null;
-      throw error;
-    }
-  })();
-
-  return configPromise;
-}
-
 export function getChainById(chainId: number): Chain | null {
-  if (cachedChain && cachedChain.id === chainId) {
-    return cachedChain;
-  }
-
   // Search through all available chains from viem
   for (const chain of Object.values(allChains)) {
     if (chain.id === chainId) {
-      cachedChain = chain;
       return chain;
     }
   }
 
-  // If not found in viem chains, check if we have a cached config with custom chain
-  if (cachedConfig && cachedConfig.app.chainId === chainId) {
-    // We need to reconstruct the chain from our cached config
-    // This should only happen after config is loaded
-    return null; // Will be handled by getAppChain()
-  }
-
   return null;
+}
+
+export async function loadAppConfig(): Promise<Config> {
+  try {
+    const degovConfig = await fetchDeGovConfig();
+    const appConfig = await transformDeGovConfig(degovConfig);
+    return { app: appConfig };
+  } catch (error) {
+    console.error('Failed to load config:', error);
+    throw error;
+  }
 }
 
 export async function getAppChain(): Promise<Chain> {
   const config = await loadAppConfig();
   let chain = getChainById(config.app.chainId);
 
+  // If not found in viem chains, try to reconstruct from remote DeGov config
   if (!chain) {
-    // If not found in viem chains and we have a config URL, the chain might be custom
-    const configUrl = getConfigUrlFromParams();
-    if (configUrl) {
-      // Fetch the DeGov config again to get chain details
-      const response = await fetch(configUrl);
-      if (response.ok) {
-        const yamlText = await response.text();
-        const degovConfig = load(yamlText) as DeGovConfig;
-        chain = createChainFromConfig(degovConfig.chain);
-        cachedChain = chain;
-      }
-    }
+    const degovConfig = await fetchDeGovConfig();
+    chain = createChainFromConfig(degovConfig.chain);
   }
 
   if (!chain) {
@@ -303,14 +265,5 @@ export async function getTokenConfig() {
     sourceToken: config.app.sourceToken,
     wrapToken: config.app.wrapToken,
     wrapContractAddress: config.app.wrapContractAddress
-  };
-}
-
-export async function getAppInfo() {
-  const config = await loadAppConfig();
-  return {
-    name: config.app.name,
-    logo: config.app.logo,
-    description: config.app.description
   };
 }
