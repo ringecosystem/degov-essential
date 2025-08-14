@@ -79,6 +79,7 @@ export class DegovRouter {
           twitter_user: twu,
         };
 
+        console.log(renderTweet);
         if (format === "html") {
           return reply.view("view/proposal-voted.handlebars", {
             tweet: renderTweet,
