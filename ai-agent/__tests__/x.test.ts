@@ -1,4 +1,4 @@
-import { DegovHelpers } from "../src/helpers";
+import { DegovHelpers, PollTweetDurationResult } from "../src/helpers";
 import { ClockMode } from "../src/types";
 import { AgentTestSupport } from "./support";
 import { DegovPrompt } from "../src/internal/prompt";
@@ -20,35 +20,106 @@ describe("X Tweet Preview Test", () => {
     await ats.close();
   });
 
+  // it(
+  //   "Expired proposal",
+  //   async () => {
+  //     const proposalEvent = ats.proposalEvent();
+  //     const { proposal } = proposalEvent;
+
+  //     const calcOptions = {
+  //       proposalVoteStart: proposal.voteStart,
+  //       proposalVoteEnd: proposal.voteEnd,
+  //       proposalCreatedBlock: proposal.blockNumber,
+  //       proposalStartTimestamp: proposal.blockTimestamp,
+  //       clockMode: ClockMode.Timestamp,
+  //       blockInterval: 6,
+  //     };
+
+  //     const pollTweetDurationResult =
+  //       DegovHelpers.calculatePollTweetDurationMinutes(calcOptions);
+
+  //     const fastify = ats.fastify();
+
+  //     const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
+  //       fastify,
+  //       {
+  //         stu: ats.verifiedXUser(),
+  //         event: proposalEvent,
+  //         voteEnd: pollTweetDurationResult.proposalEndTimestamp,
+  //         durationMinutes: pollTweetDurationResult.durationMinutes,
+  //       }
+  //     );
+
+  //     const aiResp = await generateText({
+  //       model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
+  //       system: promptout.system,
+  //       prompt: promptout.prompt,
+  //     });
+  //     const tweetInput: SendTweetInput = {
+  //       xprofile: proposalEvent.xprofile,
+  //       daocode: proposalEvent.daocode,
+  //       proposalId: proposal.id,
+  //       chainId: proposal.chainId,
+  //       text: aiResp.text,
+  //     };
+  //     console.log(pollTweetDurationResult, tweetInput);
+  //   },
+  //   1000 * 60
+  // );
+
+  // it(
+  //   "Expiring soon proposal",
+  //   async () => {
+  //     const proposalEvent = ats.proposalEvent();
+  //     const { proposal } = proposalEvent;
+
+  //     const fastify = ats.fastify();
+
+  //     const pollTweetDurationResult: PollTweetDurationResult = {
+  //       durationMinutes: 10,
+  //       proposalStartTimestamp: new Date(),
+  //       proposalEndTimestamp: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes later
+  //     };
+
+  //     const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
+  //       fastify,
+  //       {
+  //         stu: ats.verifiedXUser(),
+  //         event: proposalEvent,
+  //         voteEnd: pollTweetDurationResult.proposalEndTimestamp,
+  //         durationMinutes: pollTweetDurationResult.durationMinutes,
+  //       }
+  //     );
+
+  //     const aiResp = await generateText({
+  //       model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
+  //       system: promptout.system,
+  //       prompt: promptout.prompt,
+  //     });
+  //     const tweetInput: SendTweetInput = {
+  //       xprofile: proposalEvent.xprofile,
+  //       daocode: proposalEvent.daocode,
+  //       proposalId: proposal.id,
+  //       chainId: proposal.chainId,
+  //       text: aiResp.text,
+  //     };
+  //     console.log(pollTweetDurationResult, tweetInput);
+  //   },
+  //   1000 * 60
+  // );
+
   it(
-    "Preview New Proposal Tweet",
+    "New proposal",
     async () => {
       const proposalEvent = ats.proposalEvent();
       const { proposal } = proposalEvent;
 
-      const calcOptions = {
-        proposalVoteStart: proposal.voteStart,
-        proposalVoteEnd: proposal.voteEnd,
-        proposalCreatedBlock: proposal.blockNumber,
-        proposalStartTimestamp: proposal.blockTimestamp,
-        clockMode: ClockMode.Timestamp,
-        blockInterval: 6,
-      };
-
-      const pollTweetDurationResult =
-        DegovHelpers.calculatePollTweetDurationMinutes(calcOptions);
-
       const fastify = ats.fastify();
-      console.log(fastify.view);
-      const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
-        fastify,
-        {
-          stu: ats.verifiedXUser(),
-          event: proposalEvent,
-          voteEnd: pollTweetDurationResult.proposalEndTimestamp,
-          durationMinutes: pollTweetDurationResult.durationMinutes,
-        }
-      );
+
+      const promptout = await DegovPrompt.newProposalTweet(fastify, {
+        stu: ats.verifiedXUser(),
+        event: proposalEvent,
+      });
 
       const aiResp = await generateText({
         model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
@@ -66,6 +137,7 @@ describe("X Tweet Preview Test", () => {
     },
     1000 * 60
   );
+  
 });
 
 // ----
