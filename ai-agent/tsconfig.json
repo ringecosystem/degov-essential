@@ -7,7 +7,7 @@
     "checkJs": false,
     "declaration": true,
     "declarationMap": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "build",
     "declarationDir": "build",
     "sourceMap": true,
@@ -20,6 +20,6 @@
     "emitDecoratorMetadata": true,
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/**/*", "**/*.test.ts"],
   "exclude": ["node_modules", "build", "dist", "target"]
 }
