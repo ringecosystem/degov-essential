@@ -1,5 +1,3 @@
-// const
-
 import { DegovHelpers } from "../src/helpers";
 import { ClockMode } from "../src/types";
 import { AgentTestSupport } from "./support";
@@ -8,12 +6,14 @@ import Container from "typedi";
 import { generateText } from "ai";
 import { EnvReader } from "../src/integration/env-reader";
 import { SendTweetInput } from "../src/internal/x-agent";
+import dotenv from "dotenv";
 
 describe("X Tweet Preview Test", () => {
   const ats: AgentTestSupport = Container.get(AgentTestSupport);
 
   beforeAll(async () => {
     await ats.init();
+    dotenv.config();
   });
 
   afterAll(async () => {
