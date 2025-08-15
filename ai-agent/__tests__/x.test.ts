@@ -38,8 +38,10 @@ describe("X Tweet Preview Test", () => {
       const pollTweetDurationResult =
         DegovHelpers.calculatePollTweetDurationMinutes(calcOptions);
 
+      const fastify = ats.fastify();
+      console.log(fastify.view);
       const promptout = await DegovPrompt.newExpiringSoonProposalTweet(
-        ats.fastify(),
+        fastify,
         {
           stu: ats.verifiedXUser(),
           event: proposalEvent,

@@ -34,7 +34,7 @@ export class AgentTestSupport {
     });
 
     // render
-    fastify.register(fastifyView, {
+    await fastify.register(fastifyView, {
       engine: {
         handlebars: handlebars,
       },
@@ -45,6 +45,9 @@ export class AgentTestSupport {
       },
     });
     HbsRegister.regist();
+
+    await fastify.ready();
+
     this._fastify = fastify;
   }
 
