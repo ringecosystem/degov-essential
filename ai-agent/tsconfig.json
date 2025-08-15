@@ -7,7 +7,7 @@
     "checkJs": false,
     "declaration": true,
     "declarationMap": true,
-    "rootDir": ".",
+    "rootDirs": ["src", "__tests__"],
     "outDir": "build",
     "declarationDir": "build",
     "sourceMap": true,
