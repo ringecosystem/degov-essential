@@ -108,36 +108,79 @@ describe("X Tweet Preview Test", () => {
   //   1000 * 60
   // );
 
+  // it(
+  //   "New proposal",
+  //   async () => {
+  //     const proposalEvent = ats.proposalEvent();
+  //     const { proposal } = proposalEvent;
+
+  //     const fastify = ats.fastify();
+
+  //     const promptout = await DegovPrompt.newProposalTweet(fastify, {
+  //       stu: ats.verifiedXUser(),
+  //       event: proposalEvent,
+  //     });
+
+  //     const aiResp = await generateText({
+  //       model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
+  //       system: promptout.system,
+  //       prompt: promptout.prompt,
+  //     });
+  //     const tweetInput: SendTweetInput = {
+  //       xprofile: proposalEvent.xprofile,
+  //       daocode: proposalEvent.daocode,
+  //       proposalId: proposal.id,
+  //       chainId: proposal.chainId,
+  //       text: aiResp.text,
+  //     };
+  //     console.log(tweetInput);
+  //   },
+  //   1000 * 60
+  // );
+
   it(
     "New proposal",
     async () => {
       const proposalEvent = ats.proposalEvent();
       const { proposal } = proposalEvent;
+      const votes = ats.voteEvents();
+      const degovLink = ats.degovLink();
 
-      const fastify = ats.fastify();
+      for (const vote of votes) {
+        const promptInput = {
+          stu: ats.verifiedXUser(),
+          voterAddressLink: degovLink.delegate(vote.voter),
+          proposalLink: degovLink.proposal(vote.proposalId),
+          transactionLink: degovLink.transaction(vote.transactionHash),
+          choice: DegovHelpers.voteSupportText(vote.support),
+          reason: vote.reason ?? "",
+        };
+        const promptout = await DegovPrompt.newVoteCastTweet(
+          ats.fastify(),
+          promptInput
+        );
 
-      const promptout = await DegovPrompt.newProposalTweet(fastify, {
-        stu: ats.verifiedXUser(),
-        event: proposalEvent,
-      });
+        const aiResp = await generateText({
+          model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
+          system: promptout.system,
+          prompt: promptout.prompt,
+        });
 
-      const aiResp = await generateText({
-        model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
-        system: promptout.system,
-        prompt: promptout.prompt,
-      });
-      const tweetInput: SendTweetInput = {
-        xprofile: proposalEvent.xprofile,
-        daocode: proposalEvent.daocode,
-        proposalId: proposal.id,
-        chainId: proposal.chainId,
-        text: aiResp.text,
-      };
-      console.log(tweetInput);
+        const tweetInput: SendTweetInput = {
+          xprofile: proposalEvent.xprofile,
+          daocode: proposalEvent.daocode,
+          proposalId: proposal.id,
+          chainId: proposal.chainId,
+          text: aiResp.text,
+          reply: {
+            in_reply_to_tweet_id: proposal.id,
+          },
+        };
+        console.log(tweetInput);
+      }
     },
     1000 * 60
   );
-  
 });
 
 // ----

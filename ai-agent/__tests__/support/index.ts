@@ -3,7 +3,7 @@ import "reflect-metadata";
 import Fastify, { FastifyInstance } from "fastify";
 
 import { Service } from "typedi";
-import { DegovHelpers } from "../../src/helpers";
+import { DegovHelpers, DegovLink } from "../../src/helpers";
 import {
   ClockMode,
   NewProposalEvent,
@@ -17,6 +17,7 @@ import handlebars from "handlebars";
 import path from "path";
 import { SimpleTweetUser } from "../../src/internal/x-agent";
 import { OpenrouterAgent } from "../../src/internal/openrouter";
+import { DIVoteCast } from "../internal/graphql";
 
 @Service()
 export class AgentTestSupport {
@@ -81,6 +82,16 @@ export class AgentTestSupport {
     };
   }
 
+  degovLink(): DegovLink {
+    return new DegovLink({
+      siteUrl: "https://gov.ringdao.com",
+      // @ts-ignore
+      chain: {
+        explorers: ["https://explorer.darwinia.network"],
+      },
+    });
+  }
+
   proposalEvent(): NewProposalEvent {
     return {
       xprofile: "OFFICIAL",
@@ -92,6 +103,77 @@ export class AgentTestSupport {
       blockInterval: 6,
       proposal: SIMPLE_PROPOSAL,
     };
+  }
+
+  voteEvents(): DIVoteCast[] {
+    return [
+      {
+        id: "0007603550-5a786-000000",
+        proposalId:
+          "0x21fe4d7b110c6263187dce84bd95a9017a9b0aa88f4136d65090432527797942",
+        reason: "Necessary funding for RingDAO Community Guild.",
+        support: "1",
+        transactionHash:
+          "0x49d39963b7d1e5512faf49b227d123eb2e6f5d5c4d155cce48285975659d4f6c",
+        voter: "0xebd9a48ed1128375eb4383ed4d53478b4fd85a8d",
+        weight: "11362000000000000000000000",
+        blockNumber: "7603550",
+        blockTimestamp: "1752728466000",
+      },
+      {
+        id: "0007604362-0178b-000000",
+        proposalId:
+          "0x21fe4d7b110c6263187dce84bd95a9017a9b0aa88f4136d65090432527797942",
+        reason: "",
+        support: "1",
+        transactionHash:
+          "0x42f5dbc3ecbb86b07944c3d0576569266f612682003600f4d5098f08d1243cb5",
+        voter: "0x822e4e429adedd91c96a81db39401a1770b96a5b",
+        weight: "10000000000000000000000",
+        blockNumber: "7604362",
+        blockTimestamp: "1752735480000",
+      },
+      {
+        id: "0007607668-713e3-000000",
+        proposalId:
+          "0x21fe4d7b110c6263187dce84bd95a9017a9b0aa88f4136d65090432527797942",
+        reason: "",
+        support: "0",
+        transactionHash:
+          "0x47e06981d655dff98284bbaee9128e1eaa6cd7cc9ec9f784e8e7972e1401f594",
+        voter: "0x74cafa4ef28da1410e1de6f431b009367945df66",
+        weight: "41120000000000000000000000",
+        blockNumber: "7607668",
+        blockTimestamp: "1752764280000",
+      },
+      {
+        id: "0007608399-7782b-000000",
+        proposalId:
+          "0x21fe4d7b110c6263187dce84bd95a9017a9b0aa88f4136d65090432527797942",
+        reason: "",
+        support: "1",
+        transactionHash:
+          "0x68ac7c459f62cf66da34ed84a5389ea585a0906e8db96b0754811472b106b238",
+        voter: "0xbd5a5d450f452d5adb85dacd6d52aa10fef77148",
+        weight: "114767954850635000000000",
+        blockNumber: "7608399",
+        blockTimestamp: "1752770640000",
+      },
+      // {
+      //   id: "0007699351-b109a-000000",
+      //   proposalId:
+      //     "0x21fe4d7b110c6263187dce84bd95a9017a9b0aa88f4136d65090432527797942",
+      //   reason:
+      //     'The final decision is "For" based on unanimous on-chain support, despite zero participation in the X poll and limited comments. The confidence is medium due to concentrated voting power and lack of broad community engagement.',
+      //   support: "1",
+      //   transactionHash:
+      //     "0xfdad251254e1b20e8dfcdc571ccb502a707f8c82ede4e105d1d7527185a4909d",
+      //   voter: "0x22c7f83418cc6868651e8a46ef9000d9be8866e5",
+      //   weight: "970141000000000000000000",
+      //   blockNumber: "7699351",
+      //   blockTimestamp: "1753333308000",
+      // },
+    ];
   }
 }
 
