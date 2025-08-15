@@ -17,8 +17,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["__tests__", "node_modules", "build", "dist", "target"]
+  "include": ["src/**/*", "__tests__/**/*"],
+  "exclude": ["node_modules", "build", "dist", "target"]
 }
