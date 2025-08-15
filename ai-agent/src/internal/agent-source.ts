@@ -26,17 +26,17 @@ export class DegovAgentSource {
     }
 
     for (const rawDao of parsedConfig.daos) {
-      const degovConfig = await this.fetchDegovConfig(fastify, rawDao.extend);
+      const degovConfig = await this.fetchDegovConfig(fastify, rawDao.config);
       if (!degovConfig) {
-        fastify.log.warn(`Failed to fetch degov config from ${rawDao.extend}`);
+        fastify.log.warn(`Failed to fetch degov config from ${rawDao.config}`);
         continue;
       }
       const daoConfig: DegovDaoConfig = {
-        code: rawDao.code,
+        code: degovConfig.code,
         xprofile: rawDao.xprofile,
         carry: rawDao.carry,
         config: degovConfig,
-        extend: rawDao.extend,
+        extend: rawDao.config,
       };
       this.daos.push(daoConfig);
     }

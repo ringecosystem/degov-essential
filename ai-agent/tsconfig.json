@@ -7,7 +7,7 @@
     "checkJs": false,
     "declaration": true,
     "declarationMap": true,
-    "rootDir": "src",
+    "rootDirs": ["src", "__tests__"],
     "outDir": "build",
     "declarationDir": "build",
     "sourceMap": true,
@@ -17,8 +17,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["__tests__", "node_modules", "build", "dist", "target"]
+  "include": ["src/**/*", "__tests__/**/*", "**/*.test.ts"],
+  "exclude": ["node_modules", "build", "dist", "target"]
 }

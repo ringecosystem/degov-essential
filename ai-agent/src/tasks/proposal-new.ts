@@ -65,7 +65,6 @@ export class DegovProposalNewTask {
     const events = await this.nextNewProposals(fastify);
     for (const event of events) {
       const proposal = event.proposal;
-      // const voteEnd = new Date(+proposal.voteEnd * 1000);
       const calcOptions = {
         proposalVoteStart: proposal.voteStart,
         proposalVoteEnd: proposal.voteEnd,

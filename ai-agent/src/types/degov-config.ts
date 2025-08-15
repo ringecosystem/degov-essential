@@ -49,6 +49,7 @@ export interface DegovConfigChain {
 }
 
 export interface DegovConfig {
+  code: string; // Code of the DAO
   name: string; // Name of the DAO
   logo: string; // Logo URL of the DAO
   siteUrl: string; // Website URL of the DAO

@@ -71,7 +71,7 @@ export class DegovMcpHttpServer {
   }
 
   private async richs(fastify: FastifyInstance) {
-    fastify.register(fastifyAxios);
+    await fastify.register(fastifyAxios);
     await fastify.register(fastifyPrisma, {
       client: new PrismaClient(),
     });
@@ -95,7 +95,7 @@ export class DegovMcpHttpServer {
     });
 
     // render
-    fastify.register(fastifyView, {
+    await fastify.register(fastifyView, {
       engine: {
         handlebars: handlebars,
       },

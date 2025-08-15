@@ -6,22 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- base Meta -->
-  <title>{{#if tweet}}{{dao.name}} - {{/if}}DeGov Agent voting comment details</title>
+  <title>{{#if tweet}}{{tweet.dao.name}} - {{/if}}DeGov Agent voting comment details</title>
   <meta name="description"
-    content="{{#if tweet}}{{dao.name}} governance proposal analysis powered by DeGov AI. View voting results, sentiment analysis, and AI-driven decisions for proposal {{proposal_id}}.{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+    content="{{#if tweet}}{{tweet.dao.name}} governance proposal analysis powered by DeGov AI. View voting results, sentiment analysis, and AI-driven decisions for proposal {{proposal_id}}.{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:title"
-    content="{{#if tweet}}{{dao.name}} - {{/if}}DeGov Agent voting comment details">
+    content="{{#if tweet}}{{tweet.dao.name}} - {{/if}}DeGov Agent voting comment details">
   <meta property="og:description"
-    content="{{#if tweet}}AI-powered governance analysis for {{dao.name}}. Final decision: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} with {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}high{{/if}} confidence. View detailed voting breakdown and reasoning.{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+    content="{{#if tweet}}AI-powered governance analysis for {{tweet.dao.name}}. Final decision: {{#if tweet.fulfilled_explain.output.finalResult}}{{tweet.fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} with {{#if tweet.fulfilled_explain.output.confidence}}{{tweet.fulfilled_explain.output.confidence}}/10{{else}}high{{/if}} confidence. View detailed voting breakdown and reasoning.{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
   {{#if tweet}}
-  {{#if dao.config.logo}}
-  {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
-  <meta property="og:image" content="{{dao.config.logo}}">
+  {{#if tweet.dao.config.logo}}
+  {{#if (or (startsWith tweet.dao.config.logo "http://") (startsWith tweet.dao.config.logo "https://"))}}
+  <meta property="og:image" content="{{tweet.dao.config.logo}}">
   {{else}}
-  <meta property="og:image" content="{{dao.links.website}}{{dao.config.logo}}">
+  <meta property="og:image" content="{{tweet.dao.links.website}}{{tweet.dao.config.logo}}">
   {{/if}}
   {{else}}
   <meta property="og:image" content="https://degov.ai/assets/degov-social-preview.png">
@@ -36,15 +36,15 @@
   <meta name="twitter:site" content="@DeGovAI">
   <meta name="twitter:creator" content="@DeGovAI">
   <meta name="twitter:title"
-    content="{{#if tweet}}{{dao.name}} - {{/if}}DeGov Agent voting comment details">
+    content="{{#if tweet}}{{tweet.dao.name}} - {{/if}}DeGov Agent voting comment details">
   <meta name="twitter:description"
-    content="{{#if tweet}}🤖 AI Analysis: {{#if fulfilled_explain.output.finalResult}}{{fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if fulfilled_explain.output.confidence}}{{fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{dao.name}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
+    content="{{#if tweet}}🤖 AI Analysis: {{#if tweet.fulfilled_explain.output.finalResult}}{{tweet.fulfilled_explain.output.finalResult}}{{else}}Analyzing{{/if}} | 🎯 Confidence: {{#if tweet.fulfilled_explain.output.confidence}}{{tweet.fulfilled_explain.output.confidence}}/10{{else}}High{{/if}} | 📊 Multi-source governance intelligence for {{tweet.dao.name}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}">
   {{#if tweet}}
-  {{#if dao.config.logo}}
-  {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
-  <meta name="twitter:image" content="{{dao.config.logo}}">
+  {{#if tweet.dao.config.logo}}
+  {{#if (or (startsWith tweet.dao.config.logo "http://") (startsWith tweet.dao.config.logo "https://"))}}
+  <meta name="twitter:image" content="{{tweet.dao.config.logo}}">
   {{else}}
-  <meta name="twitter:image" content="{{dao.links.website}}{{dao.config.logo}}">
+  <meta name="twitter:image" content="{{tweet.dao.links.website}}{{tweet.dao.config.logo}}">
   {{/if}}
   {{else}}
   <meta name="twitter:image" content="https://degov.ai/images/og.png">
@@ -57,15 +57,15 @@
   <meta name="robots" content="index, follow">
   <meta name="author" content="DeGov AI">
   <meta name="keywords"
-    content="{{#if tweet}}{{dao.name}}, {{/if}}governance, AI, blockchain, voting, DAO, decision making, DeGov, autonomous agents">
+    content="{{#if tweet}}{{tweet.dao.name}}, {{/if}}governance, AI, blockchain, voting, DAO, decision making, DeGov, autonomous agents">
 
   <!-- Schema.org structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "{{#if tweet}}{{dao.name}} - DeGov AI Analysis{{else}}DeGov Vote Results{{/if}}",
-    "description": "{{#if tweet}}AI-powered governance analysis for {{dao.name}} proposal {{proposal_id}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}",
+    "name": "{{#if tweet}}{{tweet.dao.name}} - DeGov AI Analysis{{else}}DeGov Vote Results{{/if}}",
+    "description": "{{#if tweet}}AI-powered governance analysis for {{tweet.dao.name}} proposal {{proposal_id}}{{else}}Autonomous governance decisions powered by multi-source intelligence{{/if}}",
     "author": {
       "@type": "Organization",
       "name": "DeGov AI",
@@ -74,7 +74,7 @@
     {{#if tweet}}
     "about": {
       "@type": "Thing",
-      "name": "{{dao.name}} Governance Proposal",
+      "name": "{{tweet.dao.name}} Governance Proposal",
       "description": "Blockchain governance proposal analysis with AI-driven decision making"
     },
     {{/if}}
@@ -968,11 +968,11 @@
   <div class="container">
     <div class="header">
       <div class="header-content">
-        {{#if dao.config.logo}}
-        {{#if (or (startsWith dao.config.logo "http://") (startsWith dao.config.logo "https://"))}}
-        <img src="{{dao.config.logo}}" alt="{{dao.name}} Logo" class="header-logo">
+        {{#if tweet.dao.config.logo}}
+        {{#if (or (startsWith tweet.dao.config.logo "http://") (startsWith tweet.dao.config.logo "https://"))}}
+        <img src="{{tweet.dao.config.logo}}" alt="{{tweet.dao.name}} Logo" class="header-logo">
         {{else}}
-        <img src="{{dao.links.website}}{{dao.config.logo}}" alt="{{dao.name}} Logo" class="header-logo">
+        <img src="{{tweet.dao.links.website}}{{tweet.dao.config.logo}}" alt="{{tweet.dao.name}} Logo" class="header-logo">
         {{/if}}
         {{else}}
         <span class="header-emoji">🗳️</span>
@@ -995,9 +995,9 @@
             <div class="proposal-id-container">
               <div class="proposal-id-label">Proposal ID</div>
               <div class="proposal-id">
-                {{#if dao.links.website}}
-                <a href="{{dao.links.website}}/proposal/{{proposal_id}}" target="_blank" class="proposal-link">
-                  <span class="proposal-hash">{{proposal_id}}</span>
+                {{#if tweet.dao.links.website}}
+                <a href="{{tweet.dao.links.website}}/proposal/{{tweet.proposal_id}}" target="_blank" class="proposal-link">
+                  <span class="proposal-hash">{{tweet.proposal_id}}</span>
                   <svg class="external-link-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z">
@@ -1008,7 +1008,7 @@
                 </a>
                 {{else}}
                 <div class="proposal-link">
-                  <span class="proposal-hash">{{proposal_id}}</span>
+                  <span class="proposal-hash">{{tweet.proposal_id}}</span>
                 </div>
                 {{/if}}
               </div>
@@ -1016,15 +1016,15 @@
           </div>
           <div class="status-container">
             {{!-- <div class="status-label">Status</div> --}}
-            <span class="status-badge status-{{status}}">
+            <span class="status-badge status-{{tweet.status}}">
               {{#if (eq status "defeated")}}
-              ❌ {{status}}
+              ❌ {{tweet.status}}
               {{else if (eq status "succeeded")}}
-              ✅ {{status}}
+              ✅ {{tweet.status}}
               {{else if (eq status "active")}}
-              🔄 {{status}}
+              🔄 {{tweet.status}}
               {{else}}
-              {{status}}
+              {{tweet.status}}
               {{/if}}
             </span>
           </div>
@@ -1033,27 +1033,27 @@
         <div class="meta-info">
           <div class="meta-item">
             <div class="meta-label">Chain</div>
-            <div class="meta-value">{{dao.config.chain.name}}</div>
+            <div class="meta-value">{{tweet.dao.config.chain.name}}</div>
           </div>
           <div class="meta-item">
             <div class="meta-label">Tweet</div>
             <div class="meta-value">
-              <a href="https://x.com/user/status/{{id}}" target="_blank">{{id}}</a>
+              <a href="https://x.com/{{tweet.twitter_user.username}}/status/{{tweet.id}}" target="_blank">{{tweet.id}}</a>
             </div>
           </div>
           <div class="meta-item">
             <div class="meta-label">DAO</div>
             <div class="meta-value">
-              <a href="{{dao.links.website}}" target="_blank">{{dao.name}}</a>
+              <a href="{{tweet.dao.links.website}}" target="_blank">{{tweet.dao.name}}</a>
             </div>
           </div>
           <div class="meta-item">
             <div class="meta-label">Created</div>
-            <div class="meta-value">{{formatDate ctime}}</div>
+            <div class="meta-value">{{formatDate tweet.ctime}}</div>
           </div>
         </div>
 
-        {{#if fulfilled_explain.output}}
+        {{#if tweet.fulfilled_explain.output}}
         <div class="analysis-section">
           <h3 class="section-title">📊 Vote Analysis</h3>
 
@@ -1061,7 +1061,7 @@
             <!-- Twitter Poll -->
             <div class="vote-category">
               <div class="category-header">🐦 Twitter Poll</div>
-              {{#with fulfilled_explain.output.votingBreakdown.twitterPoll}}
+              {{#with tweet.fulfilled_explain.output.votingBreakdown.twitterPoll}}
               <div class="vote-bar">
                 {{#if (gt (add for against abstain) 0)}}
                 <div class="vote-for" style="width: {{percentage for (add for against abstain)}}%"></div>
@@ -1089,7 +1089,7 @@
             <!-- On-Chain Votes -->
             <div class="vote-category">
               <div class="category-header">⛓️ On-Chain Votes</div>
-              {{#with fulfilled_explain.output.votingBreakdown.onChainVotes}}
+              {{#with tweet.fulfilled_explain.output.votingBreakdown.onChainVotes}}
               <div class="vote-bar">
                 {{#if (gt (add for against abstain) 0)}}
                 <div class="vote-for" style="width: {{percentage for (add for against abstain)}}%"></div>
@@ -1117,7 +1117,7 @@
             <!-- Comment Sentiment -->
             <div class="vote-category">
               <div class="category-header">💬 Comment Sentiment</div>
-              {{#with fulfilled_explain.output.votingBreakdown.twitterComments}}
+              {{#with tweet.fulfilled_explain.output.votingBreakdown.twitterComments}}
               <div class="vote-bar">
                 {{#if (gt (add positive negative neutral) 0)}}
                 <div class="vote-for" style="width: {{percentage positive (add positive negative neutral)}}%"></div>
@@ -1152,14 +1152,14 @@
               <div class="decision-header">
                 <h4>
                   🎯 Final Decision:
-                  <span class="status-badge status-{{toLowerCase fulfilled_explain.output.finalResult}}">
-                    {{fulfilled_explain.output.finalResult}}
+                  <span class="status-badge status-{{toLowerCase tweet.fulfilled_explain.output.finalResult}}">
+                    {{tweet.fulfilled_explain.output.finalResult}}
                   </span>
                 </h4>
                 <div class="confidence-score">
-                  <strong>Confidence: {{fulfilled_explain.output.confidence}}/10</strong>
+                  <strong>Confidence: {{tweet.fulfilled_explain.output.confidence}}/10</strong>
                   <div class="confidence-bar">
-                    <div class="confidence-fill" style="width: {{multiply fulfilled_explain.output.confidence 10}}%">
+                    <div class="confidence-fill" style="width: {{multiply tweet.fulfilled_explain.output.confidence 10}}%">
                     </div>
                   </div>
                 </div>
@@ -1167,21 +1167,21 @@
             </div>
 
             <!-- Summary -->
-            {{#if fulfilled_explain.output.reasoningLite}}
+            {{#if tweet.fulfilled_explain.output.reasoningLite}}
             <div class="reasoning-summary">
               <h4>📋 Executive Summary</h4>
               <div class="reasoning-summary-content">
-                {{fulfilled_explain.output.reasoningLite}}
+                {{tweet.fulfilled_explain.output.reasoningLite}}
               </div>
             </div>
             {{/if}}
 
             <!-- Full Analysis -->
-            {{#if fulfilled_explain.output.reasoning}}
+            {{#if tweet.fulfilled_explain.output.reasoning}}
             <div class="reasoning-full">
               <h4>📄 Detailed Analysis</h4>
               <div class="reasoning-full-content">
-                {{{markdown fulfilled_explain.output.reasoning}}}
+                {{{markdown tweet.fulfilled_explain.output.reasoning}}}
               </div>
             </div>
             {{/if}}
