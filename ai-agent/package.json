@@ -6,6 +6,7 @@
     "dev": "ts-node --files src/index.ts",
     "build": "tsc -b && shx mkdir -p build/generated && shx cp -r src/generated/prisma build/generated && shx cp -r src/template build/",
     "start": "node build/index.js",
+    "test": "jest",
     "lint": "eslint . --ext .ts --fix",
     "package": "npm run build && ncc build build/index.js -o dist --source-map --minify"
   },
