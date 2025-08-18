@@ -7,6 +7,7 @@ import { generateText } from "ai";
 import { EnvReader } from "../src/integration/env-reader";
 import { SendTweetInput } from "../src/internal/x-agent";
 import dotenv from "dotenv";
+import { TweetGen } from "../src/internal/tweetgen";
 
 describe("X Tweet Preview Test", () => {
   const ats: AgentTestSupport = Container.get(AgentTestSupport);
@@ -138,45 +139,58 @@ describe("X Tweet Preview Test", () => {
   //   1000 * 60
   // );
 
+  // it(
+  //   "New vote cast tweet",
+  //   async () => {
+  //     const proposalEvent = ats.proposalEvent();
+  //     const { proposal } = proposalEvent;
+  //     const votes = ats.voteEvents();
+  //     const degovLink = ats.degovLink();
+
+  //     for (const vote of votes) {
+  //       const promptInput = {
+  //         stu: ats.verifiedXUser(),
+  //         voterAddressLink: degovLink.delegate(vote.voter),
+  //         proposalLink: degovLink.proposal(vote.proposalId),
+  //         transactionLink: degovLink.transaction(vote.transactionHash),
+  //         choice: DegovHelpers.voteSupportText(vote.support),
+  //         reason: vote.reason ?? "",
+  //       };
+  //       const promptout = await DegovPrompt.newVoteCastTweet(
+  //         ats.fastify(),
+  //         promptInput
+  //       );
+
+  //       const aiResp = await generateText({
+  //         model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
+  //         system: promptout.system,
+  //         prompt: promptout.prompt,
+  //       });
+
+  //       const tweetInput: SendTweetInput = {
+  //         xprofile: proposalEvent.xprofile,
+  //         daocode: proposalEvent.daocode,
+  //         proposalId: proposal.id,
+  //         chainId: proposal.chainId,
+  //         text: aiResp.text,
+  //         reply: {
+  //           in_reply_to_tweet_id: proposal.id,
+  //         },
+  //       };
+  //       console.log(tweetInput);
+  //     }
+  //   },
+  //   1000 * 60
+  // );
+
   it(
-    "New proposal",
+    "State changed tweet",
     async () => {
-      const proposalEvent = ats.proposalEvent();
-      const { proposal } = proposalEvent;
-      const votes = ats.voteEvents();
       const degovLink = ats.degovLink();
-
-      for (const vote of votes) {
-        const promptInput = {
-          stu: ats.verifiedXUser(),
-          voterAddressLink: degovLink.delegate(vote.voter),
-          proposalLink: degovLink.proposal(vote.proposalId),
-          transactionLink: degovLink.transaction(vote.transactionHash),
-          choice: DegovHelpers.voteSupportText(vote.support),
-          reason: vote.reason ?? "",
-        };
-        const promptout = await DegovPrompt.newVoteCastTweet(
-          ats.fastify(),
-          promptInput
-        );
-
-        const aiResp = await generateText({
-          model: ats.openrouterAgent.openrouter(EnvReader.aiModel()),
-          system: promptout.system,
-          prompt: promptout.prompt,
-        });
-
-        const tweetInput: SendTweetInput = {
-          xprofile: proposalEvent.xprofile,
-          daocode: proposalEvent.daocode,
-          proposalId: proposal.id,
-          chainId: proposal.chainId,
-          text: aiResp.text,
-          reply: {
-            in_reply_to_tweet_id: proposal.id,
-          },
-        };
-        console.log(tweetInput);
+      const events = ats.stateChangedEvents(degovLink);
+      for (const event of events) {
+        const tweet = TweetGen.generateProposalStateChangedTweet(event);
+        console.log(tweet);
       }
     },
     1000 * 60

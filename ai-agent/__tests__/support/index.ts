@@ -7,6 +7,7 @@ import { DegovHelpers, DegovLink } from "../../src/helpers";
 import {
   ClockMode,
   NewProposalEvent,
+  ProposalState,
   RuntimeProfile,
   SimpleProposal,
 } from "../../src/types";
@@ -18,6 +19,7 @@ import path from "path";
 import { SimpleTweetUser } from "../../src/internal/x-agent";
 import { OpenrouterAgent } from "../../src/internal/openrouter";
 import { DIVoteCast } from "../internal/graphql";
+import { GenProposalStateChangedTweetInput } from "../internal/tweetgen";
 
 @Service()
 export class AgentTestSupport {
@@ -103,6 +105,59 @@ export class AgentTestSupport {
       blockInterval: 6,
       proposal: SIMPLE_PROPOSAL,
     };
+  }
+
+  stateChangedEvents(
+    degovLink: DegovLink
+  ): GenProposalStateChangedTweetInput[] {
+    const transactionHash =
+      "0x31ba1c9ec4e6c1a12335c6da2d090846663c36c4964625f3bf5fa69cd144457f";
+    return [
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Pending,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Active,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Canceled,
+        transactionHash,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Defeated,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Succeeded,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Executed,
+        transactionHash,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Expired,
+      },
+      {
+        degovLink,
+        proposalId: PROPOSAL.proposalId,
+        state: ProposalState.Queued,
+        transactionHash,
+        eta: new Date(),
+      },
+    ];
   }
 
   voteEvents(): DIVoteCast[] {
