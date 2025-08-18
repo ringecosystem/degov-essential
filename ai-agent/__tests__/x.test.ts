@@ -69,10 +69,16 @@ describe("X Tweet Preview Test", () => {
       console.log(pollTweetDurationResult, tweetInput);
 
       // Write tweet to output file
-      await TweetWriter.writeTweet("Expired Proposal Tweet", {
-        pollTweetDurationResult,
-        tweetInput,
-      });
+      await TweetWriter.writeTweet(
+        "Expired Proposal Tweet",
+        ats.formatSendTweet(tweetInput) +
+          `\n\n## 📊 Poll Duration Result\n` +
+          `**Duration Minutes**: ${
+            pollTweetDurationResult.durationMinutes ?? "N/A"
+          }\n` +
+          `**Proposal Start**: ${pollTweetDurationResult.proposalStartTimestamp.toISOString()}\n` +
+          `**Proposal End**: ${pollTweetDurationResult.proposalEndTimestamp.toISOString()}\n`
+      );
     },
     1000 * 60
   );
@@ -116,10 +122,16 @@ describe("X Tweet Preview Test", () => {
       console.log(pollTweetDurationResult, tweetInput);
 
       // Write tweet to output file
-      await TweetWriter.writeTweet("Expiring Soon Proposal Tweet", {
-        pollTweetDurationResult,
-        tweetInput,
-      });
+      await TweetWriter.writeTweet(
+        "Expiring Soon Proposal Tweet",
+        ats.formatSendTweet(tweetInput) +
+          `\n\n## 📊 Poll Duration Result\n` +
+          `**Duration Minutes**: ${
+            pollTweetDurationResult.durationMinutes ?? "N/A"
+          }\n` +
+          `**Proposal Start**: ${pollTweetDurationResult.proposalStartTimestamp.toISOString()}\n` +
+          `**Proposal End**: ${pollTweetDurationResult.proposalEndTimestamp.toISOString()}\n`
+      );
     },
     1000 * 60
   );
@@ -148,13 +160,18 @@ describe("X Tweet Preview Test", () => {
         proposalId: proposal.id,
         chainId: proposal.chainId,
         text: aiResp.text,
+        poll: {
+          options: ["For", "Against", "Abstain"],
+          duration_minutes: 1440, // 24 hours
+        },
       };
       console.log(tweetInput);
 
       // Write tweet to output file
-      await TweetWriter.writeTweet("New Proposal Tweet", {
-        tweetInput,
-      });
+      await TweetWriter.writeTweet(
+        "New Proposal Tweet",
+        ats.formatSendTweet(tweetInput)
+      );
     },
     1000 * 60
   );
@@ -200,11 +217,24 @@ describe("X Tweet Preview Test", () => {
         console.log(tweetInput);
 
         // Write tweet to output file
-        await TweetWriter.writeTweet("New Vote Cast Tweet", {
-          voter: vote.voter,
-          support: vote.support,
-          tweetInput,
-        });
+        await TweetWriter.writeTweet(
+          "New Vote Cast Tweet",
+          ats.formatSendTweet(tweetInput)
+          // +
+          //   `\n\n## 🗳️ Vote Details\n` +
+          //   `**Voter Address**: \`${vote.voter}\`\n` +
+          //   `**Support**: ${DegovHelpers.voteSupportText(vote.support)} (${
+          //     vote.support
+          //   })\n` +
+          //   `**Weight**: \`${vote.weight}\`\n` +
+          //   `**Block Number**: \`${vote.blockNumber}\`\n` +
+          //   `**Transaction Hash**: \`${vote.transactionHash}\`\n` +
+          //   (vote.reason ? `**Reason**: ${vote.reason}\n` : "") +
+          //   `\n## 🔗 Links\n` +
+          //   `**Voter Link**: ${promptInput.voterAddressLink}\n` +
+          //   `**Proposal Link**: ${promptInput.proposalLink}\n` +
+          //   `**Transaction Link**: ${promptInput.transactionLink}\n`
+        );
       }
     },
     1000 * 60
@@ -213,16 +243,30 @@ describe("X Tweet Preview Test", () => {
   it(
     "State changed tweet",
     async () => {
+      const proposalEvent = ats.proposalEvent();
+      const { proposal } = proposalEvent;
       const degovLink = ats.degovLink();
       const events = ats.stateChangedEvents(degovLink);
       for (const event of events) {
         const tweet = TweetGen.generateProposalStateChangedTweet(event);
         console.log(tweet);
+
+        const tweetInput: SendTweetInput = {
+          xprofile: proposalEvent.xprofile,
+          daocode: proposalEvent.daocode,
+          proposalId: proposal.id,
+          chainId: proposal.chainId,
+          text: tweet,
+          reply: {
+            in_reply_to_tweet_id: proposal.id,
+          },
+        };
+
         // Write tweet to output file
-        await TweetWriter.writeTweet("State Changed Tweet", {
-          event: event,
-          generatedTweet: tweet,
-        });
+        await TweetWriter.writeTweet(
+          "State Changed Tweet",
+          ats.formatSendTweet(tweetInput)
+        );
       }
     },
     1000 * 60

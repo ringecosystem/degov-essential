@@ -1,4 +1,3 @@
-
 import Fastify, { FastifyInstance } from "fastify";
 
 import { Service } from "typedi";
@@ -15,7 +14,7 @@ import { HbsRegister } from "../../src/internal/hbs";
 import fastifyView from "@fastify/view";
 import handlebars from "handlebars";
 import path from "path";
-import { SimpleTweetUser } from "../../src/internal/x-agent";
+import { SendTweetInput, SimpleTweetUser } from "../../src/internal/x-agent";
 import { OpenrouterAgent } from "../../src/internal/openrouter";
 import { DIVoteCast } from "../internal/graphql";
 import { GenProposalStateChangedTweetInput } from "../internal/tweetgen";
@@ -91,6 +90,131 @@ export class AgentTestSupport {
         explorers: ["https://explorer.darwinia.network"],
       },
     });
+  }
+
+  formatSendTweet(tweetInput: SendTweetInput): string {
+    const lines: string[] = [];
+
+    // Header
+    lines.push("# 🐦 Tweet Input Details");
+    lines.push("");
+
+    // Basic Information
+    lines.push("## 📋 Basic Information");
+    lines.push(`**Profile**: \`${tweetInput.xprofile || "N/A"}\``);
+    lines.push(`**DAO Code**: \`${tweetInput.daocode}\``);
+    lines.push(`**Proposal ID**: \`${tweetInput.proposalId}\``);
+    lines.push(`**Chain ID**: \`${tweetInput.chainId}\``);
+    lines.push("");
+
+    // Tweet Content
+    lines.push("## 📝 Tweet Content");
+    if (tweetInput.text) {
+      lines.push("```");
+      lines.push(tweetInput.text);
+      lines.push("```");
+    } else {
+      lines.push("*No text content*");
+    }
+    lines.push("");
+
+    // Poll Information (if exists)
+    if (tweetInput.poll) {
+      lines.push("## 🗳️ Poll Configuration");
+      if (tweetInput.poll.options && tweetInput.poll.options.length > 0) {
+        lines.push(`**Options** (${tweetInput.poll.options.length}):`);
+        tweetInput.poll.options.forEach((option, index) => {
+          lines.push(`  ${index + 1}. ${option}`);
+        });
+      }
+      if (tweetInput.poll.duration_minutes) {
+        lines.push(`**Duration**: ${tweetInput.poll.duration_minutes} minutes`);
+      }
+      lines.push("");
+    }
+
+    // Reply Information (if exists)
+    if (tweetInput.reply) {
+      lines.push("## 💬 Reply Configuration");
+      if (tweetInput.reply.in_reply_to_tweet_id) {
+        lines.push(
+          `**Reply to Tweet ID**: \`${tweetInput.reply.in_reply_to_tweet_id}\``
+        );
+      }
+      if (
+        tweetInput.reply.exclude_reply_user_ids &&
+        tweetInput.reply.exclude_reply_user_ids.length > 0
+      ) {
+        lines.push(
+          `**Exclude Reply Users**: ${tweetInput.reply.exclude_reply_user_ids
+            .map((id) => `\`${id}\``)
+            .join(", ")}`
+        );
+      }
+      lines.push("");
+    }
+
+    // Media Information (if exists)
+    if (tweetInput.media) {
+      lines.push("## 🖼️ Media Attachments");
+      if (tweetInput.media.media_ids && tweetInput.media.media_ids.length > 0) {
+        lines.push(
+          `**Media IDs**: ${tweetInput.media.media_ids
+            .map((id) => `\`${id}\``)
+            .join(", ")}`
+        );
+      }
+      if (
+        tweetInput.media.tagged_user_ids &&
+        tweetInput.media.tagged_user_ids.length > 0
+      ) {
+        lines.push(
+          `**Tagged Users**: ${tweetInput.media.tagged_user_ids
+            .map((id) => `\`${id}\``)
+            .join(", ")}`
+        );
+      }
+      lines.push("");
+    }
+
+    // Quote Tweet Information (if exists)
+    if (tweetInput.quote_tweet_id) {
+      lines.push("## 🔄 Quote Tweet");
+      lines.push(`**Quote Tweet ID**: \`${tweetInput.quote_tweet_id}\``);
+      lines.push("");
+    }
+
+    // Geographic Information (if exists)
+    if (tweetInput.geo) {
+      lines.push("## 📍 Geographic Information");
+      if (tweetInput.geo.place_id) {
+        lines.push(`**Place ID**: \`${tweetInput.geo.place_id}\``);
+      }
+      lines.push("");
+    }
+
+    // Additional Settings
+    const additionalSettings: string[] = [];
+    if (tweetInput.for_super_followers_only) {
+      additionalSettings.push("🌟 For Super Followers Only");
+    }
+    if (tweetInput.reply_settings) {
+      additionalSettings.push(
+        `💬 Reply Settings: ${tweetInput.reply_settings}`
+      );
+    }
+
+    if (additionalSettings.length > 0) {
+      lines.push("## ⚙️ Additional Settings");
+      additionalSettings.forEach((setting) => lines.push(`- ${setting}`));
+      lines.push("");
+    }
+
+    // Footer with timestamp
+    lines.push("---");
+    lines.push(`*Generated at: ${new Date().toISOString()}*`);
+
+    return lines.join("\n");
   }
 
   proposalEvent(): NewProposalEvent {
