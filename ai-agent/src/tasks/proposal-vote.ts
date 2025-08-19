@@ -137,6 +137,8 @@ export class DegovProposalVoteTask {
         });
         const promptInput = {
           stu,
+          ensName: '',
+          voterAddress: vote.voter,
           voterAddressLink,
           proposalLink,
           transactionLink: degovLink.transaction(vote.transactionHash),

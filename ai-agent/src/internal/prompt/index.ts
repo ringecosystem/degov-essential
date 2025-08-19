@@ -75,6 +75,8 @@ Generate a tweet use above data
     options: NewVoteCastTweetOptioins
   ): Promise<PromptOutput> {
     const rawData = {
+      ensName: options.ensName,
+      voterAddress: options.voterAddress,
       voterAddressLink: options.voterAddressLink,
       transactionLink: options.transactionLink,
       proposalLink: options.proposalLink,
@@ -166,6 +168,8 @@ export interface FulfillContractOptions {
 
 export interface NewVoteCastTweetOptioins {
   stu: SimpleTweetUser;
+  ensName?: string;
+  voterAddress: string;
   voterAddressLink: string;
   proposalLink: string;
   transactionLink?: string;

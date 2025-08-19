@@ -10,6 +10,8 @@ Using the provided JSON data, generate a concise and informative tweet to announ
 
 ```json
 {
+  "ensName": "string" | undefined, // The ens name of this address
+  "voterAddress": "string", // Voter address
   "voterAddressLink": "string", // Link to the voter
   "transactionLink": "string", // Link to the transaction
   "proposalLink": "string", // Link to the proposal
@@ -43,7 +45,8 @@ You **must** fill out the template below exactly as specified.
 
 **1. Output Template:**
 
-🗳️ Vote cast by [voterAddressLink]
+🗳️ Vote cast by [ensName] [voterAddress]
+🖇️ Delegate profile: [voterAddressLink]
 🔗 Transaction: [transactionLink]
 
 🎯 Choice: [choice]

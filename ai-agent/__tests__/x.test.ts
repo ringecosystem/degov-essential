@@ -187,6 +187,8 @@ describe("X Tweet Preview Test", () => {
       for (const vote of votes) {
         const promptInput = {
           stu: ats.verifiedXUser(),
+          ensName: "",
+          voterAddress: vote.voter,
           voterAddressLink: degovLink.delegate(vote.voter),
           proposalLink: degovLink.proposal(vote.proposalId),
           transactionLink: degovLink.transaction(vote.transactionHash),
