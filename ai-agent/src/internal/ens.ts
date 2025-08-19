@@ -4,7 +4,6 @@ import * as viemChain from "viem/chains";
 
 @Service()
 export class EnsClient {
-
   private client() {
     return createPublicClient({
       chain: viemChain.mainnet,
@@ -25,7 +24,7 @@ export class EnsClient {
       if (!ensName) {
         return {
           code: 1,
-          message: "this adress not set ens primary name",
+          message: `ENS name not found for address ${address}`,
         };
       }
 

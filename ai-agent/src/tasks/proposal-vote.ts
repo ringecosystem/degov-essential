@@ -13,6 +13,7 @@ import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { setTimeout } from "timers/promises";
 import { generateText } from "ai";
+import { EnsClient } from "../internal/ens";
 
 @Service()
 export class DegovProposalVoteTask {
@@ -21,7 +22,8 @@ export class DegovProposalVoteTask {
     private readonly twitterAgent: TwitterAgentW,
     private readonly daoService: DaoService,
     private readonly degovIndexer: DegovIndexer,
-    private readonly openrouterAgent: OpenrouterAgent
+    private readonly openrouterAgent: OpenrouterAgent,
+    private readonly ensClient: EnsClient
   ) {}
 
   async start(fastify: FastifyInstance) {

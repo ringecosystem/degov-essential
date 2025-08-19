@@ -169,6 +169,7 @@ export interface FulfillContractOptions {
 export interface NewVoteCastTweetOptioins {
   stu: SimpleTweetUser;
   ensName?: string;
+  voterXAccount?: string;
   voterAddress: string;
   voterAddressLink: string;
   proposalLink: string;
