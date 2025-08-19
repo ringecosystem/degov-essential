@@ -17,16 +17,16 @@ jobs:
     steps:
       - name: Find triggering comment
         uses: peter-evans/find-comment@v3
+        if: github.event_name == 'pull_request'
         id: fc
         with:
-          # issue-number: ${{ github.event.pull_request.number }}
-          issue-number: ${{ github.event.issue.number }}
+          issue-number: ${{ github.event.pull_request.number }}
           body-includes: /generate-tweet
 
       - name: Update comment with processing status
         uses: peter-evans/create-or-update-comment@v4
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
+          comment-id: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id || github.event.comment.id }}
           body: |
             🤖 **Generating tweet...**
 
@@ -55,7 +55,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         if: success()
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
+          comment-id: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id || github.event.comment.id }}
           reactions: rocket
           edit-mode: replace
           body-path: ai-agent/outputs/tweet-gen.md
@@ -64,7 +64,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         if: failure()
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
+          comment-id: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id || github.event.comment.id }}
           reactions: confused
           edit-mode: replace
           body: |
