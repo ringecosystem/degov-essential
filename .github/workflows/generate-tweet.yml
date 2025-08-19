@@ -72,4 +72,6 @@ jobs:
 
             Sorry, there was an error while generating the tweet. Please check the workflow logs for more details.
 
+            🔗 **Workflow run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
             You can try again by commenting `/generate-tweet` once more.
