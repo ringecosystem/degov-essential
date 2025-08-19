@@ -43,19 +43,15 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
-              debug: true,
             });
-            return {
-              head_ref: pr.data.head.ref,
-              head_repo: pr.data.head.repo.clone_url,
-            };
-          result-encoding: string
+            core.setOutput("head_ref", pr.data.head.ref);
+            core.setOutput("head_repo", pr.data.head.repo.full_name);
 
       - uses: actions/checkout@v4
         if: github.event_name == 'issue_comment'
         with:
           repository: ${{ github.repository }}
-          ref: ${{ fromJson(steps.pr.outputs.result).head_ref }}
+          ref: ${{ steps.pr.outputs.head_ref }}
 
       - uses: actions/checkout@v4
         if: github.event_name == 'pull_request'
