@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
-import { GovernorContract } from "../internal/governor";
+import { GovernorContract } from "../internal/contracts";
 import { DegovService } from "../services/degov";
 import { DegovMcpDao, ProposalState } from "../types";
 import { degov_tweet } from "../generated/prisma";

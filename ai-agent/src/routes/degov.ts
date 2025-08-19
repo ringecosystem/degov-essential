@@ -3,7 +3,7 @@ import { Service } from "typedi";
 import { DegovSummaryForm, Resp } from "../types";
 import { DaoService } from "../services/dao";
 import { DegovService } from "../services/degov";
-import { GovernorContract } from "../internal/governor";
+import { GovernorContract } from "../internal/contracts";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 
 @Service()

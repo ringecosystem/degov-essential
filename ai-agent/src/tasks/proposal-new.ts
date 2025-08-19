@@ -12,7 +12,7 @@ import { NewProposalEvent } from "../types";
 import { DegovIndexer } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
 import { generateText } from "ai";
-import { GovernorContract } from "../internal/governor";
+import { GovernorContract } from "../internal/contracts";
 import { ChainTool } from "../internal/chaintool";
 
 @Service()

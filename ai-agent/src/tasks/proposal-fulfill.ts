@@ -17,7 +17,7 @@ import { DegovHelpers } from "../helpers";
 import { generateObject } from "ai";
 import { DegovPrompt } from "../internal/prompt";
 import { OpenrouterAgent } from "../internal/openrouter";
-import { GovernorContract } from "../internal/governor";
+import { GovernorContract } from "../internal/contracts";
 import { setTimeout } from "timers/promises";
 
 @Service()
