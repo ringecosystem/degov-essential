@@ -55,18 +55,20 @@ jobs:
         if: success()
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
-          body-path: ai-agent/outputs/tweet-gen.md
           reactions: rocket
+          edit-mode: replace
+          body-path: ai-agent/outputs/tweet-gen.md
 
       - name: Update comment with error message
         uses: peter-evans/create-or-update-comment@v4
         if: failure()
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
+          reactions: confused
+          edit-mode: replace
           body: |
             ❌ **Tweet generation failed**
 
             Sorry, there was an error while generating the tweet. Please check the workflow logs for more details.
 
             You can try again by commenting `/generate-tweet` once more.
-          reactions: confused
