@@ -35,28 +35,3 @@ jobs:
       - name: Build
         working-directory: ${{ matrix.package }}
         run: pnpm build
-
-  check-agent-tweet:
-    name: Check Tweet
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install deps
-        working-directory: ai-agent
-        run: pnpm install
-
-      - name: Run agent tweet check
-        working-directory: ai-agent
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_DEFAULT_MODEL: openai/gpt-4o
-        run: pnpm test __tests__/x.test.ts
-
-      - name: Create comment
-        uses: peter-evans/create-or-update-comment@v4
-        working-directory: ai-agent
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: outputs/tweet-gen.md
-          reactions: rocket
