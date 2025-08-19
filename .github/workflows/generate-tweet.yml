@@ -33,7 +33,27 @@ jobs:
             The AI agent is analyzing the changes and generating a tweet. Please wait...
           reactions: eyes
 
-      - uses: actions/checkout@v2
+      - name: Get PR info
+        id: pr
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            return {
+              head_ref: pr.data.head.ref,
+              head_repo: pr.data.head.repo.clone_url,
+            };
+          result-encoding: string
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event_name == 'issue_comment' && fromJson(steps.pr.outputs.result).head_ref || github.head_ref }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -43,7 +63,7 @@ jobs:
         working-directory: ai-agent
         run: pnpm install
 
-      - name: Run agent tweet check
+      - name: Generate agent tweet
         # id: tweet-generation
         working-directory: ai-agent
         env:
