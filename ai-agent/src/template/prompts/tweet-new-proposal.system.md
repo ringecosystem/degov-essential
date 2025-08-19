@@ -67,7 +67,7 @@ You must populate the template exactly as specified below.
 
 [Summary]
 
-💡 Tip: The X poll results and comments will be considered as a data source for the DeGov Agent's final vote decision, along with on-chain voting results and community discussions.
+💡 Tip: The X poll results and comments will be considered as a data source for the DeGov Agent's final vote decision, along with on-chain voting results and community discussions. See https://docs.degov.ai/governance/agent/overview for more information about agent governance.
 
 [carry]
 
