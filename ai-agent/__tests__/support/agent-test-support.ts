@@ -110,9 +110,9 @@ export class AgentTestSupport {
     // Tweet Content
     lines.push("## 📝 Tweet Content");
     if (tweetInput.text) {
-      lines.push("```");
+      // lines.push("```");
       lines.push(tweetInput.text);
-      lines.push("```");
+      // lines.push("```");
     } else {
       lines.push("*No text content*");
     }
