@@ -3,15 +3,17 @@ name: Generate Tweet
 on:
   issue_comment:
     types: [created]
+  pull_request:
+    branches: [main]
 
 jobs:
   generate-tweet:
     name: Generate Tweet
     runs-on: ubuntu-latest
-    if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/generate-tweet') &&
-      (github.event.comment.user.login == 'fewensa' || github.event.comment.user.login == 'boundless-forest')
+    # if: |
+    #   github.event.issue.pull_request &&
+    #   contains(github.event.comment.body, '/generate-tweet') &&
+    #   (github.event.comment.user.login == 'fewensa' || github.event.comment.user.login == 'boundless-forest')
     steps:
       - name: Find triggering comment
         uses: peter-evans/find-comment@v3
