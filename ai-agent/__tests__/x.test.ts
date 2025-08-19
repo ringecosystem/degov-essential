@@ -185,9 +185,11 @@ describe("X Tweet Preview Test", () => {
       const degovLink = ats.degovLink();
 
       for (const vote of votes) {
+        const mixedAccountInfo = ats.mixedAccountInfo(vote.voter);
         const promptInput = {
           stu: ats.verifiedXUser(),
-          ensName: "",
+          ensName: mixedAccountInfo?.ensName ?? "",
+          voterXUsername: mixedAccountInfo?.xUsername ?? "",
           voterAddress: vote.voter,
           voterAddressLink: degovLink.delegate(vote.voter),
           proposalLink: degovLink.proposal(vote.proposalId),

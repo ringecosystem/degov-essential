@@ -4,6 +4,7 @@ import { Service } from "typedi";
 import { DegovHelpers, DegovLink } from "../../src/helpers";
 import {
   ClockMode,
+  MixedAccountInfo,
   NewProposalEvent,
   ProposalState,
   RuntimeProfile,
@@ -90,6 +91,18 @@ export class AgentTestSupport {
         explorers: ["https://explorer.darwinia.network"],
       },
     });
+  }
+
+  mixedAccountInfo(address: string): MixedAccountInfo | undefined {
+    switch (address.toLowerCase()) {
+      case "0xebd9a48ed1128375eb4383ed4d53478b4fd85a8d":
+        return {
+          ensName: "fake.eth",
+          xUsername: "ai_degov",
+        };
+      default:
+        return undefined;
+    }
   }
 
   formatSendTweet(tweetInput: SendTweetInput): string {

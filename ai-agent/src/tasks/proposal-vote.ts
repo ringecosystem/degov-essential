@@ -148,7 +148,7 @@ export class DegovProposalVoteTask {
         const promptInput = {
           stu,
           ensName: mixedAccountInfo?.ensName ?? "",
-          voterXAccount: mixedAccountInfo?.xUsername ?? "",
+          voterXUsername: mixedAccountInfo?.xUsername ?? "",
           voterAddress: vote.voter,
           voterAddressLink,
           proposalLink,
