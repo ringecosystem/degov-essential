@@ -19,8 +19,7 @@ jobs:
         uses: peter-evans/find-comment@v3
         id: fc
         with:
-          issue-number: ${{ github.event.issue.number }}
-          comment-author: ${{ github.event.comment.user.login }}
+          issue-number: ${{ github.event.pull_request.number }}
           body-includes: /generate-tweet
 
       - name: Update comment with processing status
