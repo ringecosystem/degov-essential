@@ -46,7 +46,7 @@ You **must** fill out the template below exactly as specified.
 
 **1. Output Template:**
 
-🗳️ Vote cast by [ensName] [voterAddress] @[voterXUsername] (output if `voterXUsername` exists, including the leading @)
+🗳️ Vote cast by [ensName] [voterAddress] (not need if `ensName` exists) @[voterXUsername] (output if `voterXUsername` exists, including the leading @)
 🖇️ Delegate profile: [voterAddressLink]
 🔗 Transaction: [transactionLink]
 
