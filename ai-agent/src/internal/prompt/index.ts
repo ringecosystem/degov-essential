@@ -77,6 +77,7 @@ Generate a tweet use above data
     const rawData = {
       ensName: options.ensName,
       voterAddress: options.voterAddress,
+      voterXAccount: options.voterXAccount,
       voterAddressLink: options.voterAddressLink,
       transactionLink: options.transactionLink,
       proposalLink: options.proposalLink,

@@ -13,7 +13,7 @@ import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { setTimeout } from "timers/promises";
 import { generateText } from "ai";
-import { EnsClient } from "../internal/ens";
+import { ProfileService } from "../services/profile";
 
 @Service()
 export class DegovProposalVoteTask {
@@ -23,7 +23,7 @@ export class DegovProposalVoteTask {
     private readonly daoService: DaoService,
     private readonly degovIndexer: DegovIndexer,
     private readonly openrouterAgent: OpenrouterAgent,
-    private readonly ensClient: EnsClient
+    private readonly profileService: ProfileService
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -137,9 +137,18 @@ export class DegovProposalVoteTask {
         const proposalLink = degovLink.proposal(degovTweet.proposal_id, {
           delegate: vote.voter,
         });
+        const mixedAccountInfo = await this.profileService.mixedAccountInfo(
+          fastify,
+          {
+            degovSite: degovConfig.siteUrl,
+            address: vote.voter,
+          }
+        );
+
         const promptInput = {
           stu,
-          ensName: '',
+          ensName: mixedAccountInfo.ensName,
+          voterXAccount: mixedAccountInfo.xUsername,
           voterAddress: vote.voter,
           voterAddressLink,
           proposalLink,

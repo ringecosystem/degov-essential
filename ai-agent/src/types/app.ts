@@ -143,6 +143,11 @@ export enum ClockMode {
   BlockNumber = "blocknumber",
 }
 
+export interface MixedAccountInfo {
+  ensName?: string;
+  xUsername?: string;
+}
+
 export const AnalysisResultSchema = z.object({
   finalResult: z.enum(["For", "Against", "Abstain"]),
   confidence: z.number().min(0).max(10),
