@@ -1,0 +1,71 @@
+name: Generate Tweet
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  generate-tweet:
+    name: Generate Tweet
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/generate-tweet') &&
+      (github.event.comment.user.login == 'fewensa' || github.event.comment.user.login == 'boundless-forest')
+    steps:
+      - name: Find triggering comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment-author: ${{ github.event.comment.user.login }}
+          body-includes: /generate-tweet
+
+      - name: Update comment with processing status
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body: |
+            🤖 **Generating tweet...**
+
+            The AI agent is analyzing the changes and generating a tweet. Please wait...
+          reactions: eyes
+
+      - uses: actions/checkout@v2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install deps
+        working-directory: ai-agent
+        run: pnpm install
+
+      - name: Run agent tweet check
+        # id: tweet-generation
+        working-directory: ai-agent
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_DEFAULT_MODEL: openai/gpt-4o
+        run: pnpm test __tests__/x.test.ts
+
+      - name: Update comment with tweet result
+        uses: peter-evans/create-or-update-comment@v4
+        if: success()
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body-path: ai-agent/outputs/tweet-gen.md
+          reactions: rocket
+
+      - name: Update comment with error message
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure()
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body: |
+            ❌ **Tweet generation failed**
+
+            Sorry, there was an error while generating the tweet. Please check the workflow logs for more details.
+
+            You can try again by commenting `/generate-tweet` once more.
+          reactions: confused
