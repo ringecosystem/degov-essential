@@ -1,6 +1,5 @@
 import { Service } from "typedi";
 import {
-  Account,
   createPublicClient,
   createWalletClient,
   http,
