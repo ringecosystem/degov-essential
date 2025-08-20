@@ -1,6 +1,6 @@
 import { DegovHelpers, PollTweetDurationResult } from "../src/helpers";
 import { AnalysisResultSchema, ClockMode } from "../src/types";
-import { AgentTestSupport, TweetWriter } from "./support";
+import { AgentTestSupport, PreviewWriter } from "./support";
 import { DegovPrompt } from "../src/internal/prompt";
 import Container from "typedi";
 import { generateText, generateObject } from "ai";
@@ -18,7 +18,7 @@ describe("X Tweet Preview Test", () => {
     dotenv.config();
 
     // Clear the output file at the start
-    await TweetWriter.clearOutputFile();
+    await PreviewWriter.clearOutputFile();
   });
 
   afterAll(async () => {
@@ -70,7 +70,7 @@ describe("X Tweet Preview Test", () => {
       console.log(pollTweetDurationResult, tweetInput);
 
       // Write tweet to output file
-      await TweetWriter.writeTweet(
+      await PreviewWriter.write(
         "Expired Proposal Tweet",
         ats.formatSendTweet(tweetInput) +
           `\n\n## 📊 Poll Duration Result\n` +
@@ -123,7 +123,7 @@ describe("X Tweet Preview Test", () => {
       console.log(pollTweetDurationResult, tweetInput);
 
       // Write tweet to output file
-      await TweetWriter.writeTweet(
+      await PreviewWriter.write(
         "Expiring Soon Proposal Tweet",
         ats.formatSendTweet(tweetInput) +
           `\n\n## 📊 Poll Duration Result\n` +
@@ -169,7 +169,7 @@ describe("X Tweet Preview Test", () => {
       console.log(tweetInput);
 
       // Write tweet to output file
-      await TweetWriter.writeTweet(
+      await PreviewWriter.write(
         "New Proposal Tweet",
         ats.formatSendTweet(tweetInput)
       );
@@ -229,7 +229,7 @@ describe("X Tweet Preview Test", () => {
         console.log(tweetInput);
 
         // Write tweet to output file
-        await TweetWriter.writeTweet(
+        await PreviewWriter.write(
           "New Vote Cast Tweet",
           ats.formatSendTweet(tweetInput)
           // +
@@ -275,7 +275,7 @@ describe("X Tweet Preview Test", () => {
         };
 
         // Write tweet to output file
-        await TweetWriter.writeTweet(
+        await PreviewWriter.write(
           "State Changed Tweet",
           ats.formatSendTweet(tweetInput)
         );
@@ -347,7 +347,7 @@ describe("X Tweet Preview Test", () => {
         };
 
         // Write analysis to output file
-        await TweetWriter.writeTweet(
+        await PreviewWriter.write(
           `Fulfill Contract Analysis (${randomScenario})`,
           `## 📊 Governance Analysis Result - ${randomScenario.toUpperCase()} Scenario\n\n` +
             `**Test Seed**: ${randomSeed}\n` +
@@ -379,7 +379,7 @@ describe("X Tweet Preview Test", () => {
         console.error("Raw response:", aiResp.object);
 
         // Write error analysis to output file
-        await TweetWriter.writeTweet(
+        await PreviewWriter.write(
           `Fulfill Contract Analysis (${randomScenario} - ERROR)`,
           `## ❌ Analysis Failed - Invalid JSON Response\n\n` +
             `**Scenario**: ${randomScenario}\n` +

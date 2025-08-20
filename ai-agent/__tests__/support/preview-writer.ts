@@ -1,11 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
 
-export class TweetWriter {
+export class PreviewWriter {
   private static outputFile = path.join(
     process.cwd(),
     "outputs",
-    "tweet-gen.md"
+    "ai-preview.md"
   );
   private static isCleared = false;
 
@@ -36,7 +36,7 @@ export class TweetWriter {
   /**
    * Write tweet content to the output file
    */
-  static async writeTweet(title: string, content: any): Promise<void> {
+  static async write(title: string, content: any): Promise<void> {
     // Clear file on first write if not already cleared
     if (!this.isCleared) {
       await this.clearOutputFile();
