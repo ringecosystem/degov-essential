@@ -26,14 +26,16 @@ export class DegovHelpers {
   }
 
   static voteSupportText(support: any): string {
-    const supportNumber =
-      typeof support === "number" ? support : parseInt(support, 10);
-    switch (supportNumber) {
-      case 0:
+    const formattedSupported = support.toString().toLowerCase();
+    switch (formattedSupported) {
+      case "0":
+      case "against":
         return "Against";
-      case 1:
+      case "1":
+      case "for":
         return "For";
-      case 2:
+      case "2":
+      case "abstain":
         return "Abstain";
       default:
         return "Unknown";

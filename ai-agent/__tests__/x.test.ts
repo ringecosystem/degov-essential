@@ -8,6 +8,7 @@ import { EnvReader } from "../src/integration/env-reader";
 import { SendTweetInput } from "../src/internal/x-agent";
 import dotenv from "dotenv";
 import { TweetGen } from "../src/internal/tweetgen";
+import { QuorumResult } from "./internal/contracts";
 
 describe("X Tweet Preview Test", () => {
   const ats: AgentTestSupport = Container.get(AgentTestSupport);
@@ -184,7 +185,11 @@ describe("X Tweet Preview Test", () => {
       const votes = ats.voteEvents();
       const degovLink = ats.degovLink();
 
+      let seq = 0;
       for (const vote of votes) {
+        seq += 1;
+        const quorumResult = ats.quorum(seq);
+        const votingDistribution = ats.votingDistribution(seq);
         const mixedAccountInfo = ats.mixedAccountInfo(vote.voter);
         const promptInput = {
           stu: ats.verifiedXUser(),
@@ -196,6 +201,8 @@ describe("X Tweet Preview Test", () => {
           transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
+          quorum: quorumResult,
+          votingDistribution,
         };
         const promptout = await DegovPrompt.newVoteCastTweet(
           ats.fastify(),

@@ -134,17 +134,27 @@ export class DegovProposalVoteTask {
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
 
     const daoContracts = daoConfig.contracts;
-    const quorumResult = await this.degovContract.quorum({
-      chainId: daoConfig.chain.id,
-      endpoint: daoConfig.chain.rpcs?.[0],
-      contractAddress: DegovHelpers.stdHex(daoContracts.governor),
+    let quorumResult;
+    try {
+      quorumResult = await this.degovContract.quorum({
+        chainId: daoConfig.chain.id,
+        endpoint: daoConfig.chain.rpcs?.[0],
+        contractAddress: DegovHelpers.stdHex(daoContracts.governor),
 
-      standard: daoContracts.governorToken.standard,
-      governorTokenAddress: DegovHelpers.stdHex(
-        daoContracts.governorToken.address
-      ),
-    });
-    
+        standard: daoContracts.governorToken.standard,
+        governorTokenAddress: DegovHelpers.stdHex(
+          daoContracts.governorToken.address
+        ),
+        includeDecimals: true,
+      });
+    } catch (e: any) {
+      fastify.log.error(
+        `[task-vote] Error fetching quorum for DAO ${
+          daoConfig.name
+        }: ${DegovHelpers.helpfulErrorMessage(e)}`
+      );
+    }
+
     for (const vote of voteCasts) {
       try {
         const degovLink = DegovHelpers.degovLink(daoConfig);
@@ -159,6 +169,11 @@ export class DegovProposalVoteTask {
             address: vote.voter,
           }
         );
+        const votingDistribution =
+          await await this.degovIndexer.queryVotingDistribution({
+            endpoint: daoConfig.indexer.endpoint,
+            proposalId: degovTweet.proposal_id,
+          });
 
         const promptInput = {
           stu,
@@ -170,6 +185,8 @@ export class DegovProposalVoteTask {
           transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
+          quorum: quorumResult,
+          votingDistribution,
         };
         fastify.log.debug(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(

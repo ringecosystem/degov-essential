@@ -11,6 +11,7 @@ import {
   QueryProposalVotes,
   VotingDistribution,
 } from "./types";
+import { DegovHelpers } from "../../helpers";
 
 @Service()
 export class DegovIndexer {
@@ -273,13 +274,14 @@ export class DegovIndexer {
     for (const voteCast of allVoteCasts) {
       const weight = BigInt(voteCast.weight);
       const support = voteCast.support;
+      const formattedSupported = DegovHelpers.voteSupportText(support);
 
       totalWeight += weight;
 
-      if (distributionBySupport[support]) {
-        distributionBySupport[support] += weight;
+      if (distributionBySupport[formattedSupported]) {
+        distributionBySupport[formattedSupported] += weight;
       } else {
-        distributionBySupport[support] = weight;
+        distributionBySupport[formattedSupported] = weight;
       }
     }
 

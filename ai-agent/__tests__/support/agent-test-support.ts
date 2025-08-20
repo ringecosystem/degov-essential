@@ -17,8 +17,9 @@ import handlebars from "handlebars";
 import path from "path";
 import { SendTweetInput, SimpleTweetUser } from "../../src/internal/x-agent";
 import { OpenrouterAgent } from "../../src/internal/openrouter";
-import { DIVoteCast } from "../internal/graphql";
-import { GenProposalStateChangedTweetInput } from "../internal/tweetgen";
+import { DIVoteCast, VotingDistribution } from "../../src/internal/graphql";
+import { GenProposalStateChangedTweetInput } from "../../src/internal/tweetgen";
+import { QuorumResult } from "../../src/internal/contracts";
 
 @Service()
 export class AgentTestSupport {
@@ -102,6 +103,56 @@ export class AgentTestSupport {
         };
       default:
         return undefined;
+    }
+  }
+
+  quorum(seq: number): QuorumResult {
+    switch (seq) {
+      case 1:
+        return {
+          quorum: 1000000000000000000000000n,
+          decimals: undefined,
+        };
+      case 2:
+        return {
+          quorum: 5n,
+          decimals: 1n,
+        };
+      default:
+        return {
+          quorum: 40000000000000000000000000n,
+          decimals: 18n,
+        };
+    }
+  }
+
+  votingDistribution(seq: number): VotingDistribution {
+    switch (seq) {
+      case 1:
+        return {
+          totalWeight: 48573535584620845365681336n,
+          distributionBySupport: {
+            For: 42800000000000000000000000n,
+            Against: 5773535584620845365681336n,
+          },
+        };
+      case 2:
+        return {
+          totalWeight: 4n,
+          distributionBySupport: {
+            For: 2n,
+            Against: 1n,
+            Abstain: 1n,
+          },
+        };
+      default:
+        return {
+          totalWeight: 4857353558462084536568n,
+          distributionBySupport: {
+            For: 4280000000000000000000n,
+            Against: 577353558462084536568n,
+          },
+        };
     }
   }
 

@@ -14,7 +14,7 @@ describe("X Tweet Preview Test", () => {
         // standard: "ERC20",
         // governorTokenAddress: "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",
       });
-      // console.log(result);
+      console.log(result);
       expect(result).toEqual({
         quorum: 1000000000000000000000000n,
       });
@@ -34,6 +34,7 @@ describe("X Tweet Preview Test", () => {
         governorTokenAddress: "0xdafa555e2785DC8834F4Ea9D1ED88B6049142999",
         includeDecimals: true,
       });
+      console.log(result);
       expect(result).toEqual({
         quorum: 40000000000000000000000000n,
         decimals: 18n,

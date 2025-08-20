@@ -2,6 +2,8 @@ import { FastifyInstance } from "fastify";
 import { NewProposalEvent, PromptOutput } from "../../types";
 import { SimpleTweetUser } from "../x-agent";
 import { getBuiltInPrompt } from "./common";
+import { QuorumResult } from "../contracts";
+import { VotingDistribution } from "../graphql";
 
 export class DegovPrompt {
   static async newProposalTweet(
@@ -84,6 +86,8 @@ Generate a tweet use above data
       choice: options.choice,
       reason: options.reason,
       verified: options.stu.verified,
+      quorum: options.quorum,
+      votingDistribution: options.votingDistribution,
     };
     return {
       system: await getBuiltInPrompt(
@@ -177,4 +181,6 @@ export interface NewVoteCastTweetOptioins {
   transactionLink?: string;
   choice: string;
   reason: string;
+  quorum?: QuorumResult;
+  votingDistribution?: VotingDistribution;
 }
