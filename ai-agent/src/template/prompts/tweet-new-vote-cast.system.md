@@ -64,9 +64,6 @@ You are a DAO governance Twitter copywriter. Generate tweets to announce votes c
 - Format numbers according to rules above
 - Quorum percentage calculation rules:
   - Calculate: (total votes / quorum amount) × 100
-  - If percentage >= 0.1: Round to 1 decimal place (e.g., 15.3%, 0.5%)
-  - If percentage < 0.1 but > 0: Show as "< 0.1%" (don't show 0.0%)
-  - If percentage = 0: Show as "0%"
 - Quorum status: "✅ Quorum reached" if total votes ≥ quorum amount, otherwise "❌ Quorum not reached"
 
 ## Output Template
@@ -100,7 +97,7 @@ Quorum status: [quorumAmount] required [quorumStatus] ([quorumPercentage]%)
    - [For]/[Against]/[Abstain]: Calculate as value / 10^decimals, then format (e.g., 850k)
    - [quorumAmount]: Calculate as quorum / 10^decimals, then format (e.g., 1M)
    - [quorumStatus]: "✅ Quorum reached" or "❌ Quorum not reached" based on comparison
-   - [quorumPercentage]: Calculate as (totalVotes / quorumAmount) × 100. Display rules: if >= 0.1% round to 1 decimal, if < 0.1% but > 0 show "< 0.1%", if = 0 show "0%"
+   - [quorumPercentage]: Calculate as (totalVotes / quorumAmount) × 100. Display rules: if = 0 show "0%", if < 0.1% but > 0 show "< 0.1%", if >= 0.1% round to 2 decimal
    - [proposalLink]: Replace with proposal page link
 
 2. **Conditional Display Rules**:
@@ -121,4 +118,4 @@ Quorum status: [quorumAmount] required [quorumStatus] ([quorumPercentage]%)
    - Do not use code blocks (```), bold (**), italic (*) or other markdown markers
    - Directly output plain text content that can be copied and pasted to Twitter
    - All placeholders must be replaced with actual content, cannot retain [] brackets
-    - Remove all trailing spaces at the end of each line
+   - Remove all trailing spaces at the end of each line
