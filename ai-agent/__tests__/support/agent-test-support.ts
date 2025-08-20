@@ -20,6 +20,7 @@ import { OpenrouterAgent } from "../../src/internal/openrouter";
 import { DIVoteCast, VotingDistribution } from "../../src/internal/graphql";
 import { GenProposalStateChangedTweetInput } from "../../src/internal/tweetgen";
 import { QuorumResult } from "../../src/internal/contracts";
+import { FulfillContractOptions } from "../../src/internal/prompt";
 
 @Service()
 export class AgentTestSupport {
@@ -153,6 +154,439 @@ export class AgentTestSupport {
             Against: 577353558462084536568n,
           },
         };
+    }
+  }
+
+  /**
+   * Generate dynamic fulfill contract options for testing
+   * @param scenario - Different test scenarios: 'aligned', 'conflicted', 'whale-dominated', 'abstain-heavy'
+   * @param seed - Random seed for consistent test results (default: current timestamp)
+   */
+  fulfillContractOptions(
+    scenario:
+      | "aligned"
+      | "conflicted"
+      | "whale-dominated"
+      | "abstain-heavy" = "aligned",
+    seed?: number
+  ): FulfillContractOptions {
+    const randomSeed = seed ?? Date.now();
+    const random = (min: number, max: number) => {
+      const x = Math.sin(randomSeed * 9999) * 10000;
+      return Math.floor((x - Math.floor(x)) * (max - min + 1)) + min;
+    };
+
+    const baseTime = new Date("2025-08-19T09:00:00Z");
+    const getRandomTime = (hoursOffset: number) => {
+      return new Date(
+        baseTime.getTime() + (hoursOffset + random(-2, 2)) * 60 * 60 * 1000
+      );
+    };
+
+    // Generate addresses with some variety
+    const addresses = [
+      "0x742d35Cc6479C3D4C367d4C4b4F5A9e4e4b8a3f2",
+      "0x8ba1f109551bD432803012645Hac136c22C195E2",
+      "0x1f2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+      "0x9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+      "0x5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b",
+      "0x3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e",
+      "0x7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b",
+      "0x2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b",
+    ];
+
+    switch (scenario) {
+      case "aligned":
+        return {
+          pollOptions: [
+            { label: "For", votes: 1200 + random(0, 100), position: 0 },
+            { label: "Against", votes: 400 + random(0, 50), position: 1 },
+            { label: "Abstain", votes: 80 + random(0, 20), position: 2 },
+          ],
+          tweetReplies: [
+            {
+              text: "This proposal looks solid! Great technical implementation 🚀",
+              like_count: 40 + random(0, 10),
+              retweet_count: 10 + random(0, 5),
+              reply_count: 5 + random(0, 5),
+              ctime: getRandomTime(1),
+            },
+            {
+              text: "Strong support from me. The roadmap is clear and achievable!",
+              like_count: 35 + random(0, 10),
+              retweet_count: 8 + random(0, 3),
+              reply_count: 3 + random(0, 5),
+              ctime: getRandomTime(2),
+            },
+            {
+              text: "I have minor concerns about timeline but overall supportive",
+              like_count: 20 + random(0, 5),
+              retweet_count: 2 + random(0, 2),
+              reply_count: 8 + random(0, 5),
+              ctime: getRandomTime(3),
+            },
+            {
+              text: "After review, this addresses real user needs. FOR! 💪",
+              like_count: 45 + random(0, 10),
+              retweet_count: 12 + random(0, 5),
+              reply_count: 6 + random(0, 3),
+              ctime: getRandomTime(4),
+            },
+            {
+              text: "Not fully convinced about some details but willing to try",
+              like_count: 15 + random(0, 5),
+              retweet_count: 1 + random(0, 2),
+              reply_count: 10 + random(0, 5),
+              ctime: getRandomTime(5),
+            },
+            {
+              text: "This will benefit the entire ecosystem. Great work team!",
+              like_count: 38 + random(0, 8),
+              retweet_count: 9 + random(0, 4),
+              reply_count: 4 + random(0, 3),
+              ctime: getRandomTime(6),
+            },
+          ],
+          voteCasts: [
+            {
+              support: "1",
+              reason:
+                "This proposal aligns with our technical roadmap and will improve UX significantly.",
+              voter: addresses[0],
+              weight: `${1500 + random(0, 500)}000000000000000000000`,
+              blockTimestamp: getRandomTime(0.5),
+            },
+            {
+              support: "1",
+              reason: "Strong technical merit and clear implementation plan.",
+              voter: addresses[1],
+              weight: `${800 + random(0, 200)}000000000000000000000`,
+              blockTimestamp: getRandomTime(1.5),
+            },
+            {
+              support: "0",
+              reason: "Timeline seems rushed. Need more testing period.",
+              voter: addresses[2],
+              weight: `${600 + random(0, 100)}000000000000000000000`,
+              blockTimestamp: getRandomTime(2.5),
+            },
+            {
+              support: "1",
+              reason: "",
+              voter: addresses[3],
+              weight: `${400 + random(0, 100)}000000000000000000000`,
+              blockTimestamp: getRandomTime(3.5),
+            },
+            {
+              support: "1",
+              reason: "Economic model is sustainable and well-designed.",
+              voter: addresses[4],
+              weight: `${2200 + random(0, 300)}000000000000000000000`,
+              blockTimestamp: getRandomTime(4.5),
+            },
+          ],
+        };
+
+      case "conflicted":
+        return {
+          pollOptions: [
+            { label: "For", votes: 700 + random(0, 50), position: 0 },
+            { label: "Against", votes: 650 + random(0, 50), position: 1 },
+            { label: "Abstain", votes: 150 + random(0, 30), position: 2 },
+          ],
+          tweetReplies: [
+            {
+              text: "Strong support! This is exactly what we need right now 🔥",
+              like_count: 45 + random(0, 15),
+              retweet_count: 12 + random(0, 5),
+              reply_count: 8 + random(0, 5),
+              ctime: getRandomTime(1),
+            },
+            {
+              text: "Hard NO. This proposal is dangerous and poorly thought out!",
+              like_count: 60 + random(0, 20),
+              retweet_count: 15 + random(0, 8),
+              reply_count: 25 + random(0, 10),
+              ctime: getRandomTime(2),
+            },
+            {
+              text: "I'm torn on this. Good intentions but execution concerns.",
+              like_count: 25 + random(0, 10),
+              retweet_count: 3 + random(0, 3),
+              reply_count: 15 + random(0, 8),
+              ctime: getRandomTime(3),
+            },
+            {
+              text: "Voting FOR despite some reservations. We need progress!",
+              like_count: 30 + random(0, 10),
+              retweet_count: 6 + random(0, 4),
+              reply_count: 12 + random(0, 6),
+              ctime: getRandomTime(4),
+            },
+            {
+              text: "This sets a terrible precedent. Community should reject this.",
+              like_count: 40 + random(0, 15),
+              retweet_count: 8 + random(0, 5),
+              reply_count: 20 + random(0, 8),
+              ctime: getRandomTime(5),
+            },
+            {
+              text: "Mixed feelings but leaning towards support. Needs amendments though.",
+              like_count: 18 + random(0, 8),
+              retweet_count: 2 + random(0, 2),
+              reply_count: 14 + random(0, 6),
+              ctime: getRandomTime(6),
+            },
+          ],
+          voteCasts: [
+            {
+              support: "0",
+              reason:
+                "Major concerns about long-term implications and rushed timeline.",
+              voter: addresses[0],
+              weight: `${3500 + random(0, 500)}000000000000000000000`,
+              blockTimestamp: getRandomTime(0.5),
+            },
+            {
+              support: "1",
+              reason:
+                "Despite concerns, the potential benefits outweigh the risks.",
+              voter: addresses[1],
+              weight: `${2800 + random(0, 400)}000000000000000000000`,
+              blockTimestamp: getRandomTime(1.5),
+            },
+            {
+              support: "0",
+              reason:
+                "Insufficient community consultation and unclear governance impact.",
+              voter: addresses[2],
+              weight: `${1900 + random(0, 300)}000000000000000000000`,
+              blockTimestamp: getRandomTime(2.5),
+            },
+            {
+              support: "2",
+              reason:
+                "Need more time to evaluate. Concept is good but implementation unclear.",
+              voter: addresses[3],
+              weight: `${1200 + random(0, 200)}000000000000000000000`,
+              blockTimestamp: getRandomTime(3.5),
+            },
+            {
+              support: "1",
+              reason:
+                "Strong technical review confirms this is the right approach.",
+              voter: addresses[4],
+              weight: `${2600 + random(0, 400)}000000000000000000000`,
+              blockTimestamp: getRandomTime(4.5),
+            },
+          ],
+        };
+
+      case "whale-dominated":
+        return {
+          pollOptions: [
+            { label: "For", votes: 800 + random(0, 100), position: 0 },
+            { label: "Against", votes: 600 + random(0, 80), position: 1 },
+            { label: "Abstain", votes: 100 + random(0, 30), position: 2 },
+          ],
+          tweetReplies: [
+            {
+              text: "Community seems divided but I think this has merit",
+              like_count: 25 + random(0, 10),
+              retweet_count: 5 + random(0, 3),
+              reply_count: 12 + random(0, 8),
+              ctime: getRandomTime(1),
+            },
+            {
+              text: "Whales will decide anyway, regular votes don't matter much",
+              like_count: 35 + random(0, 15),
+              retweet_count: 8 + random(0, 5),
+              reply_count: 18 + random(0, 10),
+              ctime: getRandomTime(2),
+            },
+            {
+              text: "Hope the big holders vote responsibly on this one",
+              like_count: 20 + random(0, 8),
+              retweet_count: 3 + random(0, 2),
+              reply_count: 10 + random(0, 5),
+              ctime: getRandomTime(3),
+            },
+            {
+              text: "My small vote probably won't change anything but voting FOR",
+              like_count: 15 + random(0, 5),
+              retweet_count: 1 + random(0, 2),
+              reply_count: 6 + random(0, 4),
+              ctime: getRandomTime(4),
+            },
+            {
+              text: "Governance needs to be more decentralized. Too much whale influence.",
+              like_count: 42 + random(0, 18),
+              retweet_count: 11 + random(0, 6),
+              reply_count: 22 + random(0, 8),
+              ctime: getRandomTime(5),
+            },
+          ],
+          voteCasts: [
+            {
+              support: "0",
+              reason:
+                "After careful analysis, this proposal lacks sufficient safeguards for long-term ecosystem health.",
+              voter: addresses[0],
+              weight: `${45000 + random(0, 5000)}000000000000000000000`,
+              blockTimestamp: getRandomTime(0.5),
+            }, // Mega whale
+            {
+              support: "1",
+              reason:
+                "Strong support from our technical committee. Implementation is solid.",
+              voter: addresses[1],
+              weight: `${25000 + random(0, 3000)}000000000000000000000`,
+              blockTimestamp: getRandomTime(1.5),
+            }, // Big whale
+            {
+              support: "1",
+              reason: "Good for ecosystem growth.",
+              voter: addresses[2],
+              weight: `${800 + random(0, 200)}000000000000000000000`,
+              blockTimestamp: getRandomTime(2.5),
+            }, // Small vote
+            {
+              support: "0",
+              reason: "Risks outweigh benefits.",
+              voter: addresses[3],
+              weight: `${600 + random(0, 150)}000000000000000000000`,
+              blockTimestamp: getRandomTime(3.5),
+            }, // Small vote
+            {
+              support: "1",
+              reason: "",
+              voter: addresses[4],
+              weight: `${400 + random(0, 100)}000000000000000000000`,
+              blockTimestamp: getRandomTime(4.5),
+            }, // Small vote
+            {
+              support: "0",
+              reason: "Need more community input before proceeding.",
+              voter: addresses[5],
+              weight: `${18000 + random(0, 2000)}000000000000000000000`,
+              blockTimestamp: getRandomTime(5.5),
+            }, // Another whale
+          ],
+        };
+
+      case "abstain-heavy":
+        return {
+          pollOptions: [
+            { label: "For", votes: 450 + random(0, 50), position: 0 },
+            { label: "Against", votes: 380 + random(0, 40), position: 1 },
+            { label: "Abstain", votes: 320 + random(0, 80), position: 2 },
+          ],
+          tweetReplies: [
+            {
+              text: "This proposal needs more clarity before I can decide",
+              like_count: 30 + random(0, 10),
+              retweet_count: 4 + random(0, 3),
+              reply_count: 15 + random(0, 8),
+              ctime: getRandomTime(1),
+            },
+            {
+              text: "I like the idea but implementation details are vague",
+              like_count: 25 + random(0, 8),
+              retweet_count: 3 + random(0, 2),
+              reply_count: 12 + random(0, 6),
+              ctime: getRandomTime(2),
+            },
+            {
+              text: "Sitting this one out until we get more information",
+              like_count: 18 + random(0, 7),
+              retweet_count: 2 + random(0, 2),
+              reply_count: 8 + random(0, 5),
+              ctime: getRandomTime(3),
+            },
+            {
+              text: "Cautiously optimistic but want to see a pilot program first",
+              like_count: 22 + random(0, 8),
+              retweet_count: 3 + random(0, 2),
+              reply_count: 10 + random(0, 6),
+              ctime: getRandomTime(4),
+            },
+            {
+              text: "Too many unknowns. Would prefer a phased approach.",
+              like_count: 35 + random(0, 12),
+              retweet_count: 7 + random(0, 4),
+              reply_count: 18 + random(0, 8),
+              ctime: getRandomTime(5),
+            },
+            {
+              text: "The concept has merit but timing feels premature",
+              like_count: 28 + random(0, 10),
+              retweet_count: 5 + random(0, 3),
+              reply_count: 14 + random(0, 7),
+              ctime: getRandomTime(6),
+            },
+          ],
+          voteCasts: [
+            {
+              support: "2",
+              reason:
+                "Need more clarity on implementation timeline and resource allocation before committing.",
+              voter: addresses[0],
+              weight: `${2200 + random(0, 300)}000000000000000000000`,
+              blockTimestamp: getRandomTime(0.5),
+            },
+            {
+              support: "1",
+              reason:
+                "Despite uncertainties, the core concept is sound and needed.",
+              voter: addresses[1],
+              weight: `${1800 + random(0, 200)}000000000000000000000`,
+              blockTimestamp: getRandomTime(1.5),
+            },
+            {
+              support: "2",
+              reason:
+                "Prefer to wait for a pilot program to validate assumptions.",
+              voter: addresses[2],
+              weight: `${1500 + random(0, 300)}000000000000000000000`,
+              blockTimestamp: getRandomTime(2.5),
+            },
+            {
+              support: "0",
+              reason:
+                "Too many gaps in the proposal. Current approach seems insufficient.",
+              voter: addresses[3],
+              weight: `${1100 + random(0, 200)}000000000000000000000`,
+              blockTimestamp: getRandomTime(3.5),
+            },
+            {
+              support: "2",
+              reason:
+                "Abstaining until more detailed technical specifications are provided.",
+              voter: addresses[4],
+              weight: `${2000 + random(0, 400)}000000000000000000000`,
+              blockTimestamp: getRandomTime(4.5),
+            },
+            {
+              support: "1",
+              reason:
+                "Moving forward with this proposal despite some concerns about timing.",
+              voter: addresses[5],
+              weight: `${900 + random(0, 150)}000000000000000000000`,
+              blockTimestamp: getRandomTime(5.5),
+            },
+            {
+              support: "2",
+              reason:
+                "The proposal has potential but requires more community consultation.",
+              voter: addresses[6],
+              weight: `${1600 + random(0, 250)}000000000000000000000`,
+              blockTimestamp: getRandomTime(6.5),
+            },
+          ],
+        };
+
+      default:
+        return this.fulfillContractOptions("aligned", seed);
     }
   }
 

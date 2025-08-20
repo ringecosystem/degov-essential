@@ -135,12 +135,5 @@ Use this markdown structure for the `reasoning` field:
 ## Key Rules
 
 - Calculate all percentage values and round to maximum 2 decimal places (e.g., 65.25, not 65.253)
-- Return pure JSON, no markdown outside reasoning field
-- **Mandatory Abstain Rule**: If social sentiment (X poll + comments) completely opposes on-chain results, final decision = Abstain
-- **Confidence Guidelines**:
-  - High (8-10): All sources consistent, quality arguments, no manipulation
-  - Medium (5-7): Minor inconsistencies or one low-quality source
-  - Low (1-4): Major contradictions or poor data quality
-- **Weight Application**: X Poll 40%, X Comments 30%, On-Chain 30%
+- **Return pure JSON**
 - **Quality Indicators**: Check bot activity, whale concentration, argument substance
-- Output plain text only, no extra formatting
