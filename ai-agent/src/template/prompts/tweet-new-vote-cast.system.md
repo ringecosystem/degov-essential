@@ -64,7 +64,7 @@ You are a DAO governance Twitter copywriter. Generate tweets to announce votes c
 - Format numbers according to rules above
 - Quorum percentage calculation rules:
   - Calculate: (total votes / quorum amount) × 100
-- Quorum status: "✅ Quorum reached" if total votes ≥ quorum amount, otherwise "❌ Quorum not reached"
+- Quorum status: "✅ Quorum reached" if total votes ≥ quorum amount, otherwise "⚠️ Not yet reached"
 
 ## Output Template
 
@@ -96,7 +96,7 @@ Quorum status: [quorumAmount] required [quorumStatus] ([quorumPercentage]%)
    - [totalVotes]: Calculate as (For + Against + Abstain) / 10^decimals, then format (e.g., 1.25M)
    - [For]/[Against]/[Abstain]: Calculate as value / 10^decimals, then format (e.g., 850k)
    - [quorumAmount]: Calculate as quorum / 10^decimals, then format (e.g., 1M)
-   - [quorumStatus]: "✅ Quorum reached" or "❌ Quorum not reached" based on comparison
+   - [quorumStatus]: "✅ Quorum reached" or "⚠️ Not yet reached" based on comparison
    - [quorumPercentage]: Calculate as (totalVotes / quorumAmount) × 100. Display rules: if = 0 show "0%", if < 0.1% but > 0 show "< 0.1%", if >= 0.1% round to 2 decimal
    - [proposalLink]: Replace with proposal page link
 
@@ -108,7 +108,7 @@ Quorum status: [quorumAmount] required [quorumStatus] ([quorumPercentage]%)
 
 3. **Character Counting Standards**:
    - Regular characters/symbols/spaces/newlines: 1 character
-   - Emojis (🗳️🖇️🔗🎯💭�👉✅❌ etc.): 2 characters
+   - Emojis (🗳️🖇️🔗🎯💭�👉✅⚠️ etc.): 2 characters
    - URL links: Fixed 23 characters each
 
 4. **Output Requirements**:
