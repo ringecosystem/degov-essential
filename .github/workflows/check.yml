@@ -35,3 +35,8 @@ jobs:
       - name: Build
         working-directory: ${{ matrix.package }}
         run: pnpm build
+
+      - name: Test
+        working-directory: ${{ matrix.package }}
+        if: ${{ matrix.package == 'ai-agent' }}
+        run: pnpm test --testPathIgnorePatterns="__tests__/x.test.ts"
