@@ -1,4 +1,4 @@
-name: Generate Tweet
+name: AI Preview
 
 on:
   issue_comment:
@@ -7,12 +7,12 @@ on:
   #   branches: [main]
 
 jobs:
-  generate-tweet:
-    name: Generate Tweet
+  ai-preview:
+    name: AI Preview
     runs-on: ubuntu-latest
     if: |
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/generate-tweet') &&
+      contains(github.event.comment.body, '/ai-preview') &&
       (github.event.comment.user.login == 'fewensa' || github.event.comment.user.login == 'boundless-forest')
     steps:
       - name: Find triggering comment
@@ -21,7 +21,7 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body-includes: /generate-tweet
+          body-includes: /ai-preview
 
       - name: Update comment with processing status
         uses: peter-evans/create-or-update-comment@v4
@@ -29,9 +29,9 @@ jobs:
           comment-id: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id || github.event.comment.id }}
           reactions: eyes
           body: |
-            🤖 **Generating tweet...**
+            🤖 **Generating AI preview...**
 
-            The AI agent is analyzing the changes and generating a tweet. Please wait...
+            The AI agent is analyzing the changes and generating a preview. Please wait...
 
             🔗 **Workflow run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
@@ -70,22 +70,22 @@ jobs:
         working-directory: ai-agent
         run: pnpm install
 
-      - name: Generate agent tweet
-        # id: tweet-generation
+      - name: Generate AI preview
+        # id: ai-preview-generation
         working-directory: ai-agent
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_DEFAULT_MODEL: openai/gpt-4o
-        run: pnpm test __tests__/x.test.ts
+        run: pnpm test __tests__/ai.test.ts
 
-      - name: Update comment with tweet result
+      - name: Update comment with AI preview result
         uses: peter-evans/create-or-update-comment@v4
         if: success()
         with:
           comment-id: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id || github.event.comment.id }}
           reactions: rocket
           edit-mode: replace
-          body-path: ai-agent/outputs/tweet-gen.md
+          body-path: ai-agent/outputs/ai-preview.md
 
       - name: Update comment with error message
         uses: peter-evans/create-or-update-comment@v4
@@ -95,10 +95,11 @@ jobs:
           reactions: confused
           edit-mode: replace
           body: |
-            ❌ **Tweet generation failed**
+            ❌ **AI preview generation failed**
 
-            Sorry, there was an error while generating the tweet. Please check the workflow logs for more details.
+            Sorry, there was an error while generating the AI preview. Please check the workflow logs for more details.
 
             🔗 **Workflow run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            You can try again by commenting `/generate-tweet` once more.
+            You can try again by commenting `/ai-preview` once more.
+
