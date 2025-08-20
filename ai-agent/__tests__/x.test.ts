@@ -204,6 +204,7 @@ describe("X Tweet Preview Test", () => {
           quorum: quorumResult,
           votingDistribution,
         };
+        console.log(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(
           ats.fastify(),
           promptInput
