@@ -1,2 +1,2 @@
-export * from "./governor";
+export * from "./degov";
 export * from "./types";

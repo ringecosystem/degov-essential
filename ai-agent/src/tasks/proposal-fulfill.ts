@@ -17,7 +17,7 @@ import { DegovHelpers } from "../helpers";
 import { generateObject } from "ai";
 import { DegovPrompt } from "../internal/prompt";
 import { OpenrouterAgent } from "../internal/openrouter";
-import { GovernorContract } from "../internal/contracts";
+import { DegovContract } from "../internal/contracts";
 import { setTimeout } from "timers/promises";
 
 @Service()
@@ -29,7 +29,7 @@ export class DegovProposalFulfillTask {
     private readonly degovIndexer: DegovIndexer,
     private readonly degovTweetSyncTask: DegovTweetSyncTask,
     private readonly openrouterAgent: OpenrouterAgent,
-    private readonly governorContract: GovernorContract
+    private readonly degovContract: DegovContract
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -276,7 +276,7 @@ export class DegovProposalFulfillTask {
     }
     const aiResp = _aiResp!;
 
-    await this.governorContract.castVoteWithReason({
+    await this.degovContract.castVoteWithReason({
       chainId: daoConfig.chain.id,
       contractAddress: DegovHelpers.stdHex(daoConfig.contracts.governor),
       proposalId: BigInt(tweet.proposal_id),

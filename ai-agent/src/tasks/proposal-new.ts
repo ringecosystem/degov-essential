@@ -12,7 +12,7 @@ import { NewProposalEvent } from "../types";
 import { DegovIndexer } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
 import { generateText } from "ai";
-import { GovernorContract } from "../internal/contracts";
+import { DegovContract } from "../internal/contracts";
 import { ChainTool } from "../internal/chaintool";
 
 @Service()
@@ -22,7 +22,7 @@ export class DegovProposalNewTask {
     private readonly twitterAgent: TwitterAgentW,
     private readonly openrouterAgent: OpenrouterAgent,
     private readonly degovIndexer: DegovIndexer,
-    private readonly governorContract: GovernorContract,
+    private readonly degovContract: DegovContract,
     private readonly chainTool: ChainTool
   ) {}
 
@@ -199,7 +199,7 @@ export class DegovProposalNewTask {
       const chainRpc = await this.chainTool.pickRpc({
         rpcs: degovConfig.chain?.rpcs,
       });
-      const clockMode = await this.governorContract.clockMode({
+      const clockMode = await this.degovContract.clockMode({
         chainId,
         endpoint: chainRpc,
         contractAddress: degovConfig.contracts?.governor as `0x${string}`,

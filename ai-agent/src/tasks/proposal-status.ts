@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
-import { GovernorContract } from "../internal/contracts";
+import { DegovContract } from "../internal/contracts";
 import { DegovService } from "../services/degov";
 import { DegovMcpDao, ProposalState } from "../types";
 import { degov_tweet } from "../generated/prisma";
@@ -21,7 +21,7 @@ export class DegovProposalStatusTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly daoService: DaoService,
-    private readonly governorContract: GovernorContract,
+    private readonly degovContract: DegovContract,
     private readonly twitterAgent: TwitterAgentW,
     private readonly degovIndexer: DegovIndexer
   ) {}
@@ -120,7 +120,7 @@ export class DegovProposalStatusTask {
     const daoContracts = daoConfig.contracts;
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
 
-    const statusResult = await this.governorContract.status({
+    const statusResult = await this.degovContract.status({
       chainId: daoConfig.chain.id,
       endpoint: daoConfig.chain.rpcs?.[0],
       contractAddress: DegovHelpers.stdHex(daoContracts.governor),

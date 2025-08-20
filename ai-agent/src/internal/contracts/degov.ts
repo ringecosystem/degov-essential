@@ -58,7 +58,7 @@ const ABI_FUNCTION_CAST_VOTE_WITH_REASON = [
 ];
 
 @Service()
-export class GovernorContract {
+export class DegovContract {
   private private_key: PrivateKeyAccount | undefined;
 
   private client(options: BaseContractOptions) {

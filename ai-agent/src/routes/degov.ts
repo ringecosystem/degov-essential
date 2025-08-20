@@ -3,7 +3,7 @@ import { Service } from "typedi";
 import { DegovSummaryForm, Resp } from "../types";
 import { DaoService } from "../services/dao";
 import { DegovService } from "../services/degov";
-import { GovernorContract } from "../internal/contracts";
+import { DegovContract } from "../internal/contracts";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 
 @Service()
@@ -12,7 +12,7 @@ export class DegovRouter {
     private readonly daoService: DaoService,
     private readonly degovService: DegovService,
     private readonly twitterAgent: TwitterAgentW,
-    private readonly governorContract: GovernorContract
+    private readonly degovContract: DegovContract
   ) {}
 
   async regist(fastify: FastifyInstance) {
@@ -22,7 +22,7 @@ export class DegovRouter {
     });
 
     fastify.get("/degov/bot-address", async (_request, _reply) => {
-      const address = this.governorContract.botAccoutAddress();
+      const address = this.degovContract.botAccoutAddress();
       return Resp.ok({ address });
     });
 
