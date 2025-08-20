@@ -63,3 +63,10 @@ export interface DIProposalExecuted {
   blockNumber: string;
   blockTimestamp: string;
 }
+
+export interface VotingDistribution {
+  totalWeight: bigint;
+  distributionBySupport: {
+    [support: string]: bigint;
+  };
+}
