@@ -18,7 +18,19 @@ Using the provided JSON data, generate a concise and informative tweet to announ
   "proposalLink": "string", // Link to the proposal
   "choice": "string", // The choice made
   "reason": "string" | undefined, // Can be null or empty
-  "verified": "boolean" // Whether the Twitter account is verified
+  "verified": "boolean", // Whether the Twitter account is verified
+  "quorum": {
+    "quorum": "bigint", // vote quorum
+    "decimals": "bigint", // quorum decimals
+  },
+  "votingDistribution": {
+    "totalWeight": "bigint", // voting total weight
+    "distributionBySupport": {
+      "Against": "bigint", // total Against
+      "For": "bigint", // total For
+      "Abstain": "bigint",  // total Abstain
+    }
+  },
 }
 ```
 
@@ -52,6 +64,10 @@ You **must** fill out the template below exactly as specified.
 
 🎯 Choice: [choice]
 💭 Reason: [reason]
+
+📊 Voting progress:
+Total votes: [For+Against+Abstain] (For: [votingDistribution.distributionBySupport.For] | Against: [votingDistribution.distributionBySupport.Against] | Abstain: [votingDistribution.distributionBySupport.Abstain])
+Quorum status: [quorum.quorum] required ✅ Quorum reached ([percent total of quorium.quorum]%)
 
 👉 Join the discussion and cast your vote: [proposalLink]
 
