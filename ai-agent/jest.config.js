@@ -13,7 +13,4 @@ module.exports = {
       },
     ],
   },
-  moduleNameMapper: {
-    "^graphql-request$": "<rootDir>/__mocks__/graphql-request.js"
-  },
 };
