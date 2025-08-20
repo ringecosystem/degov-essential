@@ -133,6 +133,7 @@ export class DegovProposalNewTask {
         const promptout = await DegovPrompt.newProposalTweet(fastify, {
           stu,
           event,
+          pollTweetDurationResult,
         });
         const aiResp = await generateText({
           model: this.openrouterAgent.openrouter(EnvReader.aiModel()),

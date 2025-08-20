@@ -145,9 +145,16 @@ describe("X Tweet Preview Test", () => {
 
       const fastify = ats.fastify();
 
+      const pollTweetDurationResult: PollTweetDurationResult = {
+        durationMinutes: 10,
+        proposalStartTimestamp: new Date(),
+        proposalEndTimestamp: new Date(Date.now() + 1000 * 60 * 1000), // 1000 minutes later
+      };
+
       const promptout = await DegovPrompt.newProposalTweet(fastify, {
         stu: ats.verifiedXUser(),
         event: proposalEvent,
+        pollTweetDurationResult,
       });
 
       const aiResp = await generateText({

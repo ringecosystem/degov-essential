@@ -4,7 +4,7 @@ import { SimpleTweetUser } from "../x-agent";
 import { getBuiltInPrompt } from "./common";
 import { QuorumResult } from "../contracts";
 import { VotingDistribution } from "../graphql";
-import { DegovHelpers } from "../../helpers";
+import { DegovHelpers, PollTweetDurationResult } from "../../helpers";
 
 export class DegovPrompt {
   static async newProposalTweet(
@@ -12,9 +12,10 @@ export class DegovPrompt {
     options: {
       stu: SimpleTweetUser;
       event: NewProposalEvent;
+      pollTweetDurationResult: PollTweetDurationResult;
     }
   ): Promise<PromptOutput> {
-    const { event, stu } = options;
+    const { event, stu, pollTweetDurationResult } = options;
     const proposal = event.proposal;
     const rawData = {
       daoname: event.daoname,
@@ -24,6 +25,7 @@ export class DegovPrompt {
       verified: stu.verified,
       daox: event.daox,
       transactionLink: proposal.transactionLink,
+      voteEnd: pollTweetDurationResult.proposalEndTimestamp,
     };
     return {
       system: await getBuiltInPrompt(
