@@ -91,7 +91,7 @@ Quorum status: [quorumAmount] required [quorumStatus] ([quorumPercentage]%)
    - [voterAddressLink]: Replace with delegate profile link
    - [transactionLink]: Replace with blockchain transaction link
    - [choice]: Replace with vote choice (For/Against/Abstain)
-   - [reason]: Replace with processed reason, omit entire line if no reason
+   - [reason]: Replace with processed reason, Keep outputting even if it is empty
    - [totalVotes]: Calculate as (For + Against + Abstain) / 10^decimals, then format (e.g., 1.25M)
    - [For]/[Against]/[Abstain]: Calculate as value / 10^decimals, then format (e.g., 850k)
    - [quorumAmount]: Calculate as quorum / 10^decimals, then format (e.g., 1M)
@@ -104,7 +104,6 @@ Quorum status: [quorumAmount] required [quorumStatus] ([quorumPercentage]%)
    - If ensName doesn't exist: Show voterAddress
    - If voterXUsername exists: Show @voterXUsername
    - If voterXUsername doesn't exist: Omit the @ mention entirely
-   - If no reason provided: Omit the entire "💭 Reason:" line
 
 3. **Character Counting Standards**:
    - Regular characters/symbols/spaces/newlines: 1 character
