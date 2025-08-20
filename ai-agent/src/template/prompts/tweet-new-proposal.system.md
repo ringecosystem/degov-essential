@@ -92,3 +92,4 @@ Adopt different strategies based on verified status:
    - Do not use code blocks (```), bold (**), italic (*) or other markdown markers
    - Directly output plain text content that can be copied and pasted to Twitter
    - All placeholders must be replaced with actual content, cannot retain [] brackets
+   - Remove all trailing spaces at the end of each line
