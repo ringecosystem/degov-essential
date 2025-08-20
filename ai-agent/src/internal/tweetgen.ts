@@ -34,7 +34,13 @@ class ProposalStateChangedTweetGenerator {
       moreInfos.push(`🔗 Transaction: ${transactionLink}`);
     }
     if (this.input.eta) {
-      moreInfos.push(`📅 ETA: ${this.input.eta.toISOString()}`);
+      const formattedDate = new Intl.DateTimeFormat("en-US", {
+        dateStyle: "long",
+        timeStyle: "short",
+        timeZone: "UTC",
+        hour12: true,
+      }).format(this.input.eta);
+      moreInfos.push(`📅 ETA: ${formattedDate} UTC`);
     }
 
     return [
