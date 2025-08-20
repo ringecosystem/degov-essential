@@ -134,7 +134,7 @@ export class DegovProposalVoteTask {
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
 
     const daoContracts = daoConfig.contracts;
-    const quorum = await this.degovContract.quorum({
+    const quorumResult = await this.degovContract.quorum({
       chainId: daoConfig.chain.id,
       endpoint: daoConfig.chain.rpcs?.[0],
       contractAddress: DegovHelpers.stdHex(daoContracts.governor),
@@ -144,6 +144,7 @@ export class DegovProposalVoteTask {
         daoContracts.governorToken.address
       ),
     });
+    
     for (const vote of voteCasts) {
       try {
         const degovLink = DegovHelpers.degovLink(daoConfig);

@@ -1,3 +1,3 @@
 
-export * from './proposal';
+export * from './degov';
 export * from './types';
