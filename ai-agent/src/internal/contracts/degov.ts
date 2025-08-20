@@ -11,6 +11,8 @@ import {
   QueryStatusOptions,
   CastVoteOptions,
   BaseWriteContraceOptions,
+  QueryQuorumOptions,
+  QuorumResult,
 } from "./types";
 import { ClockMode, ProposalState } from "../../types";
 import { DegovHelpers } from "../../helpers";
@@ -53,6 +55,36 @@ const ABI_FUNCTION_CAST_VOTE_WITH_REASON = [
     name: "castVoteWithReason",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+];
+
+const ABI_FUNCTION_QUORUM = [
+  {
+    inputs: [{ internalType: "uint256", name: "blockNumber", type: "uint256" }],
+    name: "quorum",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+const ABI_FUNCTION_CLOCK = [
+  {
+    inputs: [],
+    name: "clock",
+    outputs: [{ internalType: "uint48", name: "", type: "uint48" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+const ABI_FUNCTION_DECIMALS = [
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
     type: "function",
   },
 ];
@@ -202,5 +234,79 @@ export class DegovContract {
       account: account,
     });
     return hash;
+  }
+
+  async quorum(options: QueryQuorumOptions): Promise<QuorumResult | undefined> {
+    const client = this.client(options);
+
+    let clock: bigint | undefined = undefined;
+    try {
+      const result = await client.readContract({
+        address: options.contractAddress,
+        abi: ABI_FUNCTION_CLOCK,
+        functionName: "clock",
+      });
+      if (result) {
+        clock = BigInt(result.toString());
+      }
+    } catch (e: any) {
+      console.warn(`failed to query clock: ${e}`);
+    }
+    if (!clock) {
+      const clockMode = await this.clockMode(options);
+      const latestBlock = await client.getBlock();
+      switch (clockMode) {
+        case ClockMode.Timestamp:
+          clock = latestBlock.timestamp - 60n * 3n;
+          break;
+        case ClockMode.BlockNumber:
+          // Use a block number that's safely in the past to avoid "block not yet mined" error
+          clock = latestBlock.number - 10n;
+          break;
+      }
+    }
+
+    const quorumResult = await client.readContract({
+      address: options.contractAddress,
+      abi: ABI_FUNCTION_QUORUM,
+      functionName: "quorum",
+      args: [clock],
+    });
+    if (!quorumResult) {
+      return undefined;
+    }
+    const quorum = BigInt(quorumResult.toString());
+    const includeDecimals = options.includeDecimals ?? false;
+
+    let decimals: bigint | undefined = undefined;
+    if (includeDecimals && options.standard && options.governorTokenAddress) {
+      switch (options.standard) {
+        case "ERC20": {
+          const decimalsResult = await client.readContract({
+            address: options.governorTokenAddress,
+            abi: ABI_FUNCTION_DECIMALS,
+            functionName: "decimals",
+          });
+          if (decimalsResult) {
+            decimals = BigInt(decimalsResult.toString());
+          } else {
+            console.warn(
+              `Failed to query decimals for governor token address ${options.governorTokenAddress}`
+            );
+          }
+          break;
+        }
+        case "ERC721":
+          decimals = 1n;
+          break;
+        default:
+          throw new Error(`unsupported contract standard: ${options.standard}`);
+      }
+    }
+
+    return {
+      quorum,
+      decimals,
+    };
   }
 }
