@@ -8,7 +8,6 @@ import { EnvReader } from "../src/integration/env-reader";
 import { SendTweetInput } from "../src/internal/x-agent";
 import dotenv from "dotenv";
 import { TweetGen } from "../src/internal/tweetgen";
-import { QuorumResult } from "./internal/contracts";
 
 describe("X Tweet Preview Test", () => {
   const ats: AgentTestSupport = Container.get(AgentTestSupport);
