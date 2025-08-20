@@ -4,6 +4,7 @@ import { SimpleTweetUser } from "../x-agent";
 import { getBuiltInPrompt } from "./common";
 import { QuorumResult } from "../contracts";
 import { VotingDistribution } from "../graphql";
+import { DegovHelpers } from "../../helpers";
 
 export class DegovPrompt {
   static async newProposalTweet(
@@ -30,7 +31,7 @@ export class DegovPrompt {
         "prompts/tweet-new-proposal.system.md"
       ),
       prompt: `
-${JSON.stringify(rawData)}
+${DegovHelpers.safeJsonStringify(rawData)}
 
 Generate a poll tweet use above data
     `,
@@ -65,7 +66,7 @@ Generate a poll tweet use above data
         "prompts/tweet-new-expiring-soon-proposal.system.md"
       ),
       prompt: `
-${JSON.stringify(rawData)}
+${DegovHelpers.safeJsonStringify(rawData)}
 
 Generate a tweet use above data
     `,
@@ -95,7 +96,7 @@ Generate a tweet use above data
         "prompts/tweet-new-vote-cast.system.md"
       ),
       prompt: `
-${JSON.stringify(rawData)}
+${DegovHelpers.safeJsonStringify(rawData)}
 
 Generate a tweet use above data
       `,
@@ -113,13 +114,13 @@ Generate a tweet use above data
       ),
       prompt: `
 **X Poll:**
-${JSON.stringify(options.pollOptions)}
+${DegovHelpers.safeJsonStringify(options.pollOptions)}
 
 **X Comments:**
-${JSON.stringify(options.tweetReplies)}
+${DegovHelpers.safeJsonStringify(options.tweetReplies)}
 
 **On-Chain Voting:**
-${JSON.stringify(options.voteCasts)}
+${DegovHelpers.safeJsonStringify(options.voteCasts)}
 
 Please analyze these data comprehensively and give final governance decision recommendations.
       `,
