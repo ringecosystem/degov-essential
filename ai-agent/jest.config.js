@@ -9,7 +9,11 @@ module.exports = {
       "ts-jest",
       {
         tsconfig: "tsconfig.test.json",
+        useESM: false,
       },
     ],
+  },
+  moduleNameMapper: {
+    "^graphql-request$": "<rootDir>/__mocks__/graphql-request.js"
   },
 };
