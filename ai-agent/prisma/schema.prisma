@@ -161,3 +161,36 @@ model proposal_summary {
   ctime DateTime @default(now())
   utime DateTime @updatedAt
 }
+
+model ens_record {
+  id String @id
+
+  address    String
+  ens_name   String
+  is_primary Boolean @default(false) // indicates if this is the primary ENS for the address
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  ens_text_records ens_text_record[]
+
+  @@unique([address, ens_name])
+  @@index([address])
+  @@index([ens_name])
+}
+
+model ens_text_record {
+  id String @id
+
+  ens_record_id String
+  key           String
+  value         String?
+
+  ctime DateTime @default(now())
+  utime DateTime @updatedAt
+
+  ens_record ens_record @relation(fields: [ens_record_id], references: [id], onDelete: Cascade)
+
+  @@unique([ens_record_id, key])
+  @@index([key])
+}

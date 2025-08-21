@@ -25,3 +25,14 @@ export interface CastVoteOptions extends BaseWriteContraceOptions {
   support: number; // 0 = Against, 1 = For, 2 = Abstain
   reason: string;
 }
+
+export interface QueryQuorumOptions extends BaseContractOptions {
+  standard?: "ERC20" | "ERC721";
+  governorTokenAddress?: `0x${string}`;
+  includeDecimals?: boolean;
+}
+
+export interface QuorumResult {
+  quorum: bigint;
+  decimals?: bigint;
+}

@@ -13,7 +13,7 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-COPY --from=builder /code/build /app
+COPY --from=builder /code/build/src /app
 COPY --from=builder /code/package.json /app/package.json
 COPY --from=builder /code/scripts /app/scripts
 COPY --from=builder /code/prisma /app/prisma

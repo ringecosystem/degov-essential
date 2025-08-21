@@ -13,6 +13,8 @@ import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { setTimeout } from "timers/promises";
 import { generateText } from "ai";
+import { ProfileService } from "../services/profile";
+import { DegovContract } from "../internal/contracts";
 
 @Service()
 export class DegovProposalVoteTask {
@@ -21,7 +23,9 @@ export class DegovProposalVoteTask {
     private readonly twitterAgent: TwitterAgentW,
     private readonly daoService: DaoService,
     private readonly degovIndexer: DegovIndexer,
-    private readonly openrouterAgent: OpenrouterAgent
+    private readonly openrouterAgent: OpenrouterAgent,
+    private readonly profileService: ProfileService,
+    private readonly degovContract: DegovContract
   ) {}
 
   async start(fastify: FastifyInstance) {
@@ -113,7 +117,7 @@ export class DegovProposalVoteTask {
       );
       return;
     }
-    const degovConfig = dao.config;
+    const daoConfig = dao.config;
     const currentVoteProgress = await this.degovService.currentVoteProgress(
       fastify,
       {
@@ -122,26 +126,67 @@ export class DegovProposalVoteTask {
     );
     const offset = currentVoteProgress?.offset ?? 0;
     const voteCasts = await this.degovIndexer.queryProposalVotes({
-      endpoint: degovConfig.indexer.endpoint,
+      endpoint: daoConfig.indexer.endpoint,
       proposalId: degovTweet.proposal_id,
       offset,
     });
     let nextOffset = offset;
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
+
+    const daoContracts = daoConfig.contracts;
+    let quorumResult;
+    try {
+      quorumResult = await this.degovContract.quorum({
+        chainId: daoConfig.chain.id,
+        endpoint: daoConfig.chain.rpcs?.[0],
+        contractAddress: DegovHelpers.stdHex(daoContracts.governor),
+
+        standard: daoContracts.governorToken.standard,
+        governorTokenAddress: DegovHelpers.stdHex(
+          daoContracts.governorToken.address
+        ),
+        includeDecimals: true,
+      });
+    } catch (e: any) {
+      fastify.log.error(
+        `[task-vote] Error fetching quorum for DAO ${
+          daoConfig.name
+        }: ${DegovHelpers.helpfulErrorMessage(e)}`
+      );
+    }
+
     for (const vote of voteCasts) {
       try {
-        const degovLink = DegovHelpers.degovLink(degovConfig);
+        const degovLink = DegovHelpers.degovLink(daoConfig);
         const voterAddressLink = degovLink.delegate(vote.voter);
         const proposalLink = degovLink.proposal(degovTweet.proposal_id, {
           delegate: vote.voter,
         });
+        const mixedAccountInfo = await this.profileService.mixedAccountInfo(
+          fastify,
+          {
+            degovSite: daoConfig.siteUrl,
+            address: vote.voter,
+          }
+        );
+        const votingDistribution =
+          await await this.degovIndexer.queryVotingDistribution({
+            endpoint: daoConfig.indexer.endpoint,
+            proposalId: degovTweet.proposal_id,
+          });
+
         const promptInput = {
           stu,
+          ensName: mixedAccountInfo?.ensName ?? "",
+          voterXUsername: mixedAccountInfo?.xUsername ?? "",
+          voterAddress: vote.voter,
           voterAddressLink,
           proposalLink,
           transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
+          quorum: quorumResult,
+          votingDistribution,
         };
         fastify.log.debug(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(
@@ -178,7 +223,7 @@ export class DegovProposalVoteTask {
         fastify.log.debug(tweetInput);
         const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
         fastify.log.info(
-          `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${degovConfig.name}, Proposal ID: ${degovTweet.proposal_id}`
+          `[task-vote] Posted new vote cast tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${daoConfig.name}, Proposal ID: ${degovTweet.proposal_id}`
         );
         nextOffset += 1;
         await setTimeout(1000);

@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Service } from "typedi";
 import { EnvReader } from "../integration/env-reader";
-import { GovernorContract } from "../internal/governor";
+import { DegovContract } from "../internal/contracts";
 import { DegovService } from "../services/degov";
 import { DegovMcpDao, ProposalState } from "../types";
 import { degov_tweet } from "../generated/prisma";
@@ -11,14 +11,17 @@ import { DegovHelpers } from "../helpers";
 import { SendTweetInput } from "../internal/x-agent";
 import { TwitterAgentW } from "../internal/x-agent/agentw";
 import { DegovIndexer } from "../internal/graphql";
-import * as changeCase from "change-case";
+import {
+  GenProposalStateChangedTweetInput,
+  TweetGen,
+} from "../internal/tweetgen";
 
 @Service()
 export class DegovProposalStatusTask {
   constructor(
     private readonly degovService: DegovService,
     private readonly daoService: DaoService,
-    private readonly governorContract: GovernorContract,
+    private readonly degovContract: DegovContract,
     private readonly twitterAgent: TwitterAgentW,
     private readonly degovIndexer: DegovIndexer
   ) {}
@@ -117,7 +120,7 @@ export class DegovProposalStatusTask {
     const daoContracts = daoConfig.contracts;
     const stu = this.twitterAgent.currentUser({ xprofile: dao.xprofile });
 
-    const statusResult = await this.governorContract.status({
+    const statusResult = await this.degovContract.status({
       chainId: daoConfig.chain.id,
       endpoint: daoConfig.chain.rpcs?.[0],
       contractAddress: DegovHelpers.stdHex(daoContracts.governor),
@@ -135,36 +138,29 @@ export class DegovProposalStatusTask {
       status: statusResult,
     });
     const degovConfig = dao.config;
+    const degovLink = DegovHelpers.degovLink(degovConfig);
 
-    const promptInput = {
-      proposalLink: DegovHelpers.degovLink(degovConfig).proposal(
-        degovTweet.proposal_id
-      ),
+    const genTweetInput: GenProposalStateChangedTweetInput = {
+      degovLink,
+      proposalId: degovTweet.proposal_id,
+      state: statusResult,
     };
 
     const moreInfos: string[] = [];
     try {
-      const moreInfosResult = await this.moreTweetInfos({
-        degovTweet,
-        dao,
-        status: statusResult,
-      });
-      if (moreInfosResult.length > 0) {
-        moreInfos.push(...moreInfosResult);
-      }
+      await this.moreTweetInfos(
+        {
+          dao,
+        },
+        genTweetInput
+      );
     } catch (err) {
       fastify.log.warn(
         `[task-status] Error fetching more tweet infos for tweet ${degovTweet.id}: ${err}`
       );
     }
 
-    const tweet = [
-      `${this.bestStatusEmoji(
-        statusResult
-      )} Proposal status update: ${changeCase.pascalCase(statusResult)}`,
-      ...moreInfos,
-      `👉 See the latest: ${promptInput.proposalLink}`,
-    ].join("\n");
+    const tweet = TweetGen.generateProposalStateChangedTweet(genTweetInput);
 
     const tweetInput: SendTweetInput = {
       xprofile: dao.xprofile,
@@ -180,42 +176,48 @@ export class DegovProposalStatusTask {
     fastify.log.debug(tweetInput);
     const sendResp = await this.twitterAgent.sendTweet(fastify, tweetInput);
     fastify.log.info(
-      `[task-status] Posted proposal status tweet(https://x.com/${stu.username}/status/${sendResp.data.id}) for DAO: ${degovConfig.name}, Proposal URL: ${promptInput.proposalLink}`
+      `[task-status] Posted proposal status tweet(https://x.com/${
+        stu.username
+      }/status/${sendResp.data.id}) for DAO: ${
+        degovConfig.name
+      }, Proposal URL: ${degovLink.proposal(genTweetInput.proposalId)}`
     );
   }
 
-  private async moreTweetInfos(options: {
-    degovTweet: degov_tweet;
-    dao: DegovMcpDao;
-    status: ProposalState;
-  }): Promise<string[]> {
-    const results = [];
+  private async moreTweetInfos(
+    options: {
+      dao: DegovMcpDao;
+    },
+    genTweetInput: GenProposalStateChangedTweetInput
+  ) {
+    const proposalState = genTweetInput.state;
+    const proposalId = genTweetInput.proposalId;
     let transactionHash: string | undefined;
     const degovConfig = options.dao.config;
-    switch (options.status) {
+    switch (proposalState) {
       case ProposalState.Canceled:
         const pcanceled = await this.degovIndexer.queryProposalCanceled({
           endpoint: degovConfig.indexer.endpoint,
-          proposalId: options.degovTweet.proposal_id,
+          proposalId,
         });
         transactionHash = pcanceled?.transactionHash;
         break;
       case ProposalState.Queued:
         const pqueued = await this.degovIndexer.queryProposalQueued({
           endpoint: degovConfig.indexer.endpoint,
-          proposalId: options.degovTweet.proposal_id,
+          proposalId,
         });
         transactionHash = pqueued?.transactionHash;
         if (pqueued) {
           const etaSeconds = +pqueued.etaSeconds;
-          const etaDate = new Date(etaSeconds * 1000).toISOString();
-          results.push(`📅 ETA: ${etaDate}`);
+          const etaDate = new Date(etaSeconds * 1000);
+          genTweetInput.eta = etaDate;
         }
         break;
       case ProposalState.Executed:
         const pexecuted = await this.degovIndexer.queryProposalExecuted({
           endpoint: degovConfig.indexer.endpoint,
-          proposalId: options.degovTweet.proposal_id,
+          proposalId,
         });
         transactionHash = pexecuted?.transactionHash;
         break;
@@ -228,34 +230,8 @@ export class DegovProposalStatusTask {
       default:
         return [];
     }
-    const transactionLink =
-      DegovHelpers.degovLink(degovConfig).transaction(transactionHash);
-    results.push(
-      ...(transactionLink ? [`🔗 Transaction: ${transactionLink}`] : [])
-    );
-    return results;
-  }
-
-  private bestStatusEmoji(status: ProposalState): string {
-    switch (status) {
-      case ProposalState.Pending:
-        return "⏳";
-      case ProposalState.Active:
-        return "🗳️";
-      case ProposalState.Canceled:
-        return "❌";
-      case ProposalState.Defeated:
-        return "💔";
-      case ProposalState.Succeeded:
-        return "🎉";
-      case ProposalState.Queued:
-        return "🚶";
-      case ProposalState.Expired:
-        return "🍂";
-      case ProposalState.Executed:
-        return "🏁";
-      default:
-        return "❓"; // Unknown status
+    if (transactionHash) {
+      genTweetInput.transactionHash = transactionHash;
     }
   }
 }

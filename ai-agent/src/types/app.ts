@@ -37,17 +37,14 @@ export enum RuntimeProfile {
 }
 
 export interface RawDegovDaoConfig {
-  code: string;
   xprofile: string;
   carry: string[];
-  extend: string; // URL to extend the configuration
+  config: string; // URL to extend the configuration
 }
 
 export interface DegovDaoConfig {
-  // name: string;
   code: string;
   xprofile: string;
-  // links: DegovMcpDaoUrl;
   carry: string[];
   config: DegovConfig;
   extend: string;
@@ -144,6 +141,11 @@ export enum ProposalState {
 export enum ClockMode {
   Timestamp = "timestamp",
   BlockNumber = "blocknumber",
+}
+
+export interface MixedAccountInfo {
+  ensName?: string;
+  xUsername?: string;
 }
 
 export const AnalysisResultSchema = z.object({

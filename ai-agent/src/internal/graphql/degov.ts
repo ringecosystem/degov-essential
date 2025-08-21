@@ -9,7 +9,9 @@ import {
   QueryNextProposalOptions,
   QueryProposalById,
   QueryProposalVotes,
+  VotingDistribution,
 } from "./types";
+import { DegovHelpers } from "../../helpers";
 
 @Service()
 export class DegovIndexer {
@@ -76,12 +78,16 @@ export class DegovIndexer {
   }
 
   async queryProposalVotes(options: QueryProposalVotes): Promise<DIVoteCast[]> {
-    const limit = 10;
+    const limit = 50;
     const document = gql`
-      query QueryProposalVotes($offset: Int!, $limit: Int!, $proposal_id: String!) {
+      query QueryProposalVotes(
+        $offset: Int!
+        $limit: Int!
+        $proposal_id: String!
+      ) {
         voteCasts(
           offset: $offset
-          limit: $limit,
+          limit: $limit
           orderBy: blockNumber_ASC
           where: { proposalId_eq: $proposal_id }
         ) {
@@ -211,5 +217,77 @@ export class DegovIndexer {
       return undefined; // No executed proposal found
     }
     return proposalExecuteds[0]; // Return the first executed proposal
+  }
+
+  async queryVotingDistribution(
+    options: QueryProposalById
+  ): Promise<VotingDistribution> {
+    const limit = 50;
+    const document = gql`
+      query QueryVotingDistribution(
+        $proposal_id: String!
+        $offset: Int!
+        $limit: Int!
+      ) {
+        voteCasts(
+          where: { proposalId_eq: $proposal_id }
+          offset: $offset
+          limit: $limit
+          orderBy: blockTimestamp_ASC
+        ) {
+          support
+          weight
+        }
+      }
+    `;
+
+    let offset = 0;
+    const allVoteCasts: { support: string; weight: string }[] = [];
+
+    // get all voting record
+    while (true) {
+      const response = await request<{
+        voteCasts: { support: string; weight: string }[];
+      }>(options.endpoint, document, {
+        proposal_id: options.proposalId,
+        offset,
+        limit,
+      });
+
+      const voteCasts = response.voteCasts;
+      if (voteCasts.length === 0) {
+        break;
+      }
+
+      allVoteCasts.push(...voteCasts);
+      offset += voteCasts.length;
+
+      if (voteCasts.length < limit) {
+        break;
+      }
+    }
+
+    // calculate total weight and distribution by support
+    let totalWeight = BigInt(0);
+    const distributionBySupport: { [support: string]: bigint } = {};
+
+    for (const voteCast of allVoteCasts) {
+      const weight = BigInt(voteCast.weight);
+      const support = voteCast.support;
+      const formattedSupported = DegovHelpers.voteSupportText(support);
+
+      totalWeight += weight;
+
+      if (distributionBySupport[formattedSupported]) {
+        distributionBySupport[formattedSupported] += weight;
+      } else {
+        distributionBySupport[formattedSupported] = weight;
+      }
+    }
+
+    return {
+      totalWeight: totalWeight,
+      distributionBySupport: distributionBySupport,
+    };
   }
 }

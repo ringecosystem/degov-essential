@@ -12,7 +12,7 @@ import { NewProposalEvent } from "../types";
 import { DegovIndexer } from "../internal/graphql";
 import { DegovHelpers } from "../helpers";
 import { generateText } from "ai";
-import { GovernorContract } from "../internal/governor";
+import { DegovContract } from "../internal/contracts";
 import { ChainTool } from "../internal/chaintool";
 
 @Service()
@@ -22,7 +22,7 @@ export class DegovProposalNewTask {
     private readonly twitterAgent: TwitterAgentW,
     private readonly openrouterAgent: OpenrouterAgent,
     private readonly degovIndexer: DegovIndexer,
-    private readonly governorContract: GovernorContract,
+    private readonly degovContract: DegovContract,
     private readonly chainTool: ChainTool
   ) {}
 
@@ -65,7 +65,6 @@ export class DegovProposalNewTask {
     const events = await this.nextNewProposals(fastify);
     for (const event of events) {
       const proposal = event.proposal;
-      // const voteEnd = new Date(+proposal.voteEnd * 1000);
       const calcOptions = {
         proposalVoteStart: proposal.voteStart,
         proposalVoteEnd: proposal.voteEnd,
@@ -134,6 +133,7 @@ export class DegovProposalNewTask {
         const promptout = await DegovPrompt.newProposalTweet(fastify, {
           stu,
           event,
+          pollTweetDurationResult,
         });
         const aiResp = await generateText({
           model: this.openrouterAgent.openrouter(EnvReader.aiModel()),
@@ -200,7 +200,7 @@ export class DegovProposalNewTask {
       const chainRpc = await this.chainTool.pickRpc({
         rpcs: degovConfig.chain?.rpcs,
       });
-      const clockMode = await this.governorContract.clockMode({
+      const clockMode = await this.degovContract.clockMode({
         chainId,
         endpoint: chainRpc,
         contractAddress: degovConfig.contracts?.governor as `0x${string}`,

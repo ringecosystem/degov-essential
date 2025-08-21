@@ -2,6 +2,9 @@ import { FastifyInstance } from "fastify";
 import { NewProposalEvent, PromptOutput } from "../../types";
 import { SimpleTweetUser } from "../x-agent";
 import { getBuiltInPrompt } from "./common";
+import { QuorumResult } from "../contracts";
+import { VotingDistribution } from "../graphql";
+import { DegovHelpers, PollTweetDurationResult } from "../../helpers";
 
 export class DegovPrompt {
   static async newProposalTweet(
@@ -9,9 +12,10 @@ export class DegovPrompt {
     options: {
       stu: SimpleTweetUser;
       event: NewProposalEvent;
+      pollTweetDurationResult: PollTweetDurationResult;
     }
   ): Promise<PromptOutput> {
-    const { event, stu } = options;
+    const { event, stu, pollTweetDurationResult } = options;
     const proposal = event.proposal;
     const rawData = {
       daoname: event.daoname,
@@ -21,6 +25,7 @@ export class DegovPrompt {
       verified: stu.verified,
       daox: event.daox,
       transactionLink: proposal.transactionLink,
+      voteEnd: pollTweetDurationResult.proposalEndTimestamp,
     };
     return {
       system: await getBuiltInPrompt(
@@ -28,7 +33,7 @@ export class DegovPrompt {
         "prompts/tweet-new-proposal.system.md"
       ),
       prompt: `
-${JSON.stringify(rawData)}
+${DegovHelpers.safeJsonStringify(rawData)}
 
 Generate a poll tweet use above data
     `,
@@ -63,7 +68,7 @@ Generate a poll tweet use above data
         "prompts/tweet-new-expiring-soon-proposal.system.md"
       ),
       prompt: `
-${JSON.stringify(rawData)}
+${DegovHelpers.safeJsonStringify(rawData)}
 
 Generate a tweet use above data
     `,
@@ -75,12 +80,17 @@ Generate a tweet use above data
     options: NewVoteCastTweetOptioins
   ): Promise<PromptOutput> {
     const rawData = {
+      ensName: options.ensName,
+      voterAddress: options.voterAddress,
+      voterXUsername: options.voterXUsername,
       voterAddressLink: options.voterAddressLink,
       transactionLink: options.transactionLink,
       proposalLink: options.proposalLink,
       choice: options.choice,
       reason: options.reason,
       verified: options.stu.verified,
+      quorum: options.quorum,
+      votingDistribution: options.votingDistribution,
     };
     return {
       system: await getBuiltInPrompt(
@@ -88,7 +98,7 @@ Generate a tweet use above data
         "prompts/tweet-new-vote-cast.system.md"
       ),
       prompt: `
-${JSON.stringify(rawData)}
+${DegovHelpers.safeJsonStringify(rawData)}
 
 Generate a tweet use above data
       `,
@@ -106,13 +116,13 @@ Generate a tweet use above data
       ),
       prompt: `
 **X Poll:**
-${JSON.stringify(options.pollOptions)}
+${DegovHelpers.safeJsonStringify(options.pollOptions)}
 
 **X Comments:**
-${JSON.stringify(options.tweetReplies)}
+${DegovHelpers.safeJsonStringify(options.tweetReplies)}
 
 **On-Chain Voting:**
-${JSON.stringify(options.voteCasts)}
+${DegovHelpers.safeJsonStringify(options.voteCasts)}
 
 Please analyze these data comprehensively and give final governance decision recommendations.
       `,
@@ -166,9 +176,14 @@ export interface FulfillContractOptions {
 
 export interface NewVoteCastTweetOptioins {
   stu: SimpleTweetUser;
+  ensName?: string;
+  voterXUsername?: string;
+  voterAddress: string;
   voterAddressLink: string;
   proposalLink: string;
   transactionLink?: string;
   choice: string;
   reason: string;
+  quorum?: QuorumResult;
+  votingDistribution?: VotingDistribution;
 }
