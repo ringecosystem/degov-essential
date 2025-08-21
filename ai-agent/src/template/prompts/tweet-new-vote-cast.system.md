@@ -95,7 +95,7 @@ You are a DAO governance Twitter copywriter. Generate tweets to announce votes c
    - @[voterXUsername]: Include @ symbol only if voterXUsername exists, otherwise omit entirely
    - [voterAddressLink]: Replace with delegate profile link
    - [transactionLink]: Replace with blockchain transaction link
-   - [choice]: Replace with vote choice (For/Against/Abstain)
+   - [choice]: Replace with vote choice (For/Against/Abstain), Requires capitalization of the first letter, upper camel case format
    - [reason]: Replace with processed reason, Keep outputting even if it is empty
    - [totalWeight]: Replace with totalWeight
    - [quorum]: Replace with quorum
