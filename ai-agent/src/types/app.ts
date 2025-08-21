@@ -1,3 +1,7 @@
+import {
+  VotingDistribution,
+  VotingDistributionPeerSupport,
+} from "../internal/graphql";
 import { DegovConfig } from "./degov-config";
 import { z } from "zod";
 
@@ -146,6 +150,27 @@ export enum ClockMode {
 export interface MixedAccountInfo {
   ensName?: string;
   xUsername?: string;
+}
+
+export enum VoteSupport {
+  Against = "against",
+  For = "for",
+  Abstain = "abstain",
+  Unknown = "unknown",
+}
+
+export interface CalculatedVotingDistribution extends VotingDistribution {
+  quorum?: bigint;
+  decimals?: bigint;
+  percentTotalVotes?: number;
+  distributionSupport: CalculatedVotingDistributionPeerSupport;
+}
+
+export interface CalculatedVotingDistributionPeerSupport
+  extends VotingDistributionPeerSupport {
+  percentAgainst: number;
+  percentFor: number;
+  percentAbstain: number;
 }
 
 export const AnalysisResultSchema = z.object({

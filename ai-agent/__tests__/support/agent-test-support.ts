@@ -132,26 +132,26 @@ export class AgentTestSupport {
       case 1:
         return {
           totalWeight: 48573535584620845365681336n,
-          distributionBySupport: {
-            For: 42800000000000000000000000n,
-            Against: 5773535584620845365681336n,
+          distributionSupport: {
+            voteFor: 42800000000000000000000000n,
+            voteAgainst: 5773535584620845365681336n,
           },
         };
       case 2:
         return {
           totalWeight: 4n,
-          distributionBySupport: {
-            For: 2n,
-            Against: 1n,
-            Abstain: 1n,
+          distributionSupport: {
+            voteFor: 2n,
+            voteAgainst: 1n,
+            voteAbstain: 1n,
           },
         };
       default:
         return {
           totalWeight: 4857353558462084536568n,
-          distributionBySupport: {
-            For: 4280000000000000000000n,
-            Against: 577353558462084536568n,
+          distributionSupport: {
+            voteFor: 4280000000000000000000n,
+            voteAgainst: 577353558462084536568n,
           },
         };
     }

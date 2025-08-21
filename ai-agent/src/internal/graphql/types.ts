@@ -66,7 +66,11 @@ export interface DIProposalExecuted {
 
 export interface VotingDistribution {
   totalWeight: bigint;
-  distributionBySupport: {
-    [support: string]: bigint;
-  };
+  distributionSupport: VotingDistributionPeerSupport;
+}
+
+export interface VotingDistributionPeerSupport {
+  voteAgainst?: bigint;
+  voteFor?: bigint;
+  voteAbstain?: bigint;
 }

@@ -174,6 +174,11 @@ export class DegovProposalVoteTask {
             endpoint: daoConfig.indexer.endpoint,
             proposalId: degovTweet.proposal_id,
           });
+        const calculatedVotingDistribution =
+          DegovHelpers.calculateVoteDistribution({
+            quorum: quorumResult,
+            votingDistribution,
+          });
 
         const promptInput = {
           stu,
@@ -185,8 +190,7 @@ export class DegovProposalVoteTask {
           transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
-          quorum: quorumResult,
-          votingDistribution,
+          votingDistribution: calculatedVotingDistribution,
         };
         fastify.log.debug(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(

@@ -196,6 +196,12 @@ describe("X Tweet Preview Test", () => {
         seq += 1;
         const quorumResult = ats.quorum(seq);
         const votingDistribution = ats.votingDistribution(seq);
+        const calculatedVotingDistribution =
+          DegovHelpers.calculateVoteDistribution({
+            quorum: quorumResult,
+            votingDistribution,
+          });
+
         const mixedAccountInfo = ats.mixedAccountInfo(vote.voter);
         const promptInput = {
           stu: ats.verifiedXUser(),
@@ -207,8 +213,7 @@ describe("X Tweet Preview Test", () => {
           transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
-          quorum: quorumResult,
-          votingDistribution,
+          votingDistribution: calculatedVotingDistribution,
         };
         console.log(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(
