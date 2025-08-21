@@ -1,7 +1,6 @@
 import { DegovContract } from "../src/internal/contracts";
-import { DegovHelpers } from "../src/helpers";
 
-describe("X Tweet Preview Test", () => {
+describe("Contract test", () => {
   const contract = new DegovContract();
 
   it(
