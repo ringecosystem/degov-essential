@@ -1,6 +1,6 @@
 import { DegovContract } from "../src/internal/contracts";
 
-describe("X Tweet Preview Test", () => {
+describe("Contract test", () => {
   const contract = new DegovContract();
 
   it(
@@ -37,6 +37,28 @@ describe("X Tweet Preview Test", () => {
       console.log(result);
       expect(result).toEqual({
         quorum: 40000000000000000000000000n,
+        decimals: 18n,
+      });
+    },
+    1000 * 60
+  );
+
+
+  it(
+    "Check quorum erc20 - unlockdao - timestamp",
+    async () => {
+      const result = await contract.quorum({
+        chainId: 8453,
+        endpoint: "https://base-rpc.publicnode.com",
+        contractAddress: "0x65bA0624403Fc5Ca2b20479e9F626eD4D78E0aD9",
+
+        standard: "ERC20",
+        governorTokenAddress: "0xaC27fa800955849d6D17cC8952Ba9dD6EAA66187",
+        includeDecimals: true,
+      });
+      console.log(result);
+      expect(result).toEqual({
+        quorum: 3000000000000000000000000n,
         decimals: 18n,
       });
     },

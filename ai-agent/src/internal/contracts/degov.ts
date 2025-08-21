@@ -61,7 +61,7 @@ const ABI_FUNCTION_CAST_VOTE_WITH_REASON = [
 
 const ABI_FUNCTION_QUORUM = [
   {
-    inputs: [{ internalType: "uint256", name: "blockNumber", type: "uint256" }],
+    inputs: [{ internalType: "uint256", name: "timepoint", type: "uint256" }],
     name: "quorum",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
@@ -239,8 +239,10 @@ export class DegovContract {
   async quorum(options: QueryQuorumOptions): Promise<QuorumResult | undefined> {
     const client = this.client(options);
 
+    let clockMode: ClockMode | undefined = ClockMode.BlockNumber;
     let clock: bigint | undefined = undefined;
     try {
+      clockMode = await this.clockMode(options);
       const result = await client.readContract({
         address: options.contractAddress,
         abi: ABI_FUNCTION_CLOCK,
@@ -252,25 +254,34 @@ export class DegovContract {
     } catch (e: any) {
       console.warn(`failed to query clock: ${e}`);
     }
+
     if (!clock) {
-      const clockMode = await this.clockMode(options);
       const latestBlock = await client.getBlock();
       switch (clockMode) {
         case ClockMode.Timestamp:
-          clock = latestBlock.timestamp - 60n * 3n;
+          clock = latestBlock.timestamp;
           break;
         case ClockMode.BlockNumber:
-          // Use a block number that's safely in the past to avoid "block not yet mined" error
-          clock = latestBlock.number - 10n;
+          clock = latestBlock.number;
           break;
       }
+    }
+
+    switch (clockMode) {
+      case ClockMode.Timestamp:
+        clock = clock - 60n * 3n;
+        break;
+      case ClockMode.BlockNumber:
+        // Use a block number that's safely in the past to avoid "block not yet mined" error
+        clock = clock - 10n;
+        break;
     }
 
     const quorumResult = await client.readContract({
       address: options.contractAddress,
       abi: ABI_FUNCTION_QUORUM,
       functionName: "quorum",
-      args: [clock],
+      args: [clock.toString()],
     });
     if (!quorumResult) {
       return undefined;
