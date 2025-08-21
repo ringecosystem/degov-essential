@@ -40,36 +40,7 @@ export class ProfileService {
       }
     }
 
-    // Call DeGov API to query user profile
-    try {
-      const response = await fetch(
-        `${options.degovSite}/api/profile/${options.address}`
-      );
-      if (response.ok) {
-        const apiData = await response.json();
-        if (apiData.code === 0 && apiData.data) {
-          const { twitter, name } = apiData.data;
-
-          if (twitter || name) {
-            // Save to database
-            await this.saveToEnsRecords(fastify, {
-              address: options.address,
-              ensName: name,
-              xUsername: twitter,
-            });
-
-            return {
-              ensName: name,
-              xUsername: twitter,
-            };
-          }
-        }
-      }
-    } catch (error) {
-      fastify.log.warn(`Failed to fetch profile from DeGov API: ${error}`);
-    }
-
-    // If DeGov API did not return data, call ENS client
+    // Call ENS client to find twitter and ens name
     try {
       const ensResult = await this.ensClient.findTwitterUsername(
         options.address as any
@@ -91,6 +62,35 @@ export class ProfileService {
       }
     } catch (error) {
       fastify.log.warn(`Failed to fetch ENS profile: ${error}`);
+    }
+
+    // Call DeGov API to query user profile
+    try {
+      const response = await fetch(
+        `${options.degovSite}/api/profile/${options.address}`
+      );
+      if (response.ok) {
+        const apiData = await response.json();
+        if (apiData.code === 0 && apiData.data) {
+          const { twitter } = apiData.data;
+
+          if (twitter) {
+            // Save to database
+            await this.saveToEnsRecords(fastify, {
+              address: options.address,
+              // ensName: name,
+              xUsername: twitter,
+            });
+
+            return {
+              // ensName: name,
+              xUsername: twitter,
+            };
+          }
+        }
+      }
+    } catch (error) {
+      fastify.log.warn(`Failed to fetch profile from DeGov API: ${error}`);
     }
 
     return undefined;
