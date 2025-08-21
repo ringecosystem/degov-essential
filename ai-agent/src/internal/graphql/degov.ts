@@ -286,13 +286,13 @@ export class DegovIndexer {
 
       switch (formattedSupported) {
         case VoteSupport.Against:
-          distributionSupport.voteAgainst += weight;
+          distributionSupport.voteAgainst! += weight;
           break;
         case VoteSupport.For:
-          distributionSupport.voteFor += weight;
+          distributionSupport.voteFor! += weight;
           break;
         case VoteSupport.Abstain:
-          distributionSupport.voteAbstain += weight;
+          distributionSupport.voteAbstain! += weight;
           break;
       }
     }
