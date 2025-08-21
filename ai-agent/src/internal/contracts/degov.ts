@@ -19,131 +19,6 @@ import { DegovHelpers } from "../../helpers";
 import { privateKeyToAccount } from "viem/accounts";
 import { EnvReader } from "../../integration/env-reader";
 
-const ABI_ERROR_GOVERNOR = [
-  { inputs: [], name: "CheckpointUnorderedInsertion", type: "error" },
-  { inputs: [], name: "FailedCall", type: "error" },
-  {
-    inputs: [{ internalType: "address", name: "voter", type: "address" }],
-    name: "GovernorAlreadyCastVote",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "proposalId", type: "uint256" }],
-    name: "GovernorAlreadyQueuedProposal",
-    type: "error",
-  },
-  { inputs: [], name: "GovernorDisabledDeposit", type: "error" },
-  {
-    inputs: [
-      { internalType: "address", name: "proposer", type: "address" },
-      { internalType: "uint256", name: "votes", type: "uint256" },
-      { internalType: "uint256", name: "threshold", type: "uint256" },
-    ],
-    name: "GovernorInsufficientProposerVotes",
-    type: "error",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "targets", type: "uint256" },
-      { internalType: "uint256", name: "calldatas", type: "uint256" },
-      { internalType: "uint256", name: "values", type: "uint256" },
-    ],
-    name: "GovernorInvalidProposalLength",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "quorumNumerator",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "quorumDenominator",
-        type: "uint256",
-      },
-    ],
-    name: "GovernorInvalidQuorumFraction",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "address", name: "voter", type: "address" }],
-    name: "GovernorInvalidSignature",
-    type: "error",
-  },
-  { inputs: [], name: "GovernorInvalidVoteParams", type: "error" },
-  { inputs: [], name: "GovernorInvalidVoteType", type: "error" },
-  {
-    inputs: [
-      { internalType: "uint256", name: "votingPeriod", type: "uint256" },
-    ],
-    name: "GovernorInvalidVotingPeriod",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "proposalId", type: "uint256" }],
-    name: "GovernorNonexistentProposal",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "proposalId", type: "uint256" }],
-    name: "GovernorNotQueuedProposal",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "address", name: "account", type: "address" }],
-    name: "GovernorOnlyExecutor",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "address", name: "account", type: "address" }],
-    name: "GovernorOnlyProposer",
-    type: "error",
-  },
-  { inputs: [], name: "GovernorQueueNotImplemented", type: "error" },
-  {
-    inputs: [{ internalType: "address", name: "proposer", type: "address" }],
-    name: "GovernorRestrictedProposer",
-    type: "error",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "proposalId", type: "uint256" },
-      {
-        internalType: "enum IGovernor.ProposalState",
-        name: "current",
-        type: "uint8",
-      },
-      { internalType: "bytes32", name: "expectedStates", type: "bytes32" },
-    ],
-    name: "GovernorUnexpectedProposalState",
-    type: "error",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "account", type: "address" },
-      { internalType: "uint256", name: "currentNonce", type: "uint256" },
-    ],
-    name: "InvalidAccountNonce",
-    type: "error",
-  },
-  { inputs: [], name: "InvalidShortString", type: "error" },
-  {
-    inputs: [
-      { internalType: "uint8", name: "bits", type: "uint8" },
-      { internalType: "uint256", name: "value", type: "uint256" },
-    ],
-    name: "SafeCastOverflowedUintDowncast",
-    type: "error",
-  },
-  {
-    inputs: [{ internalType: "string", name: "str", type: "string" }],
-    name: "StringTooLong",
-    type: "error",
-  },
-];
-
 const ABI_FUNCTION_STATE = [
   {
     inputs: [{ internalType: "uint256", name: "proposalId", type: "uint256" }],
@@ -192,7 +67,6 @@ const ABI_FUNCTION_QUORUM = [
     stateMutability: "view",
     type: "function",
   },
-  ...ABI_ERROR_GOVERNOR,
 ];
 
 const ABI_FUNCTION_CLOCK = [
