@@ -298,11 +298,11 @@ describe("X Tweet Preview Test", () => {
   it(
     "Fulfill contract analysis",
     async () => {
-      const proposalEvent = ats.proposalEvent();
+      // const proposalEvent = ats.proposalEvent();
       // const { proposal } = proposalEvent;
 
       // Randomly choose between different scenarios
-      const scenarios = ["whale-dominated", "conflicted"] as const;
+      const scenarios = ["aligned", "conflicted", "whale-dominated", "abstain-heavy"] as const;
       const randomScenario =
         scenarios[Math.floor(Math.random() * scenarios.length)];
       const randomSeed = Date.now();
