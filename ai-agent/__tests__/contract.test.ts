@@ -1,4 +1,5 @@
 import { DegovContract } from "../src/internal/contracts";
+import { DegovHelpers } from "../src/helpers";
 
 describe("X Tweet Preview Test", () => {
   const contract = new DegovContract();
@@ -14,7 +15,7 @@ describe("X Tweet Preview Test", () => {
         // standard: "ERC20",
         // governorTokenAddress: "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",
       });
-      console.log(result);
+      console.log(DegovHelpers.safeJsonStringify(result));
       expect(result).toEqual({
         quorum: 1000000000000000000000000n,
       });
@@ -34,11 +35,33 @@ describe("X Tweet Preview Test", () => {
         governorTokenAddress: "0xdafa555e2785DC8834F4Ea9D1ED88B6049142999",
         includeDecimals: true,
       });
-      console.log(result);
+      console.log(DegovHelpers.safeJsonStringify(result));
       expect(result).toEqual({
         quorum: 40000000000000000000000000n,
         decimals: 18n,
       });
+    },
+    1000 * 60
+  );
+
+
+  it(
+    "Check quorum erc20 - unlockdao - timestamp",
+    async () => {
+      const result = await contract.quorum({
+        chainId: 8453,
+        endpoint: "https://base-rpc.publicnode.com",
+        contractAddress: "0x65bA0624403Fc5Ca2b20479e9F626eD4D78E0aD9",
+
+        standard: "ERC20",
+        governorTokenAddress: "0xaC27fa800955849d6D17cC8952Ba9dD6EAA66187",
+        includeDecimals: true,
+      });
+      console.log(DegovHelpers.safeJsonStringify(result));
+      // expect(result).toEqual({
+      //   quorum: 40000000000000000000000000n,
+      //   decimals: 18n,
+      // });
     },
     1000 * 60
   );
