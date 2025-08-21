@@ -350,11 +350,15 @@ describe("X Tweet Preview Test", () => {
         );
 
         // Define expected outcomes for each scenario
-        const expectedOutcomes = {
+        const expectedOutcomes: Record<typeof randomScenario, string> = {
           "whale-dominated":
             "Should identify whale concentration issues and potentially lower confidence",
           conflicted:
             "May trigger Abstain rule due to conflicts between social and on-chain sentiment",
+          aligned:
+            "Social and on-chain sentiment are aligned; expect high confidence in decision.",
+          "abstain-heavy":
+            "High abstain rate; decision may be inconclusive or require further analysis.",
         };
 
         // Write analysis to output file
