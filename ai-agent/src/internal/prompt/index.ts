@@ -1,9 +1,11 @@
 import { FastifyInstance } from "fastify";
-import { NewProposalEvent, PromptOutput } from "../../types";
+import {
+  CalculatedVotingDistribution,
+  NewProposalEvent,
+  PromptOutput,
+} from "../../types";
 import { SimpleTweetUser } from "../x-agent";
 import { getBuiltInPrompt } from "./common";
-import { QuorumResult } from "../contracts";
-import { VotingDistribution } from "../graphql";
 import { DegovHelpers, PollTweetDurationResult } from "../../helpers";
 
 export class DegovPrompt {
@@ -89,7 +91,6 @@ Generate a tweet use above data
       choice: options.choice,
       reason: options.reason,
       verified: options.stu.verified,
-      quorum: options.quorum,
       votingDistribution: options.votingDistribution,
     };
     return {
@@ -184,6 +185,5 @@ export interface NewVoteCastTweetOptioins {
   transactionLink?: string;
   choice: string;
   reason: string;
-  quorum?: QuorumResult;
-  votingDistribution?: VotingDistribution;
+  votingDistribution?: CalculatedVotingDistribution;
 }

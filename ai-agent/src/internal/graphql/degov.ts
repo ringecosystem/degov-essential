@@ -10,8 +10,10 @@ import {
   QueryProposalById,
   QueryProposalVotes,
   VotingDistribution,
+  VotingDistributionPeerSupport,
 } from "./types";
 import { DegovHelpers } from "../../helpers";
+import { VoteSupport } from "../../types";
 
 @Service()
 export class DegovIndexer {
@@ -269,7 +271,11 @@ export class DegovIndexer {
 
     // calculate total weight and distribution by support
     let totalWeight = BigInt(0);
-    const distributionBySupport: { [support: string]: bigint } = {};
+    const distributionSupport: VotingDistributionPeerSupport = {
+      voteFor: 0n,
+      voteAgainst: 0n,
+      voteAbstain: 0n,
+    };
 
     for (const voteCast of allVoteCasts) {
       const weight = BigInt(voteCast.weight);
@@ -278,16 +284,22 @@ export class DegovIndexer {
 
       totalWeight += weight;
 
-      if (distributionBySupport[formattedSupported]) {
-        distributionBySupport[formattedSupported] += weight;
-      } else {
-        distributionBySupport[formattedSupported] = weight;
+      switch (formattedSupported) {
+        case VoteSupport.Against:
+          distributionSupport.voteAgainst! += weight;
+          break;
+        case VoteSupport.For:
+          distributionSupport.voteFor! += weight;
+          break;
+        case VoteSupport.Abstain:
+          distributionSupport.voteAbstain! += weight;
+          break;
       }
     }
 
     return {
       totalWeight: totalWeight,
-      distributionBySupport: distributionBySupport,
+      distributionSupport: distributionSupport,
     };
   }
 }

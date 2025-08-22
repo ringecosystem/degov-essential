@@ -1,5 +1,15 @@
 import { InlineErrorV2 } from "twitter-api-v2";
-import { ClockMode, DegovConfig, ProposalState, RuntimeProfile } from "./types";
+import {
+  CalculatedVotingDistribution,
+  CalculatedVotingDistributionPeerSupport,
+  ClockMode,
+  DegovConfig,
+  ProposalState,
+  RuntimeProfile,
+  VoteSupport,
+} from "./types";
+import { VotingDistribution } from "./internal/graphql";
+import { QuorumResult } from "./internal/contracts";
 
 export class DegovHelpers {
   static runtimeProfile(): RuntimeProfile {
@@ -25,21 +35,63 @@ export class DegovHelpers {
     });
   }
 
-  static voteSupportText(support: any): string {
+  static voteSupportText(support: any): VoteSupport {
     const formattedSupported = support.toString().toLowerCase();
     switch (formattedSupported) {
       case "0":
       case "against":
-        return "Against";
+        return VoteSupport.Against;
       case "1":
       case "for":
-        return "For";
+        return VoteSupport.For;
       case "2":
       case "abstain":
-        return "Abstain";
+        return VoteSupport.Abstain;
       default:
-        return "Unknown";
+        return VoteSupport.Unknown;
     }
+  }
+
+  static calculateVoteDistribution(options: {
+    quorum?: QuorumResult;
+    votingDistribution: VotingDistribution;
+  }): CalculatedVotingDistribution {
+    const votingDistribution = options.votingDistribution;
+
+    const totalWeight = options.votingDistribution.totalWeight;
+    const adjustedVotingDistributionSupport: CalculatedVotingDistributionPeerSupport =
+      {
+        ...votingDistribution.distributionSupport,
+        percentAgainst: percentFloor(
+          votingDistribution.distributionSupport.voteAgainst,
+          totalWeight
+        ),
+        percentFor: percentFloor(
+          votingDistribution.distributionSupport.voteFor,
+          totalWeight
+        ),
+        percentAbstain: percentFloor(
+          votingDistribution.distributionSupport.voteAbstain,
+          totalWeight
+        ),
+      };
+    if (!options.quorum) {
+      return {
+        ...votingDistribution,
+        distributionSupport: adjustedVotingDistributionSupport,
+      };
+    }
+
+    const { quorum, decimals } = options.quorum;
+    const percentTotalVotes = percentFloor(totalWeight, quorum);
+
+    return {
+      ...votingDistribution,
+      quorum,
+      decimals,
+      percentTotalVotes,
+      distributionSupport: adjustedVotingDistributionSupport,
+    };
   }
 
   static voteSupportNumber(support: string): number {
@@ -404,4 +456,14 @@ export interface PollTweetDurationResult {
   durationMinutes?: number;
   proposalStartTimestamp: Date;
   proposalEndTimestamp: Date;
+}
+
+function percentFloor(
+  part: bigint | undefined,
+  total: bigint | undefined
+): number {
+  if (!part || part === 0n) return 0;
+  if (!total || total === 0n) return 0;
+  const scaled = (part * 10000n) / total;
+  return Number(scaled) / 100;
 }

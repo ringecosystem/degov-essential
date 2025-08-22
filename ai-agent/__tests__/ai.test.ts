@@ -196,6 +196,12 @@ describe("X Tweet Preview Test", () => {
         seq += 1;
         const quorumResult = ats.quorum(seq);
         const votingDistribution = ats.votingDistribution(seq);
+        const calculatedVotingDistribution =
+          DegovHelpers.calculateVoteDistribution({
+            quorum: quorumResult,
+            votingDistribution,
+          });
+
         const mixedAccountInfo = ats.mixedAccountInfo(vote.voter);
         const promptInput = {
           stu: ats.verifiedXUser(),
@@ -207,8 +213,7 @@ describe("X Tweet Preview Test", () => {
           transactionLink: degovLink.transaction(vote.transactionHash),
           choice: DegovHelpers.voteSupportText(vote.support),
           reason: vote.reason ?? "",
-          quorum: quorumResult,
-          votingDistribution,
+          votingDistribution: calculatedVotingDistribution,
         };
         console.log(promptInput);
         const promptout = await DegovPrompt.newVoteCastTweet(
@@ -293,11 +298,11 @@ describe("X Tweet Preview Test", () => {
   it(
     "Fulfill contract analysis",
     async () => {
-      const proposalEvent = ats.proposalEvent();
+      // const proposalEvent = ats.proposalEvent();
       // const { proposal } = proposalEvent;
 
       // Randomly choose between different scenarios
-      const scenarios = ["whale-dominated", "conflicted"] as const;
+      const scenarios = ["aligned", "conflicted", "whale-dominated", "abstain-heavy"] as const;
       const randomScenario =
         scenarios[Math.floor(Math.random() * scenarios.length)];
       const randomSeed = Date.now();
@@ -345,11 +350,15 @@ describe("X Tweet Preview Test", () => {
         );
 
         // Define expected outcomes for each scenario
-        const expectedOutcomes = {
+        const expectedOutcomes: Record<typeof randomScenario, string> = {
           "whale-dominated":
             "Should identify whale concentration issues and potentially lower confidence",
           conflicted:
             "May trigger Abstain rule due to conflicts between social and on-chain sentiment",
+          aligned:
+            "Social and on-chain sentiment are aligned; expect high confidence in decision.",
+          "abstain-heavy":
+            "High abstain rate; decision may be inconclusive or require further analysis.",
         };
 
         // Write analysis to output file
