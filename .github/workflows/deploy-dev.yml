@@ -3,6 +3,9 @@ name: Deploy develop
 on:
   pull_request:
 
+permissions:
+  pull-requests: write
+
 jobs:
   deploy-static:
     name: Deploy
