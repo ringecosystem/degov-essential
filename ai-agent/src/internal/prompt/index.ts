@@ -84,7 +84,9 @@ Generate a tweet use above data
     const rawData = {
       ensName: options.ensName,
       voterAddress: options.voterAddress,
-      voterXUsername: options.voterXUsername,
+      // related: https://github.com/ringecosystem/degov-essential/issues/90
+      // clean up at twitter username
+      // voterXUsername: options.voterXUsername,
       voterAddressLink: options.voterAddressLink,
       transactionLink: options.transactionLink,
       proposalLink: options.proposalLink,
