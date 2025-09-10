@@ -25,9 +25,7 @@ export class DegovPrompt {
       url: proposal.url,
       description: proposal.description,
       verified: stu.verified,
-      // related: https://github.com/ringecosystem/degov-essential/issues/90
-      // clean up at twitter username
-      // daox: event.daox,
+      daox: event.daox,
       transactionLink: proposal.transactionLink,
       voteEnd: pollTweetDurationResult.proposalEndTimestamp,
     };
