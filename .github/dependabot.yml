@@ -8,9 +8,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "ai-agent" 
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
   - package-ecosystem: "npm"
     directory: "token-wrap" 
     schedule:
-      interval: "weekly"
+      interval: "monthly"
