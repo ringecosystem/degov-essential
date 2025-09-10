@@ -1,6 +1,6 @@
 {
   "name": "degov-token-wrap",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
