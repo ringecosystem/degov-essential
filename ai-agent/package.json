@@ -4,11 +4,11 @@
   "description": "Degov AI Agent",
   "scripts": {
     "dev": "ts-node --files src/index.ts",
-    "build": "tsc -b && shx cp -r src/generated build/src && shx cp -r src/template build/src",
-    "start": "node build/src/index.js",
+    "build": "tsc -b && shx cp -r src/generated build && shx cp -r src/template build",
+    "start": "node build/index.js",
     "test": "jest",
     "lint": "eslint . --ext .ts --fix",
-    "package": "npm run build && ncc build build/src/index.js -o dist --source-map --minify"
+    "package": "npm run build && ncc build build/index.js -o dist --source-map --minify"
   },
   "dependencies": {
     "@akashrajpurohit/snowflake-id": "^2.0.0",
