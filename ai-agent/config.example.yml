@@ -1,7 +1,0 @@
-daos:
-  - config: https://demo.degov.ai/degov.yml
-    xprofile: official
-    carry:
-      - "#Governance"
-      - "#DeFAI"
-      - "#DAO"
