@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         package:
-          - ai-agent
           - token-wrap
     steps:
       - uses: actions/checkout@v2
